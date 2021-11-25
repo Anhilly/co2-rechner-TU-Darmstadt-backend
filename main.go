@@ -7,4 +7,5 @@ func main() {
 	//importer.ImportGebaeude()
 	//importer.ImportStromzaehler()
 	importer.ImportWaermedaten()
+	importer.ImportKaeltedaten()
 }

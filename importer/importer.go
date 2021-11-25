@@ -112,7 +112,7 @@ func ImportGebaeude() {
 }
 
 func ImportStromzaehler() {
-	in, err := os.Open("importer/Stromdaten_aufbereitet.csv")
+	in, err := os.Open("importer\\Strom.csv")
 	if err != nil {
 		panic(err)
 	}
@@ -120,7 +120,7 @@ func ImportStromzaehler() {
 
 	reader := csv.NewReader(in)
 	reader.FieldsPerRecord = -1
-	//reader.Comma = ';'
+	reader.Comma = ';'
 
 	rawCSVdata, err := reader.ReadAll()
 	if err != nil {
@@ -165,13 +165,13 @@ func ImportStromzaehler() {
 	}
 
 	file, _ := json.MarshalIndent(stromArray, "", " ")
-	_ = ioutil.WriteFile("importer/Stromdaten.json", file, 0644)
+	_ = ioutil.WriteFile("importer\\Stromdaten.json", file, 0644)
 
 	//fmt.Println(energieversorgungArray)
 }
 
-func ImportWaermedaten(){
-	in, err := os.Open("importer/waermedaten_aufbereitet.csv")
+func ImportWaermedaten() {
+	in, err := os.Open("importer\\Waerme.csv")
 	if err != nil {
 		panic(err)
 	}
@@ -179,7 +179,7 @@ func ImportWaermedaten(){
 
 	reader := csv.NewReader(in)
 	reader.FieldsPerRecord = -1
-	//reader.Comma = ';'
+	reader.Comma = ';'
 
 	rawCSVdata, err := reader.ReadAll()
 	if err != nil {
@@ -225,7 +225,69 @@ func ImportWaermedaten(){
 	}
 
 	file, _ := json.MarshalIndent(waermeArray, "", " ")
-	_ = ioutil.WriteFile("importer/waermedaten.json", file, 0644)
+	_ = ioutil.WriteFile("importer\\Waermedaten.json", file, 0644)
+
+	//fmt.Println(energieversorgungArray)
+}
+
+func ImportKaeltedaten() {
+	in, err := os.Open("importer\\Kaelte.csv")
+	if err != nil {
+		panic(err)
+	}
+	defer in.Close()
+
+	reader := csv.NewReader(in)
+	reader.FieldsPerRecord = -1
+	reader.Comma = ';'
+
+	rawCSVdata, err := reader.ReadAll()
+	if err != nil {
+		panic(err)
+	}
+
+	var kaelte database.Kaeltezaehler
+	var kaelteArray []database.Kaeltezaehler
+
+	for _, record := range rawCSVdata {
+		if record[0] == "" {
+			continue
+		}
+
+		kaelte.Bezeichnung = record[0]
+		kaelte.ExtSystemID = record[3]
+		kaelte.Einheit = record[2]
+
+		kaelte.Revision = 1
+
+		pke, err := strconv.ParseInt(record[1], 10, 32)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		kaelte.PKEnergie = int32(pke)
+
+		d21, _ := strconv.ParseFloat(record[4], 64)
+		d20, _ := strconv.ParseFloat(record[5], 64)
+		d19, _ := strconv.ParseFloat(record[6], 64)
+		d18, _ := strconv.ParseFloat(record[7], 64)
+
+		kaelte.Zaehlerdaten = []database.Zaehlerwerte{
+			database.Zaehlerwerte{Wert: d21, Zeitstempel: "2021-01-01T00:00:00Z"},
+			database.Zaehlerwerte{Wert: d20, Zeitstempel: "2020-01-01T00:00:00Z"},
+			database.Zaehlerwerte{Wert: d19, Zeitstempel: "2019-01-01T00:00:00Z"},
+			database.Zaehlerwerte{Wert: d18, Zeitstempel: "2018-01-01T00:00:00Z"}}
+
+		fmt.Println(kaelte)
+
+		b, _ := json.Marshal(kaelte)
+		fmt.Println(string(b))
+
+		kaelteArray = append(kaelteArray, kaelte)
+	}
+
+	file, _ := json.MarshalIndent(kaelteArray, "", " ")
+	_ = ioutil.WriteFile("importer\\Kaeltedaten.json", file, 0644)
 
 	//fmt.Println(energieversorgungArray)
 }
