@@ -110,3 +110,62 @@ func ImportGebaeude() {
 
 	//fmt.Println(energieversorgungArray)
 }
+
+func ImportStromzaehler() {
+	in, err := os.Open("importer/Stromdaten_aufbereitet.csv")
+	if err != nil {
+		panic(err)
+	}
+	defer in.Close()
+
+	reader := csv.NewReader(in)
+	reader.FieldsPerRecord = -1
+	//reader.Comma = ';'
+
+	rawCSVdata, err := reader.ReadAll()
+	if err != nil {
+		panic(err)
+	}
+
+	var strom database.Stromzaehler
+	var stromArray []database.Stromzaehler
+
+	for _, record := range rawCSVdata {
+		if record[0] == "" {
+			continue
+		}
+
+		pke, err := strconv.ParseInt(record[1], 10, 32)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		strom.Bezeichnung = record[0]
+		strom.PKEnergie = int32(pke)
+
+		d21, _ := strconv.ParseFloat(record[2], 64)
+		d20, _ := strconv.ParseFloat(record[3], 64)
+		d19, _ := strconv.ParseFloat(record[4], 64)
+		d18, _ := strconv.ParseFloat(record[5], 64)
+		strom.Einheit = record[6]
+		strom.Revision = 1
+
+		strom.Zaehlerdaten = []database.Zaehlerwerte{
+			database.Zaehlerwerte{Wert: d21, Zeitstempel: "2021-01-01T00:00:00Z"},
+			database.Zaehlerwerte{Wert: d20, Zeitstempel: "2020-01-01T00:00:00Z"},
+			database.Zaehlerwerte{Wert: d19, Zeitstempel: "2019-01-01T00:00:00Z"},
+			database.Zaehlerwerte{Wert: d18, Zeitstempel: "2018-01-01T00:00:00Z"}}
+
+		fmt.Println(strom)
+
+		b, _ := json.Marshal(strom)
+		fmt.Println(string(b))
+
+		stromArray = append(stromArray, strom)
+	}
+
+	file, _ := json.MarshalIndent(stromArray, "", " ")
+	_ = ioutil.WriteFile("importer/Stromdaten.json", file, 0644)
+
+	//fmt.Println(energieversorgungArray)
+}
