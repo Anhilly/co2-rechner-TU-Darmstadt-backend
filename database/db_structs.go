@@ -15,11 +15,11 @@ type CO2Energie struct {
 
 // collection gebaeude
 type Gebaeude struct {
-	Nr          int32             `json:"nr" bson:"nr"` // (index)
-	Bezeichnung string            `json:"bezeichnung" bson:"bezeichnung"`
-	Flaeche     []GebaeudeFlaeche `json:"flaeche" bson:"flaeche"`
-	Einheit     string            `json:"einheit" bson:"einheit"`
-	Revision    int32             `json:"revision" bson:"revision"`
+	Nr          int32           `json:"nr" bson:"nr"` // (index)
+	Bezeichnung string          `json:"bezeichnung" bson:"bezeichnung"`
+	Flaeche     GebaeudeFlaeche `json:"flaeche" bson:"flaeche"`
+	Einheit     string          `json:"einheit" bson:"einheit"`
+	Revision    int32           `json:"revision" bson:"revision"`
 
 	KaelteRef []string `json:"kaelteRef" bson:"kaelteRef"` // -> Kaeltezaehler.extSystemID
 	WaermeRef []string `json:"waermeRef" bson:"waermeRef"` // -> extSystemID
