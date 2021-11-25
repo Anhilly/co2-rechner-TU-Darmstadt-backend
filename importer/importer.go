@@ -169,3 +169,63 @@ func ImportStromzaehler() {
 
 	//fmt.Println(energieversorgungArray)
 }
+
+func ImportWaermedaten(){
+	in, err := os.Open("importer/waermedaten_aufbereitet.csv")
+	if err != nil {
+		panic(err)
+	}
+	defer in.Close()
+
+	reader := csv.NewReader(in)
+	reader.FieldsPerRecord = -1
+	//reader.Comma = ';'
+
+	rawCSVdata, err := reader.ReadAll()
+	if err != nil {
+		panic(err)
+	}
+
+	var waerme database.Waermezaehler
+	var waermeArray []database.Waermezaehler
+
+	for _, record := range rawCSVdata {
+		if record[0] == "" {
+			continue
+		}
+
+		waerme.ExtSystemID = record[0]
+		waerme.Bezeichnung = record[1]
+		waerme.Einheit = record[2]
+
+		waerme.Revision = 1
+
+		pke, err := strconv.ParseInt(record[6], 10, 32)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		waerme.PKEnergie = int32(pke)
+
+		d20, _ := strconv.ParseFloat(record[3], 64)
+		d19, _ := strconv.ParseFloat(record[4], 64)
+		d18, _ := strconv.ParseFloat(record[5], 64)
+
+		waerme.Zaehlerdaten = []database.Zaehlerwerte{
+			database.Zaehlerwerte{Wert: d20, Zeitstempel: "2020-01-01T00:00:00Z"},
+			database.Zaehlerwerte{Wert: d19, Zeitstempel: "2019-01-01T00:00:00Z"},
+			database.Zaehlerwerte{Wert: d18, Zeitstempel: "2018-01-01T00:00:00Z"}}
+
+		fmt.Println(waerme)
+
+		b, _ := json.Marshal(waerme)
+		fmt.Println(string(b))
+
+		waermeArray = append(waermeArray, waerme)
+	}
+
+	file, _ := json.MarshalIndent(waermeArray, "", " ")
+	_ = ioutil.WriteFile("importer/waermedaten.json", file, 0644)
+
+	//fmt.Println(energieversorgungArray)
+}
