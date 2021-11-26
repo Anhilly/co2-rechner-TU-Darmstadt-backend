@@ -96,9 +96,9 @@ type Dienstreisen struct {
 }
 
 type CO2Dienstreisen struct {
-	Tankart string `json:"Tankart" bson:"Tankart"`
-	Strecke int32  `json:"Strecke" bson:"Strecke"`
-	Wert    int32  `json:"Wert" bson:"Wert"`
+	Tankart     string `json:"tankart" bson:"tankart"`
+	Streckentyp string `json:"streckentyp" bson:"streckentyp"`
+	Wert        int32  `json:"wert" bson:"wert"`
 }
 
 //Collection pendelweg
