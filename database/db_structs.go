@@ -23,9 +23,9 @@ type Gebaeude struct {
 	Einheit     string          `json:"einheit" bson:"einheit"`
 	Revision    int32           `json:"revision" bson:"revision"`
 
-	KaelteRef []string `json:"kaelteRef" bson:"kaelteRef"` // -> Kaeltezaehler.extSystemID
-	WaermeRef []string `json:"waermeRef" bson:"waermeRef"` // -> extSystemID
-	StromRef  []string `json:"stromRef" bson:"stromRef"`   // -> pkEnergie
+	KaelteRef []int32 `json:"kaelteRef" bson:"kaelteRef"` // -> Kaeltezaehler.pkEnergie
+	WaermeRef []int32 `json:"waermeRef" bson:"waermeRef"` // -> Waermezaehler.pkEnergie
+	StromRef  []int32 `json:"stromRef" bson:"stromRef"`   // -> Stromzaehler.pkEnergie
 }
 
 type GebaeudeFlaeche struct {
