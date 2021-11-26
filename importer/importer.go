@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"go.mongodb.org/mongo-driver/bson"
 	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 func ImportEnergieversorgung() {
@@ -72,6 +75,8 @@ func ImportGebaeude() {
 	var gebaeude database.Gebaeude
 	var gebaeudeArray []database.Gebaeude
 
+	var data []byte
+
 	for _, record := range rawCSVdata {
 		if record[0] == "" {
 			continue
@@ -99,16 +104,21 @@ func ImportGebaeude() {
 
 		fmt.Println(gebaeude)
 
-		b, _ := json.Marshal(gebaeude)
+		b, _ := bson.MarshalExtJSON(gebaeude, false, false)
 		fmt.Println(string(b))
+
+		for _, b1 := range b {
+			data = append(data, b1)
+		}
+		for _, b1 := range []byte("\n") {
+			data = append(data, b1)
+		}
 
 		gebaeudeArray = append(gebaeudeArray, gebaeude)
 	}
 
-	file, _ := json.MarshalIndent(gebaeudeArray, "", " ")
-	_ = ioutil.WriteFile("importer\\gebaeudedaten.json", file, 0644)
-
-	//fmt.Println(energieversorgungArray)
+	fmt.Println(string(data))
+	_ = ioutil.WriteFile("importer\\Gebaeudedaten.json", data, 0644)
 }
 
 func ImportStromzaehler() {
@@ -130,6 +140,8 @@ func ImportStromzaehler() {
 	var strom database.Stromzaehler
 	var stromArray []database.Stromzaehler
 
+	var data []byte
+
 	for _, record := range rawCSVdata {
 		if record[0] == "" {
 			continue
@@ -150,24 +162,34 @@ func ImportStromzaehler() {
 		strom.Einheit = record[6]
 		strom.Revision = 1
 
+		location, err := time.LoadLocation("Europe/Berlin")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		strom.Zaehlerdaten = []database.Zaehlerwerte{
-			database.Zaehlerwerte{Wert: d21, Zeitstempel: "2021-01-01T00:00:00Z"},
-			database.Zaehlerwerte{Wert: d20, Zeitstempel: "2020-01-01T00:00:00Z"},
-			database.Zaehlerwerte{Wert: d19, Zeitstempel: "2019-01-01T00:00:00Z"},
-			database.Zaehlerwerte{Wert: d18, Zeitstempel: "2018-01-01T00:00:00Z"}}
+			database.Zaehlerwerte{Wert: d21, Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location)},
+			database.Zaehlerwerte{Wert: d20, Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location)},
+			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
+			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
 
 		fmt.Println(strom)
 
-		b, _ := json.Marshal(strom)
+		b, _ := bson.MarshalExtJSON(strom, false, false)
 		fmt.Println(string(b))
+
+		for _, b1 := range b {
+			data = append(data, b1)
+		}
+		for _, b1 := range []byte("\n") {
+			data = append(data, b1)
+		}
 
 		stromArray = append(stromArray, strom)
 	}
 
-	file, _ := json.MarshalIndent(stromArray, "", " ")
-	_ = ioutil.WriteFile("importer\\Stromdaten.json", file, 0644)
-
-	//fmt.Println(energieversorgungArray)
+	fmt.Println(string(data))
+	_ = ioutil.WriteFile("importer\\Stromdaten.json", data, 0644)
 }
 
 func ImportWaermedaten() {
@@ -188,6 +210,8 @@ func ImportWaermedaten() {
 
 	var waerme database.Waermezaehler
 	var waermeArray []database.Waermezaehler
+
+	var data []byte
 
 	for _, record := range rawCSVdata {
 		if record[0] == "" {
@@ -211,23 +235,33 @@ func ImportWaermedaten() {
 		d19, _ := strconv.ParseFloat(record[4], 64)
 		d18, _ := strconv.ParseFloat(record[5], 64)
 
+		location, err := time.LoadLocation("Europe/Berlin")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		waerme.Zaehlerdaten = []database.Zaehlerwerte{
-			database.Zaehlerwerte{Wert: d20, Zeitstempel: "2020-01-01T00:00:00Z"},
-			database.Zaehlerwerte{Wert: d19, Zeitstempel: "2019-01-01T00:00:00Z"},
-			database.Zaehlerwerte{Wert: d18, Zeitstempel: "2018-01-01T00:00:00Z"}}
+			database.Zaehlerwerte{Wert: d20, Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location)},
+			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
+			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
 
 		fmt.Println(waerme)
 
-		b, _ := json.Marshal(waerme)
+		b, _ := bson.MarshalExtJSON(waerme, false, false)
 		fmt.Println(string(b))
+
+		for _, b1 := range b {
+			data = append(data, b1)
+		}
+		for _, b1 := range []byte("\n") {
+			data = append(data, b1)
+		}
 
 		waermeArray = append(waermeArray, waerme)
 	}
 
-	file, _ := json.MarshalIndent(waermeArray, "", " ")
-	_ = ioutil.WriteFile("importer\\Waermedaten.json", file, 0644)
-
-	//fmt.Println(energieversorgungArray)
+	fmt.Println(string(data))
+	_ = ioutil.WriteFile("importer\\Waermedaten.json", data, 0644)
 }
 
 func ImportKaeltedaten() {
@@ -248,6 +282,8 @@ func ImportKaeltedaten() {
 
 	var kaelte database.Kaeltezaehler
 	var kaelteArray []database.Kaeltezaehler
+
+	var data []byte
 
 	for _, record := range rawCSVdata {
 		if record[0] == "" {
@@ -272,22 +308,32 @@ func ImportKaeltedaten() {
 		d19, _ := strconv.ParseFloat(record[6], 64)
 		d18, _ := strconv.ParseFloat(record[7], 64)
 
+		location, err := time.LoadLocation("Europe/Berlin")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		kaelte.Zaehlerdaten = []database.Zaehlerwerte{
-			database.Zaehlerwerte{Wert: d21, Zeitstempel: "2021-01-01T00:00:00Z"},
-			database.Zaehlerwerte{Wert: d20, Zeitstempel: "2020-01-01T00:00:00Z"},
-			database.Zaehlerwerte{Wert: d19, Zeitstempel: "2019-01-01T00:00:00Z"},
-			database.Zaehlerwerte{Wert: d18, Zeitstempel: "2018-01-01T00:00:00Z"}}
+			database.Zaehlerwerte{Wert: d21, Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location)},
+			database.Zaehlerwerte{Wert: d20, Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location)},
+			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
+			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
 
 		fmt.Println(kaelte)
 
-		b, _ := json.Marshal(kaelte)
+		b, _ := bson.MarshalExtJSON(kaelte, false, false)
 		fmt.Println(string(b))
 
+		for _, b1 := range b {
+			data = append(data, b1)
+		}
+		for _, b1 := range []byte("\n") {
+			data = append(data, b1)
+		}
 		kaelteArray = append(kaelteArray, kaelte)
 	}
 
-	file, _ := json.MarshalIndent(kaelteArray, "", " ")
-	_ = ioutil.WriteFile("importer\\Kaeltedaten.json", file, 0644)
-
-	//fmt.Println(energieversorgungArray)
+	fmt.Println(kaelteArray)
+	fmt.Println(string(data))
+	_ = ioutil.WriteFile("importer\\Kaeltedaten.json", data, 0644)
 }
