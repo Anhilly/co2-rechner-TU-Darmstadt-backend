@@ -1,5 +1,7 @@
 package database
 
+import "time"
+
 //Collection energieversorgung
 type Energieversorgung struct {
 	Kategorie string       `json:"kategorie" bson:"kategorie"`
@@ -49,8 +51,8 @@ type Kaeltezaehler struct {
 }
 
 type Zaehlerwerte struct {
-	Wert        float64 `json:"wert" bson:"wert"`
-	Zeitstempel string  `json:"zeitstempel" bson:"zeitstempel"`
+	Wert        float64   `json:"wert" bson:"wert"`
+	Zeitstempel time.Time `json:"zeitstempel" bson:"zeitstempel"`
 }
 
 // collection stromzaehler
