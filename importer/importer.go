@@ -76,6 +76,9 @@ func ImportGebaeude() {
 	var gebaeudeArray []database.Gebaeude
 
 	var data []byte
+	for _, b1 := range []byte("[\n") {
+		data = append(data, b1)
+	}
 
 	for _, record := range rawCSVdata {
 		if record[0] == "" {
@@ -104,17 +107,21 @@ func ImportGebaeude() {
 
 		fmt.Println(gebaeude)
 
-		b, _ := bson.MarshalExtJSON(gebaeude, false, false)
+		b, _ := bson.MarshalExtJSONIndent(gebaeude, false, false, "", " ")
 		fmt.Println(string(b))
 
 		for _, b1 := range b {
 			data = append(data, b1)
 		}
-		for _, b1 := range []byte("\n") {
+		for _, b1 := range []byte(",\n") {
 			data = append(data, b1)
 		}
 
 		gebaeudeArray = append(gebaeudeArray, gebaeude)
+	}
+	data = data[0 : len(data)-2]
+	for _, b1 := range []byte("\n]") {
+		data = append(data, b1)
 	}
 
 	fmt.Println(string(data))
@@ -141,6 +148,9 @@ func ImportStromzaehler() {
 	var stromArray []database.Stromzaehler
 
 	var data []byte
+	for _, b1 := range []byte("[\n") {
+		data = append(data, b1)
+	}
 
 	for _, record := range rawCSVdata {
 		if record[0] == "" {
@@ -175,17 +185,22 @@ func ImportStromzaehler() {
 
 		fmt.Println(strom)
 
-		b, _ := bson.MarshalExtJSON(strom, false, false)
+		b, _ := bson.MarshalExtJSONIndent(strom, false, false, "", " ")
 		fmt.Println(string(b))
 
 		for _, b1 := range b {
 			data = append(data, b1)
 		}
-		for _, b1 := range []byte("\n") {
+		for _, b1 := range []byte(",\n") {
 			data = append(data, b1)
 		}
 
 		stromArray = append(stromArray, strom)
+	}
+
+	data = data[0 : len(data)-2]
+	for _, b1 := range []byte("\n]") {
+		data = append(data, b1)
 	}
 
 	fmt.Println(string(data))
@@ -212,6 +227,9 @@ func ImportWaermedaten() {
 	var waermeArray []database.Waermezaehler
 
 	var data []byte
+	for _, b1 := range []byte("[\n") {
+		data = append(data, b1)
+	}
 
 	for _, record := range rawCSVdata {
 		if record[0] == "" {
@@ -247,17 +265,22 @@ func ImportWaermedaten() {
 
 		fmt.Println(waerme)
 
-		b, _ := bson.MarshalExtJSON(waerme, false, false)
+		b, _ := bson.MarshalExtJSONIndent(waerme, false, false, "", " ")
 		fmt.Println(string(b))
 
 		for _, b1 := range b {
 			data = append(data, b1)
 		}
-		for _, b1 := range []byte("\n") {
+		for _, b1 := range []byte(",\n") {
 			data = append(data, b1)
 		}
 
 		waermeArray = append(waermeArray, waerme)
+	}
+
+	data = data[0 : len(data)-2]
+	for _, b1 := range []byte("\n]") {
+		data = append(data, b1)
 	}
 
 	fmt.Println(string(data))
@@ -284,6 +307,10 @@ func ImportKaeltedaten() {
 	var kaelteArray []database.Kaeltezaehler
 
 	var data []byte
+
+	for _, b1 := range []byte("[\n") {
+		data = append(data, b1)
+	}
 
 	for _, record := range rawCSVdata {
 		if record[0] == "" {
@@ -321,16 +348,21 @@ func ImportKaeltedaten() {
 
 		fmt.Println(kaelte)
 
-		b, _ := bson.MarshalExtJSON(kaelte, false, false)
+		b, _ := bson.MarshalExtJSONIndent(kaelte, false, false, "", " ")
 		fmt.Println(string(b))
 
 		for _, b1 := range b {
 			data = append(data, b1)
 		}
-		for _, b1 := range []byte("\n") {
+		for _, b1 := range []byte(",\n") {
 			data = append(data, b1)
 		}
 		kaelteArray = append(kaelteArray, kaelte)
+	}
+
+	data = data[0 : len(data)-2]
+	for _, b1 := range []byte("\n]") {
+		data = append(data, b1)
 	}
 
 	fmt.Println(kaelteArray)
