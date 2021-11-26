@@ -57,7 +57,7 @@ func ImportEnergieversorgung() {
 }
 
 func ImportGebaeude() {
-	in, err := os.Open("importer\\Gebaeudedaten.csv")
+	in, err := os.Open("importer\\Gebaeudedaten_erweitert.csv")
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +72,6 @@ func ImportGebaeude() {
 		panic(err)
 	}
 
-	var gebaeude database.Gebaeude
 	var gebaeudeArray []database.Gebaeude
 
 	var data []byte
@@ -81,6 +80,7 @@ func ImportGebaeude() {
 	}
 
 	for _, record := range rawCSVdata {
+		var gebaeude database.Gebaeude
 		if record[0] == "" {
 			continue
 		}
@@ -104,6 +104,36 @@ func ImportGebaeude() {
 
 		gebaeude.Einheit = "m^2"
 		gebaeude.Revision = 1
+
+		gebaeude.StromRef = []int32{}
+		for i := 0; i < 10; i++ {
+			if record[i+9] == "" {
+				continue
+			}
+
+			temp, _ := strconv.ParseInt(record[i+9], 10, 32)
+			gebaeude.StromRef = append(gebaeude.StromRef, int32(temp))
+		}
+
+		gebaeude.KaelteRef = []int32{}
+		for i := 0; i < 10; i++ {
+			if record[i+19] == "" {
+				continue
+			}
+
+			temp, _ := strconv.ParseInt(record[i+19], 10, 32)
+			gebaeude.KaelteRef = append(gebaeude.KaelteRef, int32(temp))
+		}
+
+		gebaeude.StromRef = []int32{}
+		for i := 0; i < 10; i++ {
+			if record[i+29] == "" {
+				continue
+			}
+
+			temp, _ := strconv.ParseInt(record[i+29], 10, 32)
+			gebaeude.WaermeRef = append(gebaeude.WaermeRef, int32(temp))
+		}
 
 		fmt.Println(gebaeude)
 
@@ -129,7 +159,7 @@ func ImportGebaeude() {
 }
 
 func ImportStromzaehler() {
-	in, err := os.Open("importer\\Strom.csv")
+	in, err := os.Open("importer\\Strom_erweitert.csv")
 	if err != nil {
 		panic(err)
 	}
@@ -144,7 +174,6 @@ func ImportStromzaehler() {
 		panic(err)
 	}
 
-	var strom database.Stromzaehler
 	var stromArray []database.Stromzaehler
 
 	var data []byte
@@ -153,6 +182,7 @@ func ImportStromzaehler() {
 	}
 
 	for _, record := range rawCSVdata {
+		var strom database.Stromzaehler
 		if record[0] == "" {
 			continue
 		}
@@ -183,6 +213,17 @@ func ImportStromzaehler() {
 			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
 			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
 
+		strom.GebaeudeRef = []int32{}
+
+		for i := 0; i < 10; i++ {
+			if record[i+7] == "" {
+				continue
+			}
+
+			temp, _ := strconv.ParseInt(record[i+7], 10, 32)
+			strom.GebaeudeRef = append(strom.GebaeudeRef, int32(temp))
+		}
+
 		fmt.Println(strom)
 
 		b, _ := bson.MarshalExtJSONIndent(strom, false, false, "", " ")
@@ -208,7 +249,7 @@ func ImportStromzaehler() {
 }
 
 func ImportWaermedaten() {
-	in, err := os.Open("importer\\Waerme.csv")
+	in, err := os.Open("importer\\Waerme_erweitert.csv")
 	if err != nil {
 		panic(err)
 	}
@@ -223,7 +264,6 @@ func ImportWaermedaten() {
 		panic(err)
 	}
 
-	var waerme database.Waermezaehler
 	var waermeArray []database.Waermezaehler
 
 	var data []byte
@@ -232,6 +272,7 @@ func ImportWaermedaten() {
 	}
 
 	for _, record := range rawCSVdata {
+		var waerme database.Waermezaehler
 		if record[0] == "" {
 			continue
 		}
@@ -263,6 +304,17 @@ func ImportWaermedaten() {
 			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
 			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
 
+		waerme.GebaeudeRef = []int32{}
+
+		for i := 0; i < 10; i++ {
+			if record[i+7] == "" {
+				continue
+			}
+
+			temp, _ := strconv.ParseInt(record[i+7], 10, 32)
+			waerme.GebaeudeRef = append(waerme.GebaeudeRef, int32(temp))
+		}
+
 		fmt.Println(waerme)
 
 		b, _ := bson.MarshalExtJSONIndent(waerme, false, false, "", " ")
@@ -288,7 +340,7 @@ func ImportWaermedaten() {
 }
 
 func ImportKaeltedaten() {
-	in, err := os.Open("importer\\Kaelte.csv")
+	in, err := os.Open("importer\\Kaelte_erweitert.csv")
 	if err != nil {
 		panic(err)
 	}
@@ -303,7 +355,7 @@ func ImportKaeltedaten() {
 		panic(err)
 	}
 
-	var kaelte database.Kaeltezaehler
+	//var kaelte database.Kaeltezaehler
 	var kaelteArray []database.Kaeltezaehler
 
 	var data []byte
@@ -313,6 +365,8 @@ func ImportKaeltedaten() {
 	}
 
 	for _, record := range rawCSVdata {
+		var kaelte database.Kaeltezaehler
+
 		if record[0] == "" {
 			continue
 		}
@@ -345,6 +399,17 @@ func ImportKaeltedaten() {
 			database.Zaehlerwerte{Wert: d20, Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location)},
 			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
 			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
+
+		kaelte.GebaeudeRef = []int32{}
+
+		for i := 0; i < 10; i++ {
+			if record[i+8] == "" {
+				continue
+			}
+
+			temp, _ := strconv.ParseInt(record[i+8], 10, 32)
+			kaelte.GebaeudeRef = append(kaelte.GebaeudeRef, int32(temp))
+		}
 
 		fmt.Println(kaelte)
 
