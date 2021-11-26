@@ -125,7 +125,7 @@ func ImportGebaeude() {
 			gebaeude.KaelteRef = append(gebaeude.KaelteRef, int32(temp))
 		}
 
-		gebaeude.StromRef = []int32{}
+		gebaeude.WaermeRef = []int32{}
 		for i := 0; i < 10; i++ {
 			if record[i+29] == "" {
 				continue
