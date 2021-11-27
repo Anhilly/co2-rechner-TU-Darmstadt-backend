@@ -11,7 +11,7 @@ const (
 )
 
 /**
-Die Methode liefert einen Splice an ITGeraete Dokumenten mit Kategorie gleich den Parameter.
+Die Funktion liefert einen Splice an ITGeraete Dokumenten mit Kategorie gleich den Parameter.
 */
 func ITGeraeteFind(kategorie string) ([]ITGeraete, error) {
 	var data []ITGeraete
