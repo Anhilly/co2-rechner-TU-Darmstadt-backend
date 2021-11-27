@@ -202,7 +202,7 @@ func ImportStromzaehler() {
 		strom.Einheit = record[6]
 		strom.Revision = 1
 
-		location, err := time.LoadLocation("Europe/Berlin")
+		location, err := time.LoadLocation("Etc/GMT")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -294,7 +294,7 @@ func ImportWaermedaten() {
 		d19, _ := strconv.ParseFloat(record[4], 64)
 		d18, _ := strconv.ParseFloat(record[5], 64)
 
-		location, err := time.LoadLocation("Europe/Berlin")
+		location, err := time.LoadLocation("Etc/GMT")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -389,7 +389,7 @@ func ImportKaeltedaten() {
 		d19, _ := strconv.ParseFloat(record[6], 64)
 		d18, _ := strconv.ParseFloat(record[7], 64)
 
-		location, err := time.LoadLocation("Europe/Berlin")
+		location, err := time.LoadLocation("Etc/GMT")
 		if err != nil {
 			log.Fatal(err)
 		}
