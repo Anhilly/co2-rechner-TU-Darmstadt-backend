@@ -2,19 +2,6 @@ package database
 
 import "time"
 
-//Collection energieversorgung
-type Energieversorgung struct {
-	Kategorie string       `json:"kategorie" bson:"kategorie"`
-	Einheit   string       `json:"einheit" bson:"einheit"`
-	Revision  int32        `json:"revision" bson:"revision"`
-	CO2Faktor []CO2Energie `json:"CO2Faktor" bson:"CO2Faktor"`
-}
-
-type CO2Energie struct {
-	Wert float64 `json:"wert" bson:"wert"`
-	Jahr int32   `json:"jahr" bson:"jahr"`
-}
-
 // collection gebaeude
 type Gebaeude struct {
 	Nr          int32           `json:"nr" bson:"nr"` // (index)
@@ -78,8 +65,23 @@ type Waermezaehler struct {
 	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
 }
 
+//Collection energieversorgung
+type Energieversorgung struct {
+	IDEnergieversorgung int32        `json:"idEnergieversorgung" bson:"idEnergieversorgung"`
+	Kategorie           string       `json:"kategorie" bson:"kategorie"`
+	Einheit             string       `json:"einheit" bson:"einheit"`
+	Revision            int32        `json:"revision" bson:"revision"`
+	CO2Faktor           []CO2Energie `json:"CO2Faktor" bson:"CO2Faktor"`
+}
+
+type CO2Energie struct {
+	Wert float64 `json:"wert" bson:"wert"`
+	Jahr int32   `json:"jahr" bson:"jahr"`
+}
+
 //Collection itGeraete
 type ITGeraete struct {
+	IDITGerate      int32  `json:"idITGeraete" bson:"idITGeraete"`
 	Kategorie       string `json:"kategorie" bson:"kategorie"`
 	CO2FaktorGesamt int32  `json:"CO2FaktorGesamt" bson:"CO2FaktorGesamt"`
 	CO2FaktorJahr   int32  `json:"CO2FaktorJahr" bson:"CO2FaktorJahr"`
@@ -89,10 +91,11 @@ type ITGeraete struct {
 
 //Collection dienstreisen
 type Dienstreisen struct {
-	Medium    string            `json:"medium" bson:"medium"`
-	Einheit   string            `json:"einheit" bson:"einheit"`
-	Revision  int32             `json:"revision" bson:"revision"`
-	CO2Faktor []CO2Dienstreisen `json:"CO2Faktor" bson:"CO2Faktor"`
+	IDDienstreisen int32             `json:"idDienstreisen" bson:"idDienstreisen"`
+	Medium         string            `json:"medium" bson:"medium"`
+	Einheit        string            `json:"einheit" bson:"einheit"`
+	Revision       int32             `json:"revision" bson:"revision"`
+	CO2Faktor      []CO2Dienstreisen `json:"CO2Faktor" bson:"CO2Faktor"`
 }
 
 type CO2Dienstreisen struct {
@@ -103,8 +106,9 @@ type CO2Dienstreisen struct {
 
 //Collection pendelweg
 type Pendelweg struct {
-	Medium    string `json:"medium" bson:"medium"`
-	CO2Faktor int32  `json:"CO2Faktor" bson:"CO2Faktor"`
-	Einheit   int32  `json:"einheit" bson:"einheit"`
-	Revision  int32  `json:"revision" bson:"revision"`
+	IDPendelweg int32  `json:"idPendelweg" bson:"idPendelweg"`
+	Medium      string `json:"medium" bson:"medium"`
+	CO2Faktor   int32  `json:"CO2Faktor" bson:"CO2Faktor"`
+	Einheit     int32  `json:"einheit" bson:"einheit"`
+	Revision    int32  `json:"revision" bson:"revision"`
 }
