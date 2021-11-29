@@ -11,28 +11,23 @@ const (
 )
 
 /**
-Die Funktion liefert einen Splice an ITGeraete Dokumenten mit Kategorie gleich den Parameter.
+Die Funktion liefert einen ITGeraete struct mit idITGeraete gleich dem Parameter.
 */
-func ITGeraeteFind(kategorie string) ([]ITGeraete, error) {
-	var data []ITGeraete
+func ITGeraeteFind(idITGeraete int32) (ITGeraete, error) {
+	var data ITGeraete
 
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
 	collection := client.Database(dbName).Collection(itGeraeteCol)
 
-	cursor, err := collection.Find(ctx, bson.D{{"kategorie", kategorie}})
+	cursor, err := collection.Find(ctx, bson.D{{"idITGeraete", idITGeraete}})
 	if err != nil {
-		return nil, err
+		return ITGeraete{}, err
 	}
 
-	for cursor.Next(ctx) {
-		var document ITGeraete
-
-		err := cursor.Decode(&document)
-		if err != nil {
-			return nil, err
-		}
-		data = append(data, document)
+	err = cursor.Decode(&data)
+	if err != nil {
+		return ITGeraete{}, err
 	}
 
 	return data, nil
