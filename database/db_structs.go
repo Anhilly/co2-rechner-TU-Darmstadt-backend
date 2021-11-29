@@ -2,6 +2,10 @@ package database
 
 import "time"
 
+/*
+Im dieser Datei sind die Dokumententype zur Emissionsberechnung als structs aufgeführt.
+*/
+
 // collection gebaeude
 type Gebaeude struct {
 	Nr          int32           `json:"nr" bson:"nr"` // (index)
