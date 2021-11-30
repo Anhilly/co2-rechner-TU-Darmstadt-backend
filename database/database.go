@@ -18,7 +18,7 @@ func ConnectDatabase() error {
 	var err error
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
-	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://" + username + ":" + password + "@" + serverAdress + ":" + port + "/" + dbName))
+	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://" + username + ":" + password + "@" + serverAdress + ":" + port))
 	if err != nil {
 		return err
 	}

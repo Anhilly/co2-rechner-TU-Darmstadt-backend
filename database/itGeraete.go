@@ -25,6 +25,7 @@ func ITGeraeteFind(idITGeraete int32) (ITGeraete, error) {
 		return ITGeraete{}, err
 	}
 
+	cursor.Next(ctx)
 	err = cursor.Decode(&data)
 	if err != nil {
 		return ITGeraete{}, err
