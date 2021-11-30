@@ -105,33 +105,36 @@ func ImportGebaeude() {
 		gebaeude.Einheit = "m^2"
 		gebaeude.Revision = 1
 
+		specialcase, _ := strconv.ParseFloat(record[9], 64)
+		gebaeude.Spezialfall = int32(specialcase)
+
 		gebaeude.StromRef = []int32{}
 		for i := 0; i < 10; i++ {
-			if record[i+9] == "" {
+			if record[i+10] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+9], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+10], 10, 32)
 			gebaeude.StromRef = append(gebaeude.StromRef, int32(temp))
 		}
 
 		gebaeude.KaelteRef = []int32{}
 		for i := 0; i < 10; i++ {
-			if record[i+19] == "" {
+			if record[i+20] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+19], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+20], 10, 32)
 			gebaeude.KaelteRef = append(gebaeude.KaelteRef, int32(temp))
 		}
 
 		gebaeude.WaermeRef = []int32{}
 		for i := 0; i < 10; i++ {
-			if record[i+29] == "" {
+			if record[i+30] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+29], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+30], 10, 32)
 			gebaeude.WaermeRef = append(gebaeude.WaermeRef, int32(temp))
 		}
 
@@ -213,14 +216,17 @@ func ImportStromzaehler() {
 			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
 			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
 
+		specialcase, _ := strconv.ParseFloat(record[7], 64)
+		strom.Spezialfall = int32(specialcase)
+
 		strom.GebaeudeRef = []int32{}
 
 		for i := 0; i < 10; i++ {
-			if record[i+7] == "" {
+			if record[i+8] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+7], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+8], 10, 32)
 			strom.GebaeudeRef = append(strom.GebaeudeRef, int32(temp))
 		}
 
@@ -304,14 +310,17 @@ func ImportWaermedaten() {
 			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
 			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
 
+		specialcase, _ := strconv.ParseFloat(record[7], 64)
+		waerme.Spezialfall = int32(specialcase)
+
 		waerme.GebaeudeRef = []int32{}
 
 		for i := 0; i < 10; i++ {
-			if record[i+7] == "" {
+			if record[i+8] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+7], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+8], 10, 32)
 			waerme.GebaeudeRef = append(waerme.GebaeudeRef, int32(temp))
 		}
 
@@ -400,14 +409,17 @@ func ImportKaeltedaten() {
 			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
 			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
 
+		specialcase, _ := strconv.ParseFloat(record[8], 64)
+		kaelte.Spezialfall = int32(specialcase)
+
 		kaelte.GebaeudeRef = []int32{}
 
 		for i := 0; i < 10; i++ {
-			if record[i+8] == "" {
+			if record[i+9] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+8], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+9], 10, 32)
 			kaelte.GebaeudeRef = append(kaelte.GebaeudeRef, int32(temp))
 		}
 

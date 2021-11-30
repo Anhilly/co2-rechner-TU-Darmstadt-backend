@@ -12,6 +12,7 @@ type Gebaeude struct {
 	Bezeichnung string          `json:"bezeichnung" bson:"bezeichnung"`
 	Flaeche     GebaeudeFlaeche `json:"flaeche" bson:"flaeche"`
 	Einheit     string          `json:"einheit" bson:"einheit"`
+	Spezialfall int32           `json:"spezialfall" bson:"spezialfall"`
 	Revision    int32           `json:"revision" bson:"revision"`
 
 	KaelteRef []int32 `json:"kaelteRef" bson:"kaelteRef"` // -> Kaeltezaehler.pkEnergie
@@ -31,11 +32,12 @@ type GebaeudeFlaeche struct {
 
 // collection kaeltezaehler
 type Kaeltezaehler struct {
-	ExtSystemID  string         `json:"extSystemID" bson:"extSystemID"` // (index)
+	ExtSystemID  string         `json:"extSystemID" bson:"extSystemID"`
 	Bezeichnung  string         `json:"bezeichnung" bson:"bezeichnung"`
 	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
 	Einheit      string         `json:"einheit" bson:"einheit"`
 	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
+	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
 	Revision     int32          `json:"revision" bson:"revision"`
 
 	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
@@ -52,6 +54,7 @@ type Stromzaehler struct {
 	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
 	Einheit      string         `json:"einheit" bson:"einheit"`
 	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
+	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
 	Revision     int32          `json:"revision" bson:"revision"`
 
 	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
@@ -59,11 +62,12 @@ type Stromzaehler struct {
 
 // collection kaeltezaehler
 type Waermezaehler struct {
-	ExtSystemID  string         `json:"extSystemID" bson:"extSystemID"` // (index)
+	ExtSystemID  string         `json:"extSystemID" bson:"extSystemID"`
 	Bezeichnung  string         `json:"bezeichnung" bson:"bezeichnung"`
 	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
 	Einheit      string         `json:"einheit" bson:"einheit"`
 	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"`
+	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
 	Revision     int32          `json:"revision" bson:"revision"` // (index)
 
 	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
