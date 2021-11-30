@@ -6,42 +6,69 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
 )
 
-func computeDienstreisen(dienstreisenData []server.DienstreiseElement) (float64, error){
-	var emission float64 = 0.0
+/**
+Die Funktion berechnet die Gesamtemissionen für den übergebenen Slice an Dienstreisen.
+*/
+func berechneDienstreisen(dienstreisenDaten []server.DienstreiseElement) (float64, error) {
+	var emission float64
 
-	for _, item := range dienstreisenData{
-		var co2Faktor int32
+	for _, dienstreise := range dienstreisenDaten {
+		var co2Faktor int32 = -1 // zur Überprüfung, ob der CO2Faktor umgesetzt wurde
 
-		medium, err := database.DienstreisenFind(item.IDDienstreise)
+		medium, err := database.DienstreisenFind(dienstreise.IDDienstreise)
 		if err != nil {
-			return 0, nil
+			return 0, err
 		}
 
-		switch medium.IDDienstreisen{
-		case 1:	// Bahn
+		switch medium.IDDienstreisen { // muss explizit behandelt werden, da je nach Medium der CO2 Faktor anders bestimmt wird
+		case 1: // Bahn
 			co2Faktor = medium.CO2Faktor[0].Wert
 		case 2: // Auto
-			if item.Tankart == "Benzin" {
-				co2Faktor = medium.CO2Faktor[0].Wert
-			} else if item.Tankart == "Diesel" {
-				co2Faktor = medium.CO2Faktor[1].Wert
-			} else{
+			for _, faktor := range medium.CO2Faktor {
+				if faktor.Tankart == dienstreise.Tankart {
+					co2Faktor = faktor.Wert
+				}
+			}
+			if co2Faktor == -1 {
 				return 0, errors.New("Tankart nicht vorhanden")
 			}
 		case 3: // Flugzeug
-			if item.Streckentyp == "Langstrecke"{
-				co2Faktor = medium.CO2Faktor[0].Wert
-			} else if item.Streckentyp == "Kurzstrecke"{
-				co2Faktor = medium.CO2Faktor[1].Wert
-			} else{
+			for _, faktor := range medium.CO2Faktor {
+				if faktor.Streckentyp == dienstreise.Streckentyp {
+					co2Faktor = faktor.Wert
+				}
+			}
+			if co2Faktor == -1 {
 				return 0, errors.New("Streckentyp nicht vorhanden")
 			}
 		default:
 			return 0, errors.New("ID nicht vorhanden")
 		}
 
-		emission = emission + float64(co2Faktor * item.Strecke)
+		emission += float64(co2Faktor * dienstreise.Strecke * 2)
 	}
-	
+
 	return emission, nil
+}
+
+/**
+Die Funktion berechnet die Gesamtemissionen auf Basis der gegeben Pendelwege und der Tage im Büro.
+*/
+//TODO: Fahrgemeinschaften implementieren
+func berechnePendelweg(pendelwegDaten []server.PendelwegElement, tageImBuero int32) (float64, error) {
+	var emissionen float64
+	const arbeitstage2020 = 230 // Arbeitstage in 2020, konstant(?)
+
+	arbeitstage := tageImBuero / 5.0 * arbeitstage2020
+
+	for _, weg := range pendelwegDaten {
+		medium, err := database.PendelwegFind(weg.IDPendelweg)
+		if err != nil {
+			return 0, err
+		}
+
+		emissionen += float64(arbeitstage * 2 * weg.Strecke * medium.CO2Faktor)
+	}
+
+	return emissionen, nil
 }

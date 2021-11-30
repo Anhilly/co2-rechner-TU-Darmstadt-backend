@@ -15,18 +15,17 @@ type UmfrageResponse struct {
 
 //ein temporärer JSON für eine monotlitische Umfrage
 type UmfrageRequest struct {
-	//Hauptverantwortlicher
+	// Hauptverantwortlicher
 	Gebaeude          []GebaeudeFlaeche `json:"gebaeude"`
 	AnzahlMitarbeiter int32             `json:"anzahlMitarbeiter"`
 
-	//geteilt Über Mitarbeiter und Hauptverantwortlicher
+	// geteilt Über Mitarbeiter und Hauptverantwortlicher
 	ITGeraete []ITGeraeteAnzahl `json:"itGeraete"`
 
-	//Mitarbeiter
-	Pendelweg       []PendelwegElement   `json:"pendelweg"`
-	TageImBuero     int32                `json:"tageImBuero"`
-	Dienstreise     []DienstreiseElement `json:"dienstreise"`
-	Papierverbrauch int32                `json:"papierverbrauch"`
+	// Mitarbeiter
+	Pendelweg   []PendelwegElement   `json:"pendelweg"`
+	TageImBuero int32                `json:"tageImBuero"`
+	Dienstreise []DienstreiseElement `json:"dienstreise"`
 }
 
 type GebaeudeFlaeche struct {
