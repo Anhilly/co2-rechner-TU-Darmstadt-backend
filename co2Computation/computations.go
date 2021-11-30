@@ -72,3 +72,21 @@ func berechnePendelweg(pendelwegDaten []server.PendelwegElement, tageImBuero int
 
 	return emissionen, nil
 }
+
+/**
+Die Funktion berechnet Emissionen pro Jahr für den Slice an IT-Geräten.
+*/
+func berechneITGeraete(itGeraeteDaten []server.ITGeraeteAnzahl) (float64, error) {
+	var emissionen float64
+
+	for _, itGeraet := range itGeraeteDaten {
+		kategorie, err := database.ITGeraeteFind(itGeraet.IDITGeraete)
+		if err != nil {
+			return 0, err
+		}
+
+		emissionen += float64(itGeraet.Anzahl * kategorie.CO2FaktorJahr)
+	}
+
+	return emissionen, nil
+}

@@ -34,8 +34,8 @@ type GebaeudeFlaeche struct {
 }
 
 type ITGeraeteAnzahl struct {
-	IDITGeraete string `json:"idITGeraete"`
-	Anzahl      int32  `json:"anzahl"`
+	IDITGeraete int32 `json:"idITGeraete"`
+	Anzahl      int32 `json:"anzahl"`
 }
 
 type PendelwegElement struct {
