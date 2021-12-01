@@ -83,8 +83,8 @@ type Energieversorgung struct {
 }
 
 type CO2Energie struct {
-	Wert float64 `json:"wert" bson:"wert"`
-	Jahr int32   `json:"jahr" bson:"jahr"`
+	Wert int32 `json:"wert" bson:"wert"`
+	Jahr int32 `json:"jahr" bson:"jahr"`
 }
 
 //Collection itGeraete
@@ -117,6 +117,6 @@ type Pendelweg struct {
 	IDPendelweg int32  `json:"idPendelweg" bson:"idPendelweg"`
 	Medium      string `json:"medium" bson:"medium"`
 	CO2Faktor   int32  `json:"CO2Faktor" bson:"CO2Faktor"`
-	Einheit     int32  `json:"einheit" bson:"einheit"`
+	Einheit     string `json:"einheit" bson:"einheit"`
 	Revision    int32  `json:"revision" bson:"revision"`
 }

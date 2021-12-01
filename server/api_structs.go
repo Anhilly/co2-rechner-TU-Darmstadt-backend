@@ -29,8 +29,8 @@ type UmfrageRequest struct {
 }
 
 type GebaeudeFlaeche struct {
-	GebaeudeNr     string `json:"gebaeudeNr"`
-	Flaechenanteil int32  `json:"flaechenanteil"`
+	GebaeudeNr     int32 `json:"gebaeudeNr"`
+	Flaechenanteil int32 `json:"flaechenanteil"`
 }
 
 type ITGeraeteAnzahl struct {
