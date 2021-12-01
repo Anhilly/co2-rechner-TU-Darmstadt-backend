@@ -110,6 +110,11 @@ func BerechneITGeraete(itGeraeteDaten []server.ITGeraeteAnzahl) (float64, error)
 	return emissionen, nil
 }
 
+/**
+Die Funktion berechnet für die gegeben Gebaeude, Flaechenanteile und Jahr die entsprechenden Emissionen hinsichtlich der
+übergebenen Energie.
+Ergebniseinheit: g
+*/
 func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []server.GebaeudeFlaeche, jahr int32, idEnergieversorung int32) (float64, error) {
 	var gesamtemissionen float64
 
@@ -141,6 +146,10 @@ func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []server.GebaeudeFlaeche, jah
 	return gesamtemissionen, nil
 }
 
+/**
+Funktion liefert den CO2 Faktor für das gegeben Jahr und Energieform zurück.
+Ergebniseinheit: g/kWh
+*/
 func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
 	var co2Faktor int32 = -1
 
@@ -164,6 +173,10 @@ func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
 	return co2Faktor, nil
 }
 
+/**
+Die Funktion bildet den Normalfall für die Emissionsberechnungen eines Gebaeudes und dem Flaechenanteil.
+Ergebniseinheit: g
+*/
 func gebaeudeNormalfall(co2Faktor int32, gebaeude database.Gebaeude, idEnergieversorgung int32, jahr int32, flaechenanteil int32) (float64, error) {
 	var gesamtverbrauch float64                  // Einheit: kWh
 	var gesamtNGF float64 = gebaeude.Flaeche.NGF // Einheit: m^2
@@ -214,6 +227,10 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude database.Gebaeude, idEnergieve
 	return emissionen, nil
 }
 
+/**
+Funktion stellt den Normalfall zur Bestimmung des Verbauchs und zugehöriger Gebaeudeflaeche dar.
+Ergebniseinheit: kWh, m^2
+*/
 func zaehlerNormalfall(zaehler database.Zaehler, jahr int32, gebaudeNr int32) (float64, float64, error) {
 	var ngf float64
 
