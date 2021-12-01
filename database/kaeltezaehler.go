@@ -10,8 +10,9 @@ const (
 	kaeltezaehlerCol = "gebaeude"
 )
 
-
-//temporärer Placeholder
+/**
+Die Funktion liefert einen Kaeltezaehler struct mit pkEnergie gleich dem Parameter.
+*/
 func KaeltezaehlerFind(pkEnergie int32) (Kaeltezaehler, error) {
 	var data Kaeltezaehler
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)

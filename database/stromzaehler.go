@@ -11,7 +11,9 @@ const (
 )
 
 
-//temporärer Placeholder
+/**
+Die Funktion liefert einen Stromzaehler struct mit pkEnergie gleich dem Parameter.
+*/
 func StromzaehlerFind(pkEnergie int32) (Stromzaehler, error) {
 	var data Stromzaehler
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
