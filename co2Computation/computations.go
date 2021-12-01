@@ -225,7 +225,12 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude database.Gebaeude, idEnergieve
 		}
 	}
 
-	emissionen := float64(co2Faktor) * gesamtverbrauch * float64(flaechenanteil) / gesamtNGF
+	var emissionen float64
+	if gesamtNGF <= 0 {
+		emissionen = 0
+	} else {
+		emissionen = float64(co2Faktor) * gesamtverbrauch * float64(flaechenanteil) / gesamtNGF
+	}
 
 	return emissionen, nil
 }
