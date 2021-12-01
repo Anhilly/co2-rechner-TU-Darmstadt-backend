@@ -116,23 +116,10 @@ Ergebniseinheit: g
 */
 func BerechneWaerme(gebaeudeFlaecheDaten []server.GebaeudeFlaeche, jahr int32) (float64, error) {
 	var emissionen float64
-	var co2Faktor int32 = -1
 
-	// Bestimmung CO2 Faktor für angegebens Jahr
-	energiewerte, err := database.EnergieversorgungFind(1)
+	co2Faktor, err := getEnergieCO2Faktor(1, jahr)
 	if err != nil {
 		return 0, err
-	}
-	for _, faktor := range energiewerte.CO2Faktor {
-		if faktor.Jahr == jahr {
-			co2Faktor = faktor.Wert
-		}
-	}
-	if co2Faktor == -1 {
-		return 0, errors.New("BerechneWaerme: Kein CO2 Faktor für angegebens Jahr vorhanden")
-	}
-	if energiewerte.Einheit != "g/kWh" { // Einheit muss immer g/kWh sein
-		return 0, errors.New("BerechneWaerme: Einheit unbekannt")
 	}
 
 	// Berechnung für jedes aufgelistete Gebaeude
@@ -144,56 +131,61 @@ func BerechneWaerme(gebaeudeFlaecheDaten []server.GebaeudeFlaeche, jahr int32) (
 
 		switch gebaeude.Spezialfall {
 		case 1: // Normalfall
-			referenzen := gebaeude.WaermeRef
-			var ngf float64 = gebaeude.Flaeche.NGF
 			var gesamtverbrauch float64 // Einheit: kWh
+			var ngf float64 = gebaeude.Flaeche.NGF
 
-			if len(referenzen) == 0 { // Gebäude hat keinen Waermezaehler -> keine Emissionen berechnebar
+			if len(gebaeude.WaermeRef) == 0 { // Gebäude hat keinen Waermezaehler -> keine Emissionen berechnebar
 				continue
 			}
 
-			for _, zaehlerID := range referenzen {
+			for _, zaehlerID := range gebaeude.WaermeRef {
 				zaehler, err := database.WaermezaehlerFind(zaehlerID)
 				if err != nil {
 					return 0, err
 				}
 
-				if len(zaehler.GebaeudeRef) == 0 {
-					return 0, errors.New("BerechneWaerme: Zaehler " + string(zaehler.PKEnergie) + " hat keine Refernzen auf Gebaeude")
-				}
-
-				// addiere gespeicherten Verbrauch des Jahres auf Gesamtverbrauch auf
-				var verbrauch float64 = -1
-				for _, zaehlerstand := range zaehler.Zaehlerdaten {
-					if int32(zaehlerstand.Zeitstempel.Year()) == jahr {
-						verbrauch = zaehlerstand.Wert
+				switch zaehler.Spezialfall {
+				case 1:
+					if len(zaehler.GebaeudeRef) == 0 {
+						return 0, errors.New("BerechneWaerme: Zaehler " + string(zaehler.PKEnergie) + " hat keine Refernzen auf Gebaeude")
 					}
-				}
-				if verbrauch == -1 {
-					return 0, errors.New("BerechneWaerme: Kein Verbrauch für das Jahr " + string(jahr) + ", Zaehler: " + string(zaehler.PKEnergie))
-				}
 
-				switch zaehler.Einheit {
-				case "MWh":
-					gesamtverbrauch += verbrauch * 1000
-				case "kWh":
-					gesamtverbrauch += verbrauch
+					// addiere gespeicherten Verbrauch des Jahres auf Gesamtverbrauch auf
+					var verbrauch float64 = -1
+					for _, zaehlerstand := range zaehler.Zaehlerdaten {
+						if int32(zaehlerstand.Zeitstempel.Year()) == jahr {
+							verbrauch = zaehlerstand.Wert
+						}
+					}
+					if verbrauch == -1 {
+						return 0, errors.New("BerechneWaerme: Kein Verbrauch für das Jahr " + string(jahr) + ", Zaehler: " + string(zaehler.PKEnergie))
+					}
+
+					switch zaehler.Einheit {
+					case "MWh":
+						gesamtverbrauch += verbrauch * 1000
+					case "kWh":
+						gesamtverbrauch += verbrauch
+					default:
+						return 0, errors.New("BerechneWaerme: Einheit von Zaehler " + string(zaehler.PKEnergie) + " unbekannt")
+					}
+
+					// NGF aller referenzierten Gebaeude wird aufaddiert, um Gesamtflaeche für Verbrauch zu haben
+					// fuer das oben betrachtete Gebaeude wurde die NGF schon betrachtet -> verhindert mehrfach Addition der NGF, falls Gebaeude mehrere Zaehler hat
+					for _, refGebaeudeID := range zaehler.GebaeudeRef {
+						if refGebaeudeID == gebaeude.Nr {
+							continue
+						}
+
+						refGebaeude, err := database.GebaeudeFind(refGebaeudeID)
+						if err != nil {
+							return 0, err
+						}
+						ngf += refGebaeude.Flaeche.NGF
+					}
+
 				default:
-					return 0, errors.New("BerechneWaerme: Einheit von Zaehler " + string(zaehler.PKEnergie) + " unbekannt")
-				}
-
-				// NGF aller referenzierten Gebaeude wird aufaddiert, um Gesamtflaeche für Verbrauch zu haben
-				// fuer das oben betrachtete Gebaeude wurde die NGF schon betrachtet -> verhindert mehrfach Addition der NGF, falls Gebaeude mehrere Zaehler hat
-				for _, refGebaeudeID := range zaehler.GebaeudeRef {
-					if refGebaeudeID == gebaeude.Nr {
-						continue
-					}
-
-					refGebaeude, err := database.GebaeudeFind(refGebaeudeID)
-					if err != nil {
-						return 0, err
-					}
-					ngf += refGebaeude.Flaeche.NGF
+					return 0, errors.New("BerechneWaerme: Spezialfall für Zaehler unbekannt")
 				}
 			}
 
@@ -205,4 +197,152 @@ func BerechneWaerme(gebaeudeFlaecheDaten []server.GebaeudeFlaeche, jahr int32) (
 	}
 
 	return emissionen, nil
+}
+
+func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []server.GebaeudeFlaeche, jahr int32, idEnergieversorung int32) (float64, error) {
+	var gesamtemissionen float64
+
+	co2Faktor, err := getEnergieCO2Faktor(idEnergieversorung, jahr)
+	if err != nil {
+		return 0, err
+	}
+
+	// Berechnung für jedes aufgelistete Gebaeude
+	for _, gebaeudeFlaeche := range gebaeudeFlaecheDaten {
+		gebaeude, err := database.GebaeudeFind(gebaeudeFlaeche.GebaeudeNr)
+		if err != nil {
+			return 0, err
+		}
+
+		switch gebaeude.Spezialfall {
+		case 1: // Normalfall
+			emissionen, err := gebaeudeNormalfall(co2Faktor, gebaeude, idEnergieversorung, jahr, gebaeudeFlaeche.Flaechenanteil)
+			if err != nil {
+				return 0, err
+			}
+			gesamtemissionen += emissionen
+
+		default:
+			return 0, errors.New("BerechneEnergieverbrauch: Spezialfall nicht abgedeckt")
+		}
+	}
+
+	return gesamtemissionen, nil
+}
+
+func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
+	var co2Faktor int32 = -1
+
+	// Bestimmung CO2 Faktor für angegebens Jahr
+	energiewerte, err := database.EnergieversorgungFind(id)
+	if err != nil {
+		return 0, err
+	}
+	for _, faktor := range energiewerte.CO2Faktor {
+		if faktor.Jahr == jahr {
+			co2Faktor = faktor.Wert
+		}
+	}
+	if co2Faktor == -1 {
+		return 0, errors.New("getEnergieCO2Faktor: Kein CO2 Faktor für angegebens Jahr vorhanden")
+	}
+	if energiewerte.Einheit != "g/kWh" { // Einheit muss immer g/kWh sein
+		return 0, errors.New("getEnergieCO2Faktor: Einheit unbekannt")
+	}
+
+	return co2Faktor, nil
+}
+
+func gebaeudeNormalfall(co2Faktor int32, gebaeude database.Gebaeude, idEnergieversorgung int32, jahr int32, flaechenanteil int32) (float64, error) {
+	var gesamtverbrauch float64                  // Einheit: kWh
+	var gesamtNGF float64 = gebaeude.Flaeche.NGF // Einheit: m^2
+	var refGebaeude []int32
+
+	switch idEnergieversorgung {
+	case 1: // Waerme
+		refGebaeude = gebaeude.WaermeRef
+	case 2: // Strom
+		refGebaeude = gebaeude.StromRef
+	case 3: // Kaelte
+		refGebaeude = gebaeude.KaelteRef
+	}
+
+	for _, zaehlerID := range refGebaeude {
+		var zaehler database.Zaehler
+		var err error
+
+		switch idEnergieversorgung {
+		case 1: // Waerme
+			zaehler, err = database.WaermezaehlerFind(zaehlerID)
+		case 2: // Strom
+			zaehler, err = database.StromzaehlerFind(zaehlerID)
+		case 3: // Kaelte
+			zaehler, err = database.KaeltezaehlerFind(zaehlerID)
+		}
+		if err != nil {
+			return 0, err
+		}
+
+		switch zaehler.Spezialfall {
+		case 1:
+			verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeude.Nr)
+			if err != nil {
+				return 0, err
+			}
+
+			gesamtverbrauch += verbrauch
+			gesamtNGF += ngf
+
+		default:
+			return 0, errors.New("BerechneEnergieverbrauch: Spezialfall für Zaehler unbekannt")
+		}
+	}
+
+	emissionen := float64(co2Faktor) * gesamtverbrauch * float64(flaechenanteil) / gesamtNGF
+
+	return emissionen, nil
+}
+
+func zaehlerNormalfall(zaehler database.Zaehler, jahr int32, gebaudeNr int32) (float64, float64, error) {
+	var ngf float64
+
+	if len(zaehler.GebaeudeRef) == 0 {
+		return 0, 0, errors.New("BerechneEnergieverbrauch: Zaehler " + string(zaehler.PKEnergie) + " hat keine Refernzen auf Gebaeude")
+	}
+
+	// addiere gespeicherten Verbrauch des Jahres auf Gesamtverbrauch auf
+	var verbrauch float64 = -1
+	for _, zaehlerstand := range zaehler.Zaehlerdaten {
+		if int32(zaehlerstand.Zeitstempel.Year()) == jahr {
+			verbrauch = zaehlerstand.Wert
+		}
+	}
+	if verbrauch == -1 {
+		return 0, 0, errors.New("BerechneEnergieverbrauch: Kein Verbrauch für das Jahr " + string(jahr) + ", Zaehler: " + string(zaehler.PKEnergie))
+	}
+
+	switch zaehler.Einheit {
+	case "MWh":
+		verbrauch = verbrauch * 1000
+	case "kWh":
+		verbrauch = verbrauch
+	default:
+		return 0, 0, errors.New("BerechneEnergieverbrauch: Einheit von Zaehler " + string(zaehler.PKEnergie) + " unbekannt")
+	}
+
+	// NGF aller referenzierten Gebaeude wird aufaddiert, um Gesamtflaeche für Verbrauch zu haben
+	// fuer das oben betrachtete Gebaeude wurde die NGF schon betrachtet -> verhindert mehrfach Addition der NGF, falls Gebaeude mehrere Zaehler hat
+	for _, refGebaeudeID := range zaehler.GebaeudeRef {
+		if refGebaeudeID == gebaudeNr {
+			continue
+		}
+
+		refGebaeude, err := database.GebaeudeFind(refGebaeudeID)
+		if err != nil {
+			return 0, 0, err
+		}
+		ngf += refGebaeude.Flaeche.NGF
+	}
+
+	return verbrauch, ngf, nil
 }
