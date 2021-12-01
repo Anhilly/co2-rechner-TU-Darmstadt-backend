@@ -35,9 +35,9 @@ func ImportEnergieversorgung() {
 	for _, record := range rawCSVdata {
 		energieversorgung.Kategorie = record[0]
 
-		temp, _ := strconv.ParseFloat(record[1], 64)
+		temp, _ := strconv.ParseInt(record[1], 10, 32)
 		temp2, _ := strconv.ParseInt(record[2], 10, 32)
-		energieversorgung.CO2Faktor = []database.CO2Energie{{Wert: temp, Jahr: int32(temp2)}}
+		energieversorgung.CO2Faktor = []database.CO2Energie{{Wert: int32(temp), Jahr: int32(temp2)}}
 
 		energieversorgung.Einheit = record[3]
 		energieversorgung.Revision = 1
@@ -177,7 +177,7 @@ func ImportStromzaehler() {
 		panic(err)
 	}
 
-	var stromArray []database.Stromzaehler
+	var stromArray []database.Zaehler
 
 	var data []byte
 	for _, b1 := range []byte("[\n") {
@@ -185,7 +185,7 @@ func ImportStromzaehler() {
 	}
 
 	for _, record := range rawCSVdata {
-		var strom database.Stromzaehler
+		var strom database.Zaehler
 		if record[0] == "" {
 			continue
 		}
@@ -270,7 +270,7 @@ func ImportWaermedaten() {
 		panic(err)
 	}
 
-	var waermeArray []database.Waermezaehler
+	var waermeArray []database.Zaehler
 
 	var data []byte
 	for _, b1 := range []byte("[\n") {
@@ -278,12 +278,12 @@ func ImportWaermedaten() {
 	}
 
 	for _, record := range rawCSVdata {
-		var waerme database.Waermezaehler
+		var waerme database.Zaehler
 		if record[0] == "" {
 			continue
 		}
 
-		waerme.ExtSystemID = record[0]
+		//waerme.ExtSystemID = record[0]
 		waerme.Bezeichnung = record[1]
 		waerme.Einheit = record[2]
 
@@ -365,7 +365,7 @@ func ImportKaeltedaten() {
 	}
 
 	//var kaelte database.Kaeltezaehler
-	var kaelteArray []database.Kaeltezaehler
+	var kaelteArray []database.Zaehler
 
 	var data []byte
 
@@ -374,14 +374,14 @@ func ImportKaeltedaten() {
 	}
 
 	for _, record := range rawCSVdata {
-		var kaelte database.Kaeltezaehler
+		var kaelte database.Zaehler
 
 		if record[0] == "" {
 			continue
 		}
 
 		kaelte.Bezeichnung = record[0]
-		kaelte.ExtSystemID = record[3]
+		//kaelte.ExtSystemID = record[3]
 		kaelte.Einheit = record[2]
 
 		kaelte.Revision = 1
