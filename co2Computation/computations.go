@@ -60,7 +60,6 @@ func BerechneDienstreisen(dienstreisenDaten []server.DienstreiseElement) (float6
 Die Funktion berechnet die Gesamtemissionen auf Basis der gegeben Pendelwege und der Tage im Büro.
 Ergebniseinheit: g
 */
-//TODO: Fahrgemeinschaften implementieren
 func BerechnePendelweg(pendelwegDaten []server.PendelwegElement, tageImBuero int32) (float64, error) {
 	var emissionen float64
 	const arbeitstage2020 = 230 // Arbeitstage in 2020, konstant(?)
@@ -73,8 +72,12 @@ func BerechnePendelweg(pendelwegDaten []server.PendelwegElement, tageImBuero int
 			return 0, err
 		}
 
+		if weg.Personenanzahl < 1 {
+			return 0, errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
+		}
+
 		if medium.Einheit == "g/Pkm" {
-			emissionen += float64(arbeitstage * 2 * weg.Strecke * medium.CO2Faktor)
+			emissionen += float64(arbeitstage*2*weg.Strecke*medium.CO2Faktor) / float64(weg.Personenanzahl)
 		} else {
 			return 0, errors.New("BerechnePendelweg: Einheit unbekannt")
 		}
