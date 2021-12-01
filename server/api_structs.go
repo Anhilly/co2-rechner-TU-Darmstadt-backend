@@ -39,8 +39,9 @@ type ITGeraeteAnzahl struct {
 }
 
 type PendelwegElement struct {
-	Strecke     int32 `json:"strecke"`
-	IDPendelweg int32 `json:"idPendelweg"`
+	Strecke        int32 `json:"strecke"`
+	IDPendelweg    int32 `json:"idPendelweg"`
+	Personenanzahl int32 `json:"personenanzahl"`
 }
 
 type DienstreiseElement struct {
