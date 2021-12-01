@@ -30,13 +30,13 @@ type GebaeudeFlaeche struct {
 	GesamtF float64 `json:"gesamtf" bson:"gesamtf"` // Gesamtfläche
 }
 
-// collection kaeltezaehler
-type Kaeltezaehler struct {
-	ExtSystemID  string         `json:"extSystemID" bson:"extSystemID"`
+// Uebertyp fuer Kaeltezaehler, Waermezaehler und Stromzaehler
+type Zaehler struct {
+	Zaehlertyp   string         `json:"-" bson:"-"`                 // Feld wird nur in Go benutzt
+	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
 	Bezeichnung  string         `json:"bezeichnung" bson:"bezeichnung"`
 	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
 	Einheit      string         `json:"einheit" bson:"einheit"`
-	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
 	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
 	Revision     int32          `json:"revision" bson:"revision"`
 
@@ -48,12 +48,26 @@ type Zaehlerwerte struct {
 	Zeitstempel time.Time `json:"zeitstempel" bson:"zeitstempel"`
 }
 
-// collection stromzaehler
-type Stromzaehler struct {
+/*
+// collection kaeltezaehler
+type Kaeltezaehler struct {
+	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
+	ExtSystemID  string         `json:"extSystemID" bson:"extSystemID"`
 	Bezeichnung  string         `json:"bezeichnung" bson:"bezeichnung"`
 	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
 	Einheit      string         `json:"einheit" bson:"einheit"`
+	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
+	Revision     int32          `json:"revision" bson:"revision"`
+
+	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
+}
+
+// collection stromzaehler
+type Stromzaehler struct {
 	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
+	Bezeichnung  string         `json:"bezeichnung" bson:"bezeichnung"`
+	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
+	Einheit      string         `json:"einheit" bson:"einheit"`
 	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
 	Revision     int32          `json:"revision" bson:"revision"`
 
@@ -62,20 +76,20 @@ type Stromzaehler struct {
 
 // collection kaeltezaehler
 type Waermezaehler struct {
+	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
 	ExtSystemID  string         `json:"extSystemID" bson:"extSystemID"`
 	Bezeichnung  string         `json:"bezeichnung" bson:"bezeichnung"`
 	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
 	Einheit      string         `json:"einheit" bson:"einheit"`
-	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"`
 	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
-	Revision     int32          `json:"revision" bson:"revision"` // (index)
+	Revision     int32          `json:"revision" bson:"revision"`
 
 	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
-}
+} */
 
 //Collection energieversorgung
 type Energieversorgung struct {
-	IDEnergieversorgung int32        `json:"idEnergieversorgung" bson:"idEnergieversorgung"`
+	IDEnergieversorgung int32        `json:"idEnergieversorgung" bson:"idEnergieversorgung"` // (index)
 	Kategorie           string       `json:"kategorie" bson:"kategorie"`
 	Einheit             string       `json:"einheit" bson:"einheit"`
 	Revision            int32        `json:"revision" bson:"revision"`
@@ -89,7 +103,7 @@ type CO2Energie struct {
 
 //Collection itGeraete
 type ITGeraete struct {
-	IDITGerate      int32  `json:"idITGeraete" bson:"idITGeraete"`
+	IDITGerate      int32  `json:"idITGeraete" bson:"idITGeraete"` // (index)
 	Kategorie       string `json:"kategorie" bson:"kategorie"`
 	CO2FaktorGesamt int32  `json:"CO2FaktorGesamt" bson:"CO2FaktorGesamt"`
 	CO2FaktorJahr   int32  `json:"CO2FaktorJahr" bson:"CO2FaktorJahr"`
@@ -99,7 +113,7 @@ type ITGeraete struct {
 
 //Collection dienstreisen
 type Dienstreisen struct {
-	IDDienstreisen int32             `json:"idDienstreisen" bson:"idDienstreisen"`
+	IDDienstreisen int32             `json:"idDienstreisen" bson:"idDienstreisen"` // (index)
 	Medium         string            `json:"medium" bson:"medium"`
 	Einheit        string            `json:"einheit" bson:"einheit"`
 	Revision       int32             `json:"revision" bson:"revision"`
@@ -114,7 +128,7 @@ type CO2Dienstreisen struct {
 
 //Collection pendelweg
 type Pendelweg struct {
-	IDPendelweg int32  `json:"idPendelweg" bson:"idPendelweg"`
+	IDPendelweg int32  `json:"idPendelweg" bson:"idPendelweg"` // (index)
 	Medium      string `json:"medium" bson:"medium"`
 	CO2Faktor   int32  `json:"CO2Faktor" bson:"CO2Faktor"`
 	Einheit     string `json:"einheit" bson:"einheit"`
