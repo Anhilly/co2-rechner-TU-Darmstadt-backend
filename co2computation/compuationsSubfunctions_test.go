@@ -165,6 +165,21 @@ func TestZaehlerNormalfall(t *testing.T) {
 		is.Equal(ngf, 0.0)            // erwartet 0.0 da keine Gruppenzaehler
 	})
 
+	// Test scheitert, das noch nicht explizit betrachtet
+	t.Run("zaehlerNormalfall: Stromzaehler mit kW als Einheit", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		zaehler, _ := database.StromzaehlerFind(3576)
+		var jahr int32 = 2020
+		var gebaeudeNr int32 = 1321
+
+		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
+
+		is.NoErr(err)                // Normalfall wirft keine Errors
+		is.Equal(verbrauch, 55234.9) // erwartet 208676.2 (Verbrauch Jahr 2020)
+		is.Equal(ngf, 0.0)           // erwartet 0.0 da keine Gruppenzaehler
+	})
+
 	// Errortests
 	// dieser Fall sollte in der realen Welt nicht auftreten, sonst ist Fehler in den Daten
 	t.Run("zaehlerNormalfall: Zaehler ohne Referenz zu Gebaeude", func(t *testing.T) {
