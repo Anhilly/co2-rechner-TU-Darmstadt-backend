@@ -9,8 +9,6 @@ import (
 )
 
 func TestFind(t *testing.T) {
-	//is := is.NewRelaxed(t)
-
 	database.ConnectDatabase()
 	defer database.DisconnectDatabase()
 
