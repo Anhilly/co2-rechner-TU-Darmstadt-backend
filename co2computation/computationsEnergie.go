@@ -6,6 +6,8 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 )
 
+var ErrJahrNichtVorhanden = errors.New("getEnergieCO2Faktor: Kein CO2 Faktor für angegebens Jahr vorhanden")
+
 /**
 Die Funktion berechnet für die gegeben Gebaeude, Flaechenanteile und Jahr die entsprechenden Emissionen hinsichtlich der
 übergebenen Energie.
@@ -60,7 +62,7 @@ func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
 		}
 	}
 	if co2Faktor == -1 {
-		return 0, errors.New("getEnergieCO2Faktor: Kein CO2 Faktor für angegebens Jahr vorhanden")
+		return 0, ErrJahrNichtVorhanden
 	}
 	if energiewerte.Einheit != "g/kWh" { // Einheit muss immer g/kWh sein
 		return 0, errors.New("getEnergieCO2Faktor: Einheit unbekannt")
