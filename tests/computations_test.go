@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestCompuations(t *testing.T) {
+func TestComputations(t *testing.T) {
 	database.ConnectDatabase()
 	defer database.DisconnectDatabase()
 
