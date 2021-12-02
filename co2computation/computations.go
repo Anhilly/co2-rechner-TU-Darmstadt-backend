@@ -1,4 +1,4 @@
-package co2Computation
+package co2computation
 
 import (
 	"errors"
