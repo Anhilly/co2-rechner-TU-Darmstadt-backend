@@ -28,7 +28,7 @@ func TestBerechneITGeraete(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// normale Berechnungen
-	t.Run("BerechneITGeraete: leere Eingabe", func(t *testing.T) {
+	t.Run("BerechneITGeraete: Slice = nil", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var itGeraeteDaten []structs.ITGeraeteAnzahl = nil
@@ -58,7 +58,7 @@ func TestBerechneITGeraete(t *testing.T) {
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
 		is.NoErr(err)                  // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 147000.0) // CO2KatorJahr (588000) fuer Notebooks (ID = 1)
+		is.Equal(emissionen, 147000.0) // CO2FaktorJahr (588000) fuer Notebooks (ID = 1)
 	})
 
 	t.Run("BerechneITGeraete: komplexe Eingabe", func(t *testing.T) {
