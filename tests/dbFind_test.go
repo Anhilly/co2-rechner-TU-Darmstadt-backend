@@ -202,10 +202,10 @@ func TestStromzaehlerFind(t *testing.T) {
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
-			Einheit: "MWh",
+			Einheit: "KWh",
 			Spezialfall: 1,
 			Revision: 1,
-			GebaeudeRef: []int32{2101},
+			GebaeudeRef: []int32{2201},
 		})
 	})
 }
