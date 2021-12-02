@@ -32,11 +32,13 @@ type UmfrageMitarbeiterReq struct {
 	Pendelweg   []PendelwegElement   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`
 	Dienstreise []DienstreiseElement `json:"dienstreise"`
+	ITGeraete []ITGeraeteAnzahl `json:"itGeraete"`
 }
 
 type UmfrageHauptverantwortlicherReq struct {
 	Gebaeude          []GebaeudeFlaeche `json:"gebaeude"`
 	AnzahlMitarbeiter int32             `json:"anzahlMitarbeiter"`
+	ITGeraete []ITGeraeteAnzahl `json:"itGeraete"`
 }
 
 type GebaeudeFlaeche struct {
