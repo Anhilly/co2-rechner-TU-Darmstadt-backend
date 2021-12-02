@@ -43,7 +43,7 @@ func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI,
 }
 
 /**
-Funktion liefert den CO2 Faktor für das gegeben Jahr und Energieform zurück.
+Funktion liefert den CO2 Faktor für das gegebene Jahr und Energieform zurück.
 Ergebniseinheit: g/kWh
 */
 func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
