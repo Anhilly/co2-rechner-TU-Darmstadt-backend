@@ -128,10 +128,10 @@ func TestKaeltezaehlerFind(t *testing.T) {
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
-			Einheit: "MWh",
+			Einheit:     "MWh",
 			Spezialfall: 1,
-			Revision: 1,
-			GebaeudeRef: []int32 {3101},
+			Revision:    1,
+			GebaeudeRef: []int32{3101},
 		})
 	})
 }
@@ -163,10 +163,10 @@ func TestWaermezaehlerFind(t *testing.T) {
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
-			Einheit: "MWh",
+			Einheit:     "MWh",
 			Spezialfall: 1,
-			Revision: 1,
-			GebaeudeRef: []int32{2101,2102,2108},
+			Revision:    1,
+			GebaeudeRef: []int32{2101, 2102, 2108},
 		})
 	})
 }
@@ -202,9 +202,9 @@ func TestStromzaehlerFind(t *testing.T) {
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
-			Einheit: "KWh",
+			Einheit:     "kWh",
 			Spezialfall: 1,
-			Revision: 1,
+			Revision:    1,
 			GebaeudeRef: []int32{2201},
 		})
 	})
