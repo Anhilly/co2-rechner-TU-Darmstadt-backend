@@ -16,6 +16,10 @@ func BerechneDienstreisen(dienstreisenDaten []server.DienstreiseElement) (float6
 	for _, dienstreise := range dienstreisenDaten {
 		var co2Faktor int32 = -1 // zur Überprüfung, ob der CO2Faktor umgesetzt wurde
 
+		if dienstreise.Strecke == 0 {
+			continue
+		}
+
 		medium, err := database.DienstreisenFind(dienstreise.IDDienstreise)
 		if err != nil {
 			return 0, err
@@ -64,16 +68,24 @@ func BerechnePendelweg(pendelwegDaten []server.PendelwegElement, tageImBuero int
 	var emissionen float64
 	const arbeitstage2020 = 230 // Arbeitstage in 2020, konstant(?)
 
+	if tageImBuero == 0 {
+		return 0, nil
+	}
+
 	arbeitstage := tageImBuero / 5.0 * arbeitstage2020
 
 	for _, weg := range pendelwegDaten {
-		medium, err := database.PendelwegFind(weg.IDPendelweg)
-		if err != nil {
-			return 0, err
+		if weg.Strecke == 0 {
+			continue
 		}
 
 		if weg.Personenanzahl < 1 {
 			return 0, errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
+		}
+
+		medium, err := database.PendelwegFind(weg.IDPendelweg)
+		if err != nil {
+			return 0, err
 		}
 
 		if medium.Einheit == "g/Pkm" {
@@ -94,6 +106,10 @@ func BerechneITGeraete(itGeraeteDaten []server.ITGeraeteAnzahl) (float64, error)
 	var emissionen float64
 
 	for _, itGeraet := range itGeraeteDaten {
+		if itGeraet.Anzahl == 0 {
+			continue
+		}
+
 		kategorie, err := database.ITGeraeteFind(itGeraet.IDITGeraete)
 		if err != nil {
 			return 0, err
