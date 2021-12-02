@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
@@ -13,8 +14,8 @@ const (
 /**
 Die Funktion liefert einen Pendelweg struct mit idPendelweg gleich dem Parameter.
 */
-func PendelwegFind(idPendelweg int32) (Pendelweg, error) {
-	var data Pendelweg
+func PendelwegFind(idPendelweg int32) (structs.Pendelweg, error) {
+	var data structs.Pendelweg
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -22,12 +23,12 @@ func PendelwegFind(idPendelweg int32) (Pendelweg, error) {
 
 	cursor, err := collection.Find(ctx, bson.D{{"idPendelweg", idPendelweg}})
 	if err != nil {
-		return Pendelweg{}, err
+		return structs.Pendelweg{}, err
 	}
 	cursor.Next(ctx)
 	err = cursor.Decode(&data)
 	if err != nil {
-		return Pendelweg{}, err
+		return structs.Pendelweg{}, err
 	}
 
 	return data, nil

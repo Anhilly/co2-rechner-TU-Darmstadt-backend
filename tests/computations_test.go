@@ -3,7 +3,7 @@ package tests
 import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/co2computation"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
 	"io"
 	"testing"
@@ -31,7 +31,7 @@ func TestBerechneITGeraete(t *testing.T) {
 	t.Run("BerechneITGeraete: leere Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var itGeraeteDaten []server.ITGeraeteAnzahl = nil
+		var itGeraeteDaten []structs.ITGeraeteAnzahl = nil
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
@@ -42,7 +42,7 @@ func TestBerechneITGeraete(t *testing.T) {
 	t.Run("BerechneITGeraete: leere Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []server.ITGeraeteAnzahl{}
+		itGeraeteDaten := []structs.ITGeraeteAnzahl{}
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
@@ -53,7 +53,7 @@ func TestBerechneITGeraete(t *testing.T) {
 	t.Run("BerechneITGeraete: einelementige Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []server.ITGeraeteAnzahl{{IDITGeraete: 1, Anzahl: 1}}
+		itGeraeteDaten := []structs.ITGeraeteAnzahl{{IDITGeraete: 1, Anzahl: 1}}
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
@@ -64,7 +64,7 @@ func TestBerechneITGeraete(t *testing.T) {
 	t.Run("BerechneITGeraete: komplexe Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []server.ITGeraeteAnzahl{
+		itGeraeteDaten := []structs.ITGeraeteAnzahl{
 			{IDITGeraete: 1, Anzahl: 5},
 			{IDITGeraete: 4, Anzahl: 10},
 			{IDITGeraete: 6, Anzahl: 4},
@@ -82,7 +82,7 @@ func TestBerechneITGeraete(t *testing.T) {
 	t.Run("BerechneITGeraete: Anzahl 0", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []server.ITGeraeteAnzahl{
+		itGeraeteDaten := []structs.ITGeraeteAnzahl{
 			{IDITGeraete: 1, Anzahl: 0},
 			{IDITGeraete: 4, Anzahl: 0},
 			{IDITGeraete: 6, Anzahl: 0},
@@ -100,7 +100,7 @@ func TestBerechneITGeraete(t *testing.T) {
 	t.Run("BerechneITGeraete: Toner", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []server.ITGeraeteAnzahl{
+		itGeraeteDaten := []structs.ITGeraeteAnzahl{
 			{IDITGeraete: 8, Anzahl: 1},
 			{IDITGeraete: 10, Anzahl: 1},
 		}
@@ -115,7 +115,7 @@ func TestBerechneITGeraete(t *testing.T) {
 	t.Run("BerechneITGeraete: ID nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []server.ITGeraeteAnzahl{
+		itGeraeteDaten := []structs.ITGeraeteAnzahl{
 			{IDITGeraete: 100, Anzahl: 5},
 		}
 
@@ -133,7 +133,7 @@ func TestBerechnePendelweg(t *testing.T) {
 	t.Run("BerechnePendelweg: Slice = nil", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pendelwegDaten []server.PendelwegElement = nil
+		var pendelwegDaten []structs.PendelwegElement = nil
 		var tageImBuero int32 = 1
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
@@ -145,7 +145,7 @@ func TestBerechnePendelweg(t *testing.T) {
 	t.Run("BerechnePendelweg: leerer Slice", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []server.PendelwegElement{}
+		pendelwegDaten := []structs.PendelwegElement{}
 		var tageImBuero int32 = 1
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
@@ -157,7 +157,7 @@ func TestBerechnePendelweg(t *testing.T) {
 	t.Run("BerechnePendelweg: tageImBuero = 0", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []server.PendelwegElement{
+		pendelwegDaten := []structs.PendelwegElement{
 			{IDPendelweg: 1, Strecke: 1, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 0
@@ -171,7 +171,7 @@ func TestBerechnePendelweg(t *testing.T) {
 	t.Run("BerechnePendelweg: leerer Slice, tageImBuero = 0", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []server.PendelwegElement{}
+		pendelwegDaten := []structs.PendelwegElement{}
 		var tageImBuero int32 = 0
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
@@ -183,7 +183,7 @@ func TestBerechnePendelweg(t *testing.T) {
 	t.Run("BerechnePendelweg: einfache Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []server.PendelwegElement{
+		pendelwegDaten := []structs.PendelwegElement{
 			{IDPendelweg: 1, Strecke: 10, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 1
@@ -197,7 +197,7 @@ func TestBerechnePendelweg(t *testing.T) {
 	t.Run("BerechnePendelweg: komplexe Berechnung", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []server.PendelwegElement{
+		pendelwegDaten := []structs.PendelwegElement{
 			{IDPendelweg: 1, Strecke: 10, Personenanzahl: 1},
 			{IDPendelweg: 4, Strecke: 15, Personenanzahl: 1},
 			{IDPendelweg: 10, Strecke: 90, Personenanzahl: 1},
@@ -216,7 +216,7 @@ func TestBerechnePendelweg(t *testing.T) {
 	t.Run("BerechnePendelweg: ID = 100", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []server.PendelwegElement{
+		pendelwegDaten := []structs.PendelwegElement{
 			{IDPendelweg: 100, Strecke: 1, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 1
@@ -230,7 +230,7 @@ func TestBerechnePendelweg(t *testing.T) {
 	t.Run("BerechnePendelweg: Personenanzahl < 1", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []server.PendelwegElement{
+		pendelwegDaten := []structs.PendelwegElement{
 			{IDPendelweg: 1, Strecke: 1, Personenanzahl: 0},
 		}
 		var tageImBuero int32 = 1

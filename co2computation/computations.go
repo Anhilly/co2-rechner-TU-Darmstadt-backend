@@ -3,7 +3,7 @@ package co2computation
 import (
 	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 )
 
 var ErrPersonenzahlZuKlein = errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
@@ -12,7 +12,7 @@ var ErrPersonenzahlZuKlein = errors.New("BerechnePendelweg: Personenzahl ist kle
 Die Funktion berechnet die Gesamtemissionen für den übergebenen Slice an Dienstreisen.
 Ergebniseinheit: g
 */
-func BerechneDienstreisen(dienstreisenDaten []server.DienstreiseElement) (float64, error) {
+func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float64, error) {
 	var emission float64
 
 	for _, dienstreise := range dienstreisenDaten {
@@ -66,7 +66,7 @@ func BerechneDienstreisen(dienstreisenDaten []server.DienstreiseElement) (float6
 Die Funktion berechnet die Gesamtemissionen auf Basis der gegeben Pendelwege und der Tage im Büro.
 Ergebniseinheit: g
 */
-func BerechnePendelweg(pendelwegDaten []server.PendelwegElement, tageImBuero int32) (float64, error) {
+func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero int32) (float64, error) {
 	var emissionen float64
 	const arbeitstage2020 = 230 // Arbeitstage in 2020, konstant(?)
 
@@ -104,7 +104,7 @@ func BerechnePendelweg(pendelwegDaten []server.PendelwegElement, tageImBuero int
 Die Funktion berechnet Emissionen pro Jahr für den Slice an IT-Geräten.
 Ergebniseinheit: g
 */
-func BerechneITGeraete(itGeraeteDaten []server.ITGeraeteAnzahl) (float64, error) {
+func BerechneITGeraete(itGeraeteDaten []structs.ITGeraeteAnzahl) (float64, error) {
 	var emissionen float64
 
 	for _, itGeraet := range itGeraeteDaten {

@@ -3,7 +3,7 @@ package co2computation
 import (
 	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 )
 
 /**
@@ -11,7 +11,7 @@ Die Funktion berechnet für die gegeben Gebaeude, Flaechenanteile und Jahr die e
 übergebenen Energie.
 Ergebniseinheit: g
 */
-func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []server.GebaeudeFlaeche, jahr int32, idEnergieversorung int32) (float64, error) {
+func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI, jahr int32, idEnergieversorung int32) (float64, error) {
 	var gesamtemissionen float64
 
 	co2Faktor, err := getEnergieCO2Faktor(idEnergieversorung, jahr)
@@ -73,7 +73,7 @@ func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
 Die Funktion bildet den Normalfall für die Emissionsberechnungen eines Gebaeudes und dem Flaechenanteil.
 Ergebniseinheit: g
 */
-func gebaeudeNormalfall(co2Faktor int32, gebaeude database.Gebaeude, idEnergieversorgung int32, jahr int32, flaechenanteil int32) (float64, error) {
+func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergieversorgung int32, jahr int32, flaechenanteil int32) (float64, error) {
 	var gesamtverbrauch float64                  // Einheit: kWh
 	var gesamtNGF float64 = gebaeude.Flaeche.NGF // Einheit: m^2
 	var refGebaeude []int32
@@ -88,7 +88,7 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude database.Gebaeude, idEnergieve
 	}
 
 	for _, zaehlerID := range refGebaeude {
-		var zaehler database.Zaehler
+		var zaehler structs.Zaehler
 		var err error
 
 		switch idEnergieversorgung {
@@ -147,7 +147,7 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude database.Gebaeude, idEnergieve
 Funktion stellt den Normalfall zur Bestimmung des Verbauchs und zugehöriger Gebaeudeflaeche dar.
 Ergebniseinheit: kWh, m^2
 */
-func zaehlerNormalfall(zaehler database.Zaehler, jahr int32, gebaudeNr int32) (float64, float64, error) {
+func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaudeNr int32) (float64, float64, error) {
 	var ngf float64
 
 	if len(zaehler.GebaeudeRef) == 0 {
@@ -196,7 +196,7 @@ Die Funktion stellt den Spezialfall 2 und 3 für die Kaeltezaehler 3621 und 3622
 des Normalfalls und genau auf diese Zaehler zugeschnitte.
 Ergebniseinheit: kWh
 */
-func zaehlerSpezialfallZweiDrei(zaehler database.Zaehler, jahr int32, andereZaehlerID int32) (float64, error) {
+func zaehlerSpezialfallZweiDrei(zaehler structs.Zaehler, jahr int32, andereZaehlerID int32) (float64, error) {
 	var verbrauch float64 = -1 //Verbauch des Gruppenzaehlers
 	for _, zaehlerstand := range zaehler.Zaehlerdaten {
 		if int32(zaehlerstand.Zeitstempel.Year()) == jahr {

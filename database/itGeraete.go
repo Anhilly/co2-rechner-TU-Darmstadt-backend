@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
@@ -13,8 +14,8 @@ const (
 /**
 Die Funktion liefert einen ITGeraete struct mit idITGeraete gleich dem Parameter.
 */
-func ITGeraeteFind(idITGeraete int32) (ITGeraete, error) {
-	var data ITGeraete
+func ITGeraeteFind(idITGeraete int32) (structs.ITGeraete, error) {
+	var data structs.ITGeraete
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -22,13 +23,13 @@ func ITGeraeteFind(idITGeraete int32) (ITGeraete, error) {
 
 	cursor, err := collection.Find(ctx, bson.D{{"idITGeraete", idITGeraete}})
 	if err != nil {
-		return ITGeraete{}, err
+		return structs.ITGeraete{}, err
 	}
 
 	cursor.Next(ctx)
 	err = cursor.Decode(&data)
 	if err != nil {
-		return ITGeraete{}, err
+		return structs.ITGeraete{}, err
 	}
 
 	return data, nil

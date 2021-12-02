@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
@@ -13,8 +14,8 @@ const (
 /**
 Die Funktion liefert einen Dienstreisen struct mit idDienstreisen gleich dem Parameter.
 */
-func DienstreisenFind(idDienstreisen int32) (Dienstreisen, error) {
-	var data Dienstreisen
+func DienstreisenFind(idDienstreisen int32) (structs.Dienstreisen, error) {
+	var data structs.Dienstreisen
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -22,13 +23,13 @@ func DienstreisenFind(idDienstreisen int32) (Dienstreisen, error) {
 
 	cursor, err := collection.Find(ctx, bson.D{{"idDienstreisen", idDienstreisen}})
 	if err != nil {
-		return Dienstreisen{}, err
+		return structs.Dienstreisen{}, err
 	}
 
 	cursor.Next(ctx)
 	err = cursor.Decode(&data)
 	if err != nil {
-		return Dienstreisen{}, err
+		return structs.Dienstreisen{}, err
 	}
 
 	return data, nil
