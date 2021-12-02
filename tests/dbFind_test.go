@@ -67,7 +67,7 @@ func TestEnergieversorgungFind(t *testing.T) {
 func TestGebaeudeFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	t.Run("GebaeudeFind: ID = 1", func(t *testing.T) {
+	t.Run("GebaeudeFind: ID = 1101", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data, err := database.GebaeudeFind(1102)
@@ -97,7 +97,7 @@ func TestGebaeudeFind(t *testing.T) {
 func TestKaeltezaehlerFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	t.Run("KaelteFind: ID = 1", func(t *testing.T) {
+	t.Run("KaelteFind: ID = 4023", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data, err := database.KaeltezaehlerFind(4023)
@@ -124,6 +124,46 @@ func TestKaeltezaehlerFind(t *testing.T) {
 					Wert:        169.59,
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location),
 				},
-			}})
+			},
+			Einheit: "MWh",
+			Spezialfall: 1,
+			Revision: 1,
+			GebaeudeRef: []int32 {3101},
+		})
+	})
+}
+
+func TestWearmezaehlerFind(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	t.Run("WearmeFind: ID = 2107", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(2107)
+		location, err := time.LoadLocation("Etc/GMT")
+
+		is.NoErr(err) // Error seitens der Datenbank
+		is.Equal(data, database.Zaehler{Zaehlertyp: "Wearme",
+			PKEnergie:   2107,
+			Bezeichnung: " 2101,2102,2108 Waerme Gruppenzaehler",
+			Zaehlerdaten: []database.Zaehlerwerte{
+				{
+					Wert:        788.66,
+					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location),
+				},
+				{
+					Wert:        794.8,
+					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location),
+				},
+				{
+					Wert:        736.9,
+					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location),
+				},
+			},
+			Einheit: "MWh",
+			Spezialfall: 1,
+			Revision: 1,
+			GebaeudeRef: []int32{2101,2102,2108},
+		})
 	})
 }
