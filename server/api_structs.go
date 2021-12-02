@@ -12,6 +12,14 @@ type UmfrageRes struct {
 	DienstreisenEmissionen float64 `json:"dienstreisenEmissionen"`
 	PendelwegeEmissionen   float64 `json:"pendelwegeEmissionen"`
 }
+
+// For testing:
+type UmfrageMitarbeiterRes struct {
+	PendelwegeEmissionen   float64 `json:"pendelwegeEmissionen"`
+	DienstreisenEmissionen float64 `json:"dienstreisenEmissionen"`
+	ITGeraeteEmissionen    float64 `json:"itGeraeteEmissionen"`
+}
+
 /* For testing:
 //ein temporärer JSON für eine monotlitische Umfrage
 type UmfrageReq struct {
