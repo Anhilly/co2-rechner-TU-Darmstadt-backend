@@ -13,7 +13,8 @@ func TestFind(t *testing.T) {
 	defer database.DisconnectDatabase()
 
 	t.Run("TestITGeareteFind", TestITGeraeteFind)
-
+	t.Run("TestITEnergieversorgungFind", TestEnergieversorgungFind)
+	t.Run("TestITDienstreisenFind", TestDienstreisenFind)
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -28,6 +29,19 @@ func TestITGeraeteFind(t *testing.T) {
 		is.Equal(data, database.ITGeraete{IDITGerate: 1, Kategorie: "Notebooks", CO2FaktorGesamt: 588000, CO2FaktorJahr: 147000, Einheit: "g/Stueck", Revision: 1}) // Überprüfung des zurrückgelieferten Elements
 	})
 
+}
+
+func TestDienstreisenFind(t *testing.T){
+	is := is.NewRelaxed(t)
+
+	t.Run("DienstreisenFind: ID = 1", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.DienstreisenFind(1)
+
+		is.NoErr(err)                                                                                                                                               // Error seitens der Datenbank
+		is.Equal(data, database.Dienstreisen{IDDienstreisen: 1, Medium: "Bahn", Einheit: "g/Pkm", Revision: 1, CO2Faktor: []database.CO2Dienstreisen{{Wert: 8}}}) // Überprüfung des zurrückgelieferten Elements
+	})
 }
 
 func TestEnergieversorgungFind(t *testing.T) {
