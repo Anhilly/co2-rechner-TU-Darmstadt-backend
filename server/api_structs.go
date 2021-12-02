@@ -34,8 +34,9 @@ type UmfrageMitarbeiterReq struct {
 	Dienstreise []DienstreiseElement `json:"dienstreise"`
 }
 
-type UmfrageHauptverantwortlicherReq stuct {
-
+type UmfrageHauptverantwortlicherReq struct {
+	Gebaeude          []GebaeudeFlaeche `json:"gebaeude"`
+	AnzahlMitarbeiter int32             `json:"anzahlMitarbeiter"`
 }
 
 type GebaeudeFlaeche struct {
