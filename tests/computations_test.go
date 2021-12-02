@@ -15,13 +15,7 @@ func TestComputations(t *testing.T) {
 
 	t.Run("TestBerechneITGeraete", TestBerechneITGeraete)
 	t.Run("TestBerechnePendelweg", TestBerechnePendelweg)
-}
-
-func TestTester(t *testing.T) {
-	database.ConnectDatabase()
-	defer database.DisconnectDatabase()
-
-	t.Run("TestBerechnePendelweg", TestBerechnePendelweg)
+	t.Run("TestBerechneDienstreisen", TestBerechneDienstreisen)
 }
 
 func TestBerechneITGeraete(t *testing.T) {
@@ -123,6 +117,19 @@ func TestBerechneITGeraete(t *testing.T) {
 
 		is.Equal(err, io.EOF)     // EOF von der Dantenbank erwartet
 		is.Equal(emissionen, 0.0) // Erwarteter Wert: 0.0
+	})
+
+	t.Run("BerechneITGeraete: negative Anzahl", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		itGeraeteDaten := []structs.ITGeraeteAnzahl{
+			{IDITGeraete: 1, Anzahl: -5},
+		}
+
+		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
+
+		is.Equal(err, co2computation.ErrAnzahlNegativ) // Funktion wirft co2computation.ErrAnzahlNegativ
+		is.Equal(emissionen, 0.0)                      // Erwarteter Wert: 0.0
 	})
 }
 
@@ -239,5 +246,212 @@ func TestBerechnePendelweg(t *testing.T) {
 
 		is.Equal(err, co2computation.ErrPersonenzahlZuKlein) // soll ErrPersonenzahlZuKlein werfen
 		is.Equal(emissionen, 0.0)                            // bei Fehler ist Ergebnis 0.0
+	})
+
+	t.Run("BerechnePendelweg: negative Strecke", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		pendelwegDaten := []structs.PendelwegElement{
+			{IDPendelweg: 1, Strecke: -100, Personenanzahl: 1},
+		}
+		var tageImBuero int32 = 1
+
+		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+
+		is.Equal(err, co2computation.ErrStreckeNegativ) // soll ErrStreckeNegativ werfen
+		is.Equal(emissionen, 0.0)                       // bei Fehler ist Ergebnis 0.0
+	})
+}
+
+func TestBerechneDienstreisen(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// normale Berechnungen
+	t.Run("BerechneDienstreisen: Slice = nil", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var dienstreisenDaten []structs.DienstreiseElement = nil
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
+		is.Equal(emissionen, 0.0) // bei nil als Eingabe gibt es keine Emissionen
+	})
+
+	t.Run("BerechneDienstreisen: leerer Slice", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
+		is.Equal(emissionen, 0.0) // bei leerer Eingabe gibt es keine Emissionen
+	})
+
+	t.Run("BerechneDienstreisen: einfache Eingabe Bahn", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 1, Strecke: 100},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.NoErr(err)                // bei normaler Berechnung sollte kein Error geworfen werden
+		is.Equal(emissionen, 1600.0) // erwartetes Ergebnis: 1600.0
+	})
+
+	t.Run("BerechneDienstreisen: Bahn; Felder Tankart, Streckentyp egal", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 1, Strecke: 10, Streckentyp: "unbekannt", Tankart: "unbekannt"},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.NoErr(err)               // bei normaler Berechnung sollte kein Error geworfen werden
+		is.Equal(emissionen, 160.0) // erwartetes Ergebnis: 160.0
+	})
+
+	t.Run("BerechneDienstreisen: einfache Eingabe Auto", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 2, Strecke: 100, Tankart: "Diesel"},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.NoErr(err)                 // bei normaler Berechnung sollte kein Error geworfen werden
+		is.Equal(emissionen, 48800.0) // erwartetes Ergebnis: 48800.0
+	})
+
+	t.Run("BerechneDienstreisen: Auto; Feld Streckentyp egal", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 2, Strecke: 10, Tankart: "Benzin", Streckentyp: "unbekannt"},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.NoErr(err)                // bei normaler Berechnung sollte kein Error geworfen werden
+		is.Equal(emissionen, 5200.0) // erwartetes Ergebnis: 5200.0
+	})
+
+	t.Run("BerechneDienstreisen: einfache Eingabe Flugzeug", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 3, Strecke: 100, Streckentyp: "Kurzstrecke"},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.NoErr(err)                  // bei normaler Berechnung sollte kein Error geworfen werden
+		is.Equal(emissionen, 177600.0) // erwartetes Ergebnis: 177600.0
+	})
+
+	t.Run("BerechneDienstreisen: Flugzeug; Feld Tankart egal", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 3, Strecke: 10, Streckentyp: "Langstrecke", Tankart: "unbekannt"},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.NoErr(err)                // bei normaler Berechnung sollte kein Error geworfen werden
+		is.Equal(emissionen, 8360.0) // erwartetes Ergebnis: 8360.0
+	})
+
+	t.Run("BerechneDienstreisen: komplexe Eingabe", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 2, Strecke: 1200, Tankart: "Diesel"},
+			{IDDienstreise: 1, Strecke: 150},
+			{IDDienstreise: 3, Strecke: 750, Streckentyp: "Langstrecke"},
+			{IDDienstreise: 3, Strecke: 1000, Streckentyp: "Kurzstrecke"},
+			{IDDienstreise: 2, Strecke: 45, Tankart: "Benzin"},
+			{IDDienstreise: 1, Strecke: 1},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.NoErr(err)                   // bei normaler Berechnung sollte kein Error geworfen werden
+		is.Equal(emissionen, 3014416.0) // erwartetes Ergebnis: 3014416.0
+	})
+
+	t.Run("BerechneDienstreisen: Strecke = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 1, Strecke: 0},
+			{IDDienstreise: 2, Strecke: 0, Tankart: "Benzin"},
+			{IDDienstreise: 2, Strecke: 0, Tankart: "Diesel"},
+			{IDDienstreise: 3, Strecke: 0, Streckentyp: "Kurzstrecke"},
+			{IDDienstreise: 3, Strecke: 0, Streckentyp: "Langstrecke"},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0
+	})
+
+	// Errortests
+	t.Run("BerechneDienstreisen: ID = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 0, Strecke: 100},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.Equal(err, io.EOF)     // Datenbank wirft EOF Error
+		is.Equal(emissionen, 0.0) // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+	})
+
+	t.Run("BerechneDienstreisen: unbekannte Tankart", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 2, Strecke: 100, Tankart: "nicht definiert"},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.Equal(err, co2computation.ErrTankartUnbekannt) // Funktione wirft ErrTankartUnbekannt
+		is.Equal(emissionen, 0.0)                         // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+	})
+
+	t.Run("BerechneDienstreisen: unbekannter Streckentyp", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 3, Strecke: 100, Streckentyp: "nicht definiert"},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.Equal(err, co2computation.ErrStreckentypUnbekannt) // Funktione wirft ErrStreckentypUnbekannt
+		is.Equal(emissionen, 0.0)                             // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+	})
+
+	t.Run("BerechneDienstreisen: negative Strecke", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.DienstreiseElement{
+			{IDDienstreise: 1, Strecke: -100},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.Equal(err, co2computation.ErrStreckeNegativ) // Funktione wirft ErrStreckeNegativ)
+		is.Equal(emissionen, 0.0)                       // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 }

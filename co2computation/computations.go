@@ -6,7 +6,13 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 )
 
-var ErrPersonenzahlZuKlein = errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
+var (
+	ErrPersonenzahlZuKlein  = errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
+	ErrTankartUnbekannt     = errors.New("BerechneDienstreisen: Tankart nicht vorhanden")
+	ErrStreckentypUnbekannt = errors.New("BerechneDienstreisen: Streckentyp nicht vorhanden")
+	ErrStreckeNegativ       = errors.New("BerechneDienstreisen / BerechnePendelweg: Strecke ist negativ")
+	ErrAnzahlNegativ        = errors.New("BerechneITGeraete: Anzahl an IT-Geraeten ist negativ")
+)
 
 /**
 Die Funktion berechnet die Gesamtemissionen für den übergebenen Slice an Dienstreisen.
@@ -20,6 +26,8 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 
 		if dienstreise.Strecke == 0 {
 			continue
+		} else if dienstreise.Strecke < 0 {
+			return 0, ErrStreckeNegativ
 		}
 
 		medium, err := database.DienstreisenFind(dienstreise.IDDienstreise)
@@ -37,7 +45,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 				}
 			}
 			if co2Faktor == -1 {
-				return 0, errors.New("BerechneDienstreisen: Tankart nicht vorhanden")
+				return 0, ErrTankartUnbekannt
 			}
 		case 3: // Flugzeug
 			for _, faktor := range medium.CO2Faktor {
@@ -46,7 +54,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 				}
 			}
 			if co2Faktor == -1 {
-				return 0, errors.New("BerechneDienstreisen: Streckentyp nicht vorhanden")
+				return 0, ErrStreckentypUnbekannt
 			}
 		default:
 			return 0, errors.New("BerechneDienstreisen: ID nicht vorhanden")
@@ -79,6 +87,8 @@ func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero in
 	for _, weg := range pendelwegDaten {
 		if weg.Strecke == 0 {
 			continue
+		} else if weg.Strecke < 0 {
+			return 0, ErrStreckeNegativ
 		}
 
 		if weg.Personenanzahl < 1 {
@@ -110,6 +120,8 @@ func BerechneITGeraete(itGeraeteDaten []structs.ITGeraeteAnzahl) (float64, error
 	for _, itGeraet := range itGeraeteDaten {
 		if itGeraet.Anzahl == 0 {
 			continue
+		} else if itGeraet.Anzahl < 0 {
+			return 0, ErrAnzahlNegativ
 		}
 
 		kategorie, err := database.ITGeraeteFind(itGeraet.IDITGeraete)
