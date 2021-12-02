@@ -6,6 +6,8 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
 )
 
+var ErrPersonenzahlZuKlein = errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
+
 /**
 Die Funktion berechnet die Gesamtemissionen für den übergebenen Slice an Dienstreisen.
 Ergebniseinheit: g
@@ -72,7 +74,7 @@ func BerechnePendelweg(pendelwegDaten []server.PendelwegElement, tageImBuero int
 		return 0, nil
 	}
 
-	arbeitstage := tageImBuero / 5.0 * arbeitstage2020
+	arbeitstage := int32(float64(tageImBuero) / 5.0 * arbeitstage2020)
 
 	for _, weg := range pendelwegDaten {
 		if weg.Strecke == 0 {
@@ -80,7 +82,7 @@ func BerechnePendelweg(pendelwegDaten []server.PendelwegElement, tageImBuero int
 		}
 
 		if weg.Personenanzahl < 1 {
-			return 0, errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
+			return 0, ErrPersonenzahlZuKlein
 		}
 
 		medium, err := database.PendelwegFind(weg.IDPendelweg)
