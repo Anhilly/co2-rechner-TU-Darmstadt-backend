@@ -17,6 +17,9 @@ func TestFind(t *testing.T) {
 	t.Run("TestEnergieversorgungFind", TestEnergieversorgungFind)
 	t.Run("TestDienstreisenFind", TestDienstreisenFind)
 	t.Run("TestGebaeudeFind", TestGebaeudeFind)
+	t.Run("TestKaelteFind", TestKaeltezaehlerFind)
+	t.Run("TestWaermeFind", TestWaermezaehlerFind)
+	t.Run("TestStromFind", TestStromzaehlerFind)
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -70,7 +73,7 @@ func TestGebaeudeFind(t *testing.T) {
 	t.Run("GebaeudeFind: ID = 1101", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		data, err := database.GebaeudeFind(1102)
+		data, err := database.GebaeudeFind(1101)
 
 		is.NoErr(err) // Error seitens der Datenbank
 		is.Equal(data, database.Gebaeude{
@@ -110,19 +113,19 @@ func TestKaeltezaehlerFind(t *testing.T) {
 			Zaehlerdaten: []database.Zaehlerwerte{
 				{
 					Wert:        311.06,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location),
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
 					Wert:        414.61,
-					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location),
+					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
 					Wert:        555.3,
-					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location),
+					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
 					Wert:        169.59,
-					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location),
+					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
 			Einheit: "MWh",
@@ -133,7 +136,7 @@ func TestKaeltezaehlerFind(t *testing.T) {
 	})
 }
 
-func TestWearmezaehlerFind(t *testing.T) {
+func TestWaermezaehlerFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	t.Run("WearmeFind: ID = 2107", func(t *testing.T) {
@@ -143,27 +146,66 @@ func TestWearmezaehlerFind(t *testing.T) {
 		location, err := time.LoadLocation("Etc/GMT")
 
 		is.NoErr(err) // Error seitens der Datenbank
-		is.Equal(data, database.Zaehler{Zaehlertyp: "Wearme",
+		is.Equal(data, database.Zaehler{Zaehlertyp: "Waerme",
 			PKEnergie:   2107,
 			Bezeichnung: " 2101,2102,2108 Waerme Gruppenzaehler",
 			Zaehlerdaten: []database.Zaehlerwerte{
 				{
 					Wert:        788.66,
-					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location),
+					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
 					Wert:        794.8,
-					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location),
+					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
 					Wert:        736.9,
-					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location),
+					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
 			Einheit: "MWh",
 			Spezialfall: 1,
 			Revision: 1,
 			GebaeudeRef: []int32{2101,2102,2108},
+		})
+	})
+}
+
+func TestStromzaehlerFind(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	t.Run("WearmeFind: ID = 5967", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.StromzaehlerFind(5967)
+		location, err := time.LoadLocation("Etc/GMT")
+
+		is.NoErr(err) // Error seitens der Datenbank
+		is.Equal(data, database.Zaehler{Zaehlertyp: "Strom",
+			PKEnergie:   5967,
+			Bezeichnung: "2201 Strom Hauptzaehler",
+			Zaehlerdaten: []database.Zaehlerwerte{
+				{
+					Wert:        126048.9,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        0.0,
+					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        0.0,
+					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        0.0,
+					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+			},
+			Einheit: "MWh",
+			Spezialfall: 1,
+			Revision: 1,
+			GebaeudeRef: []int32{2101},
 		})
 	})
 }
