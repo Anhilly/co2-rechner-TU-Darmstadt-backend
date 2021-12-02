@@ -4,9 +4,13 @@ import (
 	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
+	"strconv"
 )
 
-var ErrJahrNichtVorhanden = errors.New("getEnergieCO2Faktor: Kein CO2 Faktor für angegebens Jahr vorhanden")
+var (
+	ErrJahrNichtVorhanden = errors.New("getEnergieCO2Faktor: Kein CO2 Faktor für angegebens Jahr vorhanden")
+	ErrFlaecheNegativ     = errors.New("gebaeudeNormalfall: Flaechenanteil ist negativ")
+)
 
 /**
 Die Funktion berechnet für die gegeben Gebaeude, Flaechenanteile und Jahr die entsprechenden Emissionen hinsichtlich der
@@ -79,6 +83,12 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 	var gesamtverbrauch float64                  // Einheit: kWh
 	var gesamtNGF float64 = gebaeude.Flaeche.NGF // Einheit: m^2
 	var refGebaeude []int32
+
+	if flaechenanteil == 0 {
+		return 0, nil
+	} else if flaechenanteil < 0 {
+		return 0, ErrFlaecheNegativ
+	}
 
 	switch idEnergieversorgung {
 	case 1: // Waerme
@@ -153,7 +163,7 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaudeNr int32) (fl
 	var ngf float64
 
 	if len(zaehler.GebaeudeRef) == 0 {
-		return 0, 0, errors.New("zaehlerNormalfall: Zaehler " + string(zaehler.PKEnergie) + " hat keine Refernzen auf Gebaeude")
+		return 0, 0, errors.New("zaehlerNormalfall: Zaehler " + strconv.FormatInt(int64(zaehler.PKEnergie), 10) + " hat keine Refernzen auf Gebaeude")
 	}
 
 	// addiere gespeicherten Verbrauch des Jahres auf Gesamtverbrauch auf
@@ -164,7 +174,7 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaudeNr int32) (fl
 		}
 	}
 	if verbrauch == -1 {
-		return 0, 0, errors.New("zaehlerNormalfall: Kein Verbrauch für das Jahr " + string(jahr) + ", Zaehler: " + string(zaehler.PKEnergie))
+		return 0, 0, errors.New("zaehlerNormalfall: Kein Verbrauch für das Jahr " + strconv.FormatInt(int64(jahr), 10) + ", Zaehler: " + strconv.FormatInt(int64(zaehler.PKEnergie), 10))
 	}
 
 	switch zaehler.Einheit {
@@ -173,7 +183,7 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaudeNr int32) (fl
 	case "kWh":
 		verbrauch = verbrauch
 	default:
-		return 0, 0, errors.New("zaehlerNormalfall: Einheit von Zaehler " + string(zaehler.PKEnergie) + " unbekannt")
+		return 0, 0, errors.New("zaehlerNormalfall: Einheit von Zaehler " + strconv.FormatInt(int64(zaehler.PKEnergie), 10) + " unbekannt")
 	}
 
 	// NGF aller referenzierten Gebaeude wird aufaddiert, um Gesamtflaeche für Verbrauch zu haben
