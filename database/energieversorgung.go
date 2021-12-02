@@ -10,13 +10,13 @@ const (
 	energieversorgungCol = "energieversorgung"
 )
 
-
 /**
 Die Funktion liefert einen Energieversorgung struct mit idEnergieversorgung gleich dem Parameter.
 */
 func EnergieversorgungFind(idEnergieversorgung int32) (Energieversorgung, error) {
 	var data Energieversorgung
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	collection := client.Database(dbName).Collection(energieversorgungCol)
 
@@ -33,4 +33,3 @@ func EnergieversorgungFind(idEnergieversorgung int32) (Energieversorgung, error)
 
 	return data, nil
 }
-

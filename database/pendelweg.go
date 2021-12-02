@@ -5,6 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
+
 const (
 	pendelwegCol = "pendelweg"
 )
@@ -14,7 +15,8 @@ Die Funktion liefert einen Pendelweg struct mit idPendelweg gleich dem Parameter
 */
 func PendelwegFind(idPendelweg int32) (Pendelweg, error) {
 	var data Pendelweg
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	collection := client.Database(dbName).Collection(pendelwegCol)
 

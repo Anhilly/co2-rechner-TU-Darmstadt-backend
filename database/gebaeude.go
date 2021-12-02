@@ -15,7 +15,8 @@ Die Funktion liefert einen Gebaeude struct mit nr gleich dem Parameter.
 */
 func GebaeudeFind(nr int32) (Gebaeude, error) {
 	var data Gebaeude
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	collection := client.Database(dbName).Collection(gebaeudeCol)
 

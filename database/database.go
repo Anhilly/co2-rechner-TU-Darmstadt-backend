@@ -16,7 +16,8 @@ Die Referenz zur Datenbank wird in der Variable client gepseichert
 */
 func ConnectDatabase() error {
 	var err error
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://" + username + ":" + password + "@" + serverAdress + ":" + port))
 	if err != nil {
@@ -40,7 +41,8 @@ func ConnectDatabase() error {
 Die Funktion schließt die Verbindung mit der Datenbank.
 */
 func DisconnectDatabase() error {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	err := client.Disconnect(ctx)
 	if err != nil {

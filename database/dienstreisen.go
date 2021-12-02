@@ -15,7 +15,8 @@ Die Funktion liefert einen Dienstreisen struct mit idDienstreisen gleich dem Par
 */
 func DienstreisenFind(idDienstreisen int32) (Dienstreisen, error) {
 	var data Dienstreisen
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	collection := client.Database(dbName).Collection(dienstreisenCol)
 
