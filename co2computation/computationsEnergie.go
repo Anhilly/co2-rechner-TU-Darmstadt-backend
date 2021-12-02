@@ -216,21 +216,21 @@ func zaehlerSpezialfallZweiDrei(zaehler structs.Zaehler, jahr int32, andereZaehl
 		}
 	}
 	if verbrauch == -1 {
-		return 0, errors.New("zaehlerSpezialfallZweiDrei: Kein Verbrauch für das Jahr " + string(jahr) + ", Zaehler: " + string(zaehler.PKEnergie))
+		return 0, errors.New("zaehlerSpezialfallZweiDrei: Kein Verbrauch für das Jahr " + strconv.FormatInt(int64(jahr), 10) + ", Zaehler: " + strconv.FormatInt(int64(zaehler.PKEnergie), 10))
 	}
 
 	subtraktionszaehler, err := database.KaeltezaehlerFind(andereZaehlerID)
 	if err != nil {
 		return 0, err
 	}
-	var subtraktionsverbrauch float64 = -1 //Verbauch des Zaehlers, der substrahiert werden muss
+	var subtraktionsverbrauch float64 = -1 // Verbauch des Zaehlers, der substrahiert werden muss
 	for _, zaehlerstand := range subtraktionszaehler.Zaehlerdaten {
 		if int32(zaehlerstand.Zeitstempel.Year()) == jahr {
 			subtraktionsverbrauch = zaehlerstand.Wert
 		}
 	}
 	if subtraktionsverbrauch == -1 {
-		return 0, errors.New("zaehlerSpezialfallZweiDrei: Kein Verbrauch für das Jahr " + string(jahr) + ", Zaehler: " + string(zaehler.PKEnergie))
+		return 0, errors.New("zaehlerSpezialfallZweiDrei: Kein Verbrauch für das Jahr " + strconv.FormatInt(int64(jahr), 10) + ", Zaehler: " + strconv.FormatInt(int64(zaehler.PKEnergie), 10))
 	}
 
 	differenz := verbrauch - subtraktionsverbrauch
