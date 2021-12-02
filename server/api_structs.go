@@ -4,7 +4,7 @@ package server
 In dieser Daten sind Request und Response JSON für die API als structs aufgelistet.
 */
 
-type UmfrageResponse struct {
+type UmfrageRes struct {
 	KaelteEmissionen       float64 `json:"kaelteEmissionen"`
 	WaermeEmissionen       float64 `json:"waermeEmissionen"`
 	StromEmissionen        float64 `json:"stromEmissionen"`
@@ -13,8 +13,16 @@ type UmfrageResponse struct {
 	PendelwegeEmissionen   float64 `json:"pendelwegeEmissionen"`
 }
 
+// For testing:
+type UmfrageMitarbeiterRes struct {
+	PendelwegeEmissionen   float64 `json:"pendelwegeEmissionen"`
+	DienstreisenEmissionen float64 `json:"dienstreisenEmissionen"`
+	ITGeraeteEmissionen    float64 `json:"itGeraeteEmissionen"`
+}
+
+/* For testing:
 //ein temporärer JSON für eine monotlitische Umfrage
-type UmfrageRequest struct {
+type UmfrageReq struct {
 	// Hauptverantwortlicher
 	Gebaeude          []GebaeudeFlaeche `json:"gebaeude"`
 	AnzahlMitarbeiter int32             `json:"anzahlMitarbeiter"`
@@ -26,6 +34,19 @@ type UmfrageRequest struct {
 	Pendelweg   []PendelwegElement   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`
 	Dienstreise []DienstreiseElement `json:"dienstreise"`
+}
+*/
+type UmfrageMitarbeiterReq struct {
+	Pendelweg   []PendelwegElement   `json:"pendelweg"`
+	TageImBuero int32                `json:"tageImBuero"`
+	Dienstreise []DienstreiseElement `json:"dienstreise"`
+	ITGeraete []ITGeraeteAnzahl `json:"itGeraete"`
+}
+
+type UmfrageHauptverantwortlicherReq struct {
+	Gebaeude          []GebaeudeFlaeche `json:"gebaeude"`
+	AnzahlMitarbeiter int32             `json:"anzahlMitarbeiter"`
+	ITGeraete []ITGeraeteAnzahl `json:"itGeraete"`
 }
 
 type GebaeudeFlaeche struct {

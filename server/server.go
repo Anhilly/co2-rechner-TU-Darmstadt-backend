@@ -13,6 +13,8 @@ func StartServer() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
+
+	//Nur zum Testen!!!
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
 		AllowedOrigins: []string{"https://*", "http://*"},
@@ -23,6 +25,8 @@ func StartServer() {
 		AllowCredentials: false,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
+
+	r.Mount("/umfrage", RouteUmfrage())
 
 	log.Fatalln(http.ListenAndServe(":9000", r))
 }
