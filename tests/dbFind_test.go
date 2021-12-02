@@ -3,6 +3,7 @@ package tests
 import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/matryer/is"
+	"io"
 	"testing"
 	"time"
 )
@@ -25,7 +26,7 @@ func TestFind(t *testing.T) {
 func TestITGeraeteFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	t.Run("ITGeraeteFind: Test ID = 1", func(t *testing.T) {
+	t.Run("ITGeraeteFind: ID = 1", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data, err := database.ITGeraeteFind(1)
@@ -34,6 +35,14 @@ func TestITGeraeteFind(t *testing.T) {
 		is.Equal(data, database.ITGeraete{IDITGerate: 1, Kategorie: "Notebooks", CO2FaktorGesamt: 588000, CO2FaktorJahr: 147000, Einheit: "g/Stueck", Revision: 1}) // Überprüfung des zurückgelieferten Elements
 	})
 
+	t.Run("ITGeraeteFind: ID = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.ITGeraeteFind(0)
+
+		is.Equal(err, io.EOF)                // Datenbank gibt EOF error
+		is.Equal(data, database.ITGeraete{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
 }
 
 func TestDienstreisenFind(t *testing.T) {
@@ -46,6 +55,15 @@ func TestDienstreisenFind(t *testing.T) {
 
 		is.NoErr(err)                                                                                                                                             // Error seitens der Datenbank
 		is.Equal(data, database.Dienstreisen{IDDienstreisen: 1, Medium: "Bahn", Einheit: "g/Pkm", Revision: 1, CO2Faktor: []database.CO2Dienstreisen{{Wert: 8}}}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	t.Run("DienstreisenFind: ID = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.DienstreisenFind(0)
+
+		is.Equal(err, io.EOF)                   // Datenbank gibt EOF error
+		is.Equal(data, database.Dienstreisen{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
 
@@ -64,6 +82,15 @@ func TestEnergieversorgungFind(t *testing.T) {
 			Einheit:             "g/kWh",
 			Revision:            1,
 			CO2Faktor:           []database.CO2Energie{{Wert: 144, Jahr: 2020}}}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	t.Run("EnergieversorgungFind: ID = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.EnergieversorgungFind(0)
+
+		is.Equal(err, io.EOF)                        // Datenbank gibt EOF error
+		is.Equal(data, database.Energieversorgung{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
 
@@ -95,12 +122,21 @@ func TestGebaeudeFind(t *testing.T) {
 			WaermeRef:   []int32{2084},
 			StromRef:    []int32{}}) // Überprüfung des zurückgelieferten Elements
 	})
+
+	t.Run("GebaeudeFind: ID = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.GebaeudeFind(0)
+
+		is.Equal(err, io.EOF)               // Datenbank gibt EOF error
+		is.Equal(data, database.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
 }
 
 func TestKaeltezaehlerFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	t.Run("KaelteFind: ID = 4023", func(t *testing.T) {
+	t.Run("KaeltezaehlerFind: ID = 4023", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data, err := database.KaeltezaehlerFind(4023)
@@ -133,6 +169,15 @@ func TestKaeltezaehlerFind(t *testing.T) {
 			Revision:    1,
 			GebaeudeRef: []int32{3101},
 		})
+	})
+
+	t.Run("KaeltezaehlerFind: ID = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.KaeltezaehlerFind(0)
+
+		is.Equal(err, io.EOF)              // Datenbank gibt EOF error
+		is.Equal(data, database.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
 
@@ -168,6 +213,15 @@ func TestWaermezaehlerFind(t *testing.T) {
 			Revision:    1,
 			GebaeudeRef: []int32{2101, 2102, 2108},
 		})
+	})
+
+	t.Run("WaermezaehlerFind: ID = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(0)
+
+		is.Equal(err, io.EOF)              // Datenbank gibt EOF error
+		is.Equal(data, database.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
 
@@ -207,5 +261,14 @@ func TestStromzaehlerFind(t *testing.T) {
 			Revision:    1,
 			GebaeudeRef: []int32{2201},
 		})
+	})
+
+	t.Run("StromzaehlerFind: ID = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.StromzaehlerFind(0)
+
+		is.Equal(err, io.EOF)              // Datenbank gibt EOF error
+		is.Equal(data, database.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
