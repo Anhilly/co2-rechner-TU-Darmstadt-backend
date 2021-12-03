@@ -13,6 +13,7 @@ func RouteUmfrage() chi.Router {
 	r := chi.NewRouter()
 
 	r.Post("/mitarbeiter", PostMitarbeiter)
+	r.Post("/hauptverantwortlicher", PostHauptverantwortlicher)
 
 	return r
 }
