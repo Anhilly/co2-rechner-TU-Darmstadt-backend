@@ -31,3 +31,19 @@ func PostMitarbeiter(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 	res.Write(response)
 }
+
+func PostHauptverantwortlicher(res http.ResponseWriter, req *http.Request) {
+	s, _ := ioutil.ReadAll(req.Body)
+	umfrageReq := structs.UmfrageHauptverantwortlicherReq{}
+	umfrageRes := structs.UmfrageHauptverantwortlicherRes{}
+	json.Unmarshal(s, &umfrageReq)
+	//TODO Jahr soll nicht hardcoded sein, sondern als parameter mitübergeben werden.
+	umfrageRes.WaermeEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 1)
+	umfrageRes.StromEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 2)
+	umfrageRes.KaelteEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 3)
+
+	response, _ := json.Marshal(umfrageRes)
+
+	res.WriteHeader(http.StatusOK)
+	res.Write(response)
+}
