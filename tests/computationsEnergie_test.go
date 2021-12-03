@@ -95,6 +95,7 @@ func TestBerechneEnergieverbrauch(t *testing.T) {
 	})
 
 	// Errortests
+	// auch in TestGetEnergieCO2Faktor
 	t.Run("BerechneEnergieverbrauch: idEnergieversorgung = 0", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -108,6 +109,7 @@ func TestBerechneEnergieverbrauch(t *testing.T) {
 		is.Equal(emissionen, 0.0) // im Fehlerfall ist Emissionen = 0.0
 	})
 
+	// auch in TestGetEnergieCO2Faktor
 	t.Run("BerechneEnergieverbrauch: Jahr = 0", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 

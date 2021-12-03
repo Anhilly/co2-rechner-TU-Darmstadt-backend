@@ -125,7 +125,7 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 			gesamtverbrauch += verbrauch
 			gesamtNGF += ngf
 		case 2: // Spezialfall für Kaeltezaehler 3621 (und 3619)
-			verbrauch, err := zaehlerSpezialfallZweiDrei(zaehler, jahr, 3619)
+			verbrauch, err := zaehlerSpezialfall(zaehler, jahr, 3619)
 			if err != nil {
 				return 0, err
 			}
@@ -133,7 +133,7 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 			gesamtverbrauch += verbrauch
 
 		case 3: // Spezialfall für Kaeltezaehler 3622 (und 3620)
-			verbrauch, err := zaehlerSpezialfallZweiDrei(zaehler, jahr, 3620)
+			verbrauch, err := zaehlerSpezialfall(zaehler, jahr, 3620)
 			if err != nil {
 				return 0, err
 			}
@@ -208,7 +208,7 @@ Die Funktion stellt den Spezialfall 2 und 3 für die Kaeltezaehler 3621 und 3622
 des Normalfalls und genau auf diese Zaehler zugeschnitte.
 Ergebniseinheit: kWh
 */
-func zaehlerSpezialfallZweiDrei(zaehler structs.Zaehler, jahr int32, andereZaehlerID int32) (float64, error) {
+func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andereZaehlerID int32) (float64, error) {
 	var verbrauch float64 = -1 //Verbauch des Gruppenzaehlers
 	for _, zaehlerstand := range zaehler.Zaehlerdaten {
 		if int32(zaehlerstand.Zeitstempel.Year()) == jahr {
@@ -216,7 +216,7 @@ func zaehlerSpezialfallZweiDrei(zaehler structs.Zaehler, jahr int32, andereZaehl
 		}
 	}
 	if verbrauch == -1 {
-		return 0, errors.New("zaehlerSpezialfallZweiDrei: Kein Verbrauch für das Jahr " + strconv.FormatInt(int64(jahr), 10) + ", Zaehler: " + strconv.FormatInt(int64(zaehler.PKEnergie), 10))
+		return 0, errors.New("zaehlerSpezialfall: Kein Verbrauch für das Jahr " + strconv.FormatInt(int64(jahr), 10) + ", Zaehler: " + strconv.FormatInt(int64(zaehler.PKEnergie), 10))
 	}
 
 	subtraktionszaehler, err := database.KaeltezaehlerFind(andereZaehlerID)
@@ -230,7 +230,7 @@ func zaehlerSpezialfallZweiDrei(zaehler structs.Zaehler, jahr int32, andereZaehl
 		}
 	}
 	if subtraktionsverbrauch == -1 {
-		return 0, errors.New("zaehlerSpezialfallZweiDrei: Kein Verbrauch für das Jahr " + strconv.FormatInt(int64(jahr), 10) + ", Zaehler: " + strconv.FormatInt(int64(zaehler.PKEnergie), 10))
+		return 0, errors.New("zaehlerSpezialfall: Kein Verbrauch für das Jahr " + strconv.FormatInt(int64(jahr), 10) + ", Zaehler: " + strconv.FormatInt(int64(zaehler.PKEnergie), 10))
 	}
 
 	differenz := verbrauch - subtraktionsverbrauch

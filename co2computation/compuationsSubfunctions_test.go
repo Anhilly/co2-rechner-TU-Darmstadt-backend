@@ -6,6 +6,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
 	"io"
+	"math"
 	"testing"
 	"time"
 )
@@ -16,13 +17,15 @@ func TestComputaionsSubfunctions(t *testing.T) {
 
 	t.Run("TestGetEnergieCO2Faktor", TestGetEnergieCO2Faktor)
 	t.Run("TestZaehlerNormalfall", TestZaehlerNormalfall)
+	t.Run("TestZaehlerSpezialfall", TestZaehlerSpezialfall)
+	t.Run("TestGebaeudeNormalfall", TestGebaeudeNormalfall)
 }
 
 func TestTester2(t *testing.T) {
 	database.ConnectDatabase()
 	defer database.DisconnectDatabase()
 
-	t.Run("TestZaehlerNormalfall", TestZaehlerNormalfall)
+	t.Run("TestGebaeudeNormalfall", TestGebaeudeNormalfall)
 }
 
 func TestGetEnergieCO2Faktor(t *testing.T) {
@@ -260,5 +263,177 @@ func TestZaehlerNormalfall(t *testing.T) {
 		is.Equal(err, io.EOF)    // Datenbank wirft EOF, weil Refenrenz nicht gefunden werden kann
 		is.Equal(verbrauch, 0.0) // Fehlerfall liefert 0.0
 		is.Equal(ngf, 0.0)       // Fehlerfall liefert 0.0
+	})
+}
+
+func TestZaehlerSpezialfall(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("zaehlerSpezialfall: Spezialfall = 2, ID = 3621, Jahr = 2020", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		zaehler, _ := database.KaeltezaehlerFind(3621)
+		var jahr int32 = 2020
+		var andereZaehlerID int32 = 3619
+
+		verbrauch, err := zaehlerSpezialfall(zaehler, jahr, andereZaehlerID)
+
+		is.NoErr(err)            // Normalfall wirft keine Errors
+		is.Equal(verbrauch, 0.0) // erwartet 0.0 (Verbrauch Jahr 2020)
+	})
+
+	t.Run("zaehlerSpezialfall: Spezialfall = 3, ID = 3622, Jahr = 2020", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		zaehler, _ := database.KaeltezaehlerFind(3622)
+		var jahr int32 = 2020
+		var andereZaehlerID int32 = 3620
+
+		verbrauch, err := zaehlerSpezialfall(zaehler, jahr, andereZaehlerID)
+
+		is.NoErr(err)                 // Normalfall wirft keine Errors
+		is.Equal(verbrauch, 958260.0) // erwartet 958260.0 (Verbrauch Jahr 2020)
+	})
+
+	t.Run("zaehlerSpezialfall: Spezialfall = 2, ID = 3621, Jahr = 2018", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		zaehler, _ := database.KaeltezaehlerFind(3621)
+		var jahr int32 = 2018
+		var andereZaehlerID int32 = 3619
+
+		verbrauch, err := zaehlerSpezialfall(zaehler, jahr, andereZaehlerID)
+
+		is.NoErr(err)                                    // Normalfall wirft keine Errors
+		is.Equal(math.Round(verbrauch*100)/100, 33100.0) // erwartet 33100.0 (Verbrauch Jahr 2020)
+	})
+
+	// Errortests
+	t.Run("zaehlerSpezialfall: Jahr = 0 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		zaehler, _ := database.KaeltezaehlerFind(3622)
+		var jahr int32 = 0
+		var andereZaehlerID int32 = 3620
+
+		verbrauch, err := zaehlerSpezialfall(zaehler, jahr, andereZaehlerID)
+
+		is.Equal(err, errors.New("zaehlerSpezialfall: Kein Verbrauch für das Jahr 0, Zaehler: 3622")) // Funktion kann Wert fuer Jahr nicht finden
+		is.Equal(verbrauch, 0.0)                                                                      // erwartet 0.0 da Fehlerfall
+	})
+}
+
+func TestGebaeudeNormalfall(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("gebauedeNormalfall: Flaechenanteil = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaude, _ := database.GebaeudeFind(1101)
+		var co2Faktor int32 = 0
+		var idEnergieversorgung int32 = 0
+		var jahr int32 = 0
+		var flaechenanteil int32 = 0
+
+		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
+
+		is.NoErr(err)             // im Normalfall kein Error
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0
+	})
+
+	t.Run("gebauedeNormalfall: keine Zaehler von bestimmten Typ", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaude, _ := database.GebaeudeFind(1101)
+		var co2Faktor int32 = 0
+		var idEnergieversorgung int32 = 2
+		var jahr int32 = 0
+		var flaechenanteil int32 = 1000
+
+		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
+
+		is.NoErr(err)             // im Normalfall kein Error
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0
+	})
+
+	t.Run("gebauedeNormalfall: einfach Eingabe", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaude, _ := database.GebaeudeFind(1101)
+		var co2Faktor int32 = 144
+		var idEnergieversorgung int32 = 1
+		var jahr int32 = 2020
+		var flaechenanteil int32 = 1000
+
+		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
+
+		is.NoErr(err)                                           // im Normalfall kein Error
+		is.Equal(math.Round(emissionen*1000)/1000, 6604024.854) // erwartetes Ergebnis: 6604024.854
+	})
+
+	t.Run("gebauedeNormalfall: Gebaeude mit mehreren Zaehlern", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaude, _ := database.GebaeudeFind(1103) // referenziert Zaehler 2349, 2350, 2351, 2352, 2353, 2354
+		var co2Faktor int32 = 144
+		var idEnergieversorgung int32 = 1
+		var jahr int32 = 2020
+		var flaechenanteil int32 = 1000
+
+		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
+
+		is.NoErr(err)                                           // im Normalfall kein Error
+		is.Equal(math.Round(emissionen*1000)/1000, 8632077.005) // erwartetes Ergebnis: 8632077.005
+	})
+
+	t.Run("gebauedeNormalfall: Gebaeude mit Gruppenzaehler", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaude, _ := database.GebaeudeFind(2101) // Gruppe mit 2102, 2108
+		var co2Faktor int32 = 144
+		var idEnergieversorgung int32 = 1
+		var jahr int32 = 2020
+		var flaechenanteil int32 = 1000
+
+		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
+
+		is.NoErr(err)                                         // im Normalfall kein Error
+		is.Equal(math.Round(emissionen*100)/100, 22709184.09) // erwartetes Ergebnis: 22709184.09
+	})
+
+	// Errortests
+	t.Run("gebauedeNormalfall: negativer Flaechenanteil", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaude, _ := database.GebaeudeFind(1101)
+		var co2Faktor int32 = 0
+		var idEnergieversorgung int32 = 0
+		var jahr int32 = 0
+		var flaechenanteil int32 = -10
+
+		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
+
+		is.Equal(err, ErrFlaecheNegativ) // Funktion wirft ErrFlaecheNegativ
+		is.Equal(emissionen, 0.0)        // im Fehlerfall Rückgabewert immer 0.0
+	})
+
+	t.Run("gebauedeNormalfall: Gebaeude mit ungültiger Referenz", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeude := structs.Gebaeude{
+			Nr:        0,
+			WaermeRef: []int32{0},
+		}
+		var co2Faktor int32 = 0
+		var idEnergieversorgung int32 = 1
+		var jahr int32 = 0
+		var flaechenanteil int32 = 100
+
+		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaeude, idEnergieversorgung, jahr, flaechenanteil)
+
+		is.Equal(err, io.EOF)     // Datenbank wirft EOF, weil Zaehler unbekannt
+		is.Equal(emissionen, 0.0) // im Fehlerfall Rückgabewert immer 0.0
 	})
 }
