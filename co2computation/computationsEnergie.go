@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
+	"math"
 	"strconv"
 )
 
@@ -45,7 +46,7 @@ func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI,
 		}
 	}
 
-	return gesamtemissionen, nil
+	return math.Round(gesamtemissionen * 100) / 100, nil
 }
 
 /**

@@ -46,11 +46,41 @@ func TestBerechneEnergieverbrauch(t *testing.T) {
 		is.Equal(emissionen, 0.0) // ohne Eingaben sind Emissionen = 0.0
 	})
 
-	t.Run("BerechneEnergieverbrauch: einfache Eingabe (ein Gebaeude mit einem Zaehler) ", func(t *testing.T) {
+	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Einzelzaehler ", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		geaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
 			{GebaeudeNr: 1101, Flaechenanteil: 1000},
+		}
+		var jahr int32 = 2020             // muss gueltiges Jahr sein
+		var idEnergieversorgung int32 = 1 // muss gueltige ID sein
+
+		emissionen, err := co2computation.BerechneEnergieverbrauch(geaeudeFlaecheDaten, jahr, idEnergieversorgung)
+
+		is.NoErr(err)                     // bei normalen Berechnungen sollte kein Error geworfen werden
+		is.Equal(emissionen, 6604024.85) // erwartetes Ergebnis: 6604024.85
+	})
+
+	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Gebaeude mehrere Zaehler ", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		geaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{	// Zaehler 2250, 2251, 2252, 2085
+			{GebaeudeNr: 1108, Flaechenanteil: 1000},
+		}
+		var jahr int32 = 2020             // muss gueltiges Jahr sein
+		var idEnergieversorgung int32 = 1 // muss gueltige ID sein
+
+		emissionen, err := co2computation.BerechneEnergieverbrauch(geaeudeFlaecheDaten, jahr, idEnergieversorgung)
+
+		is.NoErr(err)                     // bei normalen Berechnungen sollte kein Error geworfen werden
+		is.Equal(emissionen, 23126680.04) // erwartetes Ergebnis: 23126680.04
+	})
+
+	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Gruppenzaehler ", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		geaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{	// Zaehler: 3807, weiteres Gebaeude: 3016
+			{GebaeudeNr: 3102, Flaechenanteil: 1000},
 		}
 		var jahr int32 = 2020             // muss gueltiges Jahr sein
 		var idEnergieversorgung int32 = 3 // muss gueltige ID sein
@@ -58,7 +88,24 @@ func TestBerechneEnergieverbrauch(t *testing.T) {
 		emissionen, err := co2computation.BerechneEnergieverbrauch(geaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)                     // bei normalen Berechnungen sollte kein Error geworfen werden
-		is.Equal(emissionen, 3302012.427) // erwartetes Ergebnis: 3302012.427
+		is.Equal(emissionen, 1085282.24) // erwartetes Ergebnis: 1085282.24
+	})
+
+	t.Run("BerechneEnergieverbrauch: komplexe Eingabe", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		geaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
+			{GebaeudeNr: 1101, Flaechenanteil: 1000},
+			{GebaeudeNr: 1108, Flaechenanteil: 1000},
+			{GebaeudeNr: 1103, Flaechenanteil: 1000},
+		}
+		var jahr int32 = 2020             // muss gueltiges Jahr sein
+		var idEnergieversorgung int32 = 1 // muss gueltige ID sein
+
+		emissionen, err := co2computation.BerechneEnergieverbrauch(geaeudeFlaecheDaten, jahr, idEnergieversorgung)
+
+		is.NoErr(err)                     // bei normalen Berechnungen sollte kein Error geworfen werden
+		is.Equal(emissionen, 6604024.85 + 23126680.04 + 8632077.01) // erwartetes Ergebnis: 1085282.24
 	})
 
 	t.Run("BerechneEnergieverbrauch: Gebauede ohne Zaehler", func(t *testing.T) {
