@@ -44,9 +44,15 @@ type UmfrageMitarbeiterReq struct {
 }
 
 type UmfrageHauptverantwortlicherReq struct {
-	Gebaeude          []GebaeudeFlaeche `json:"gebaeude"`
-	AnzahlMitarbeiter int32             `json:"anzahlMitarbeiter"`
-	ITGeraete         []ITGeraeteAnzahl `json:"itGeraete"`
+	Gebaeude          []GebaeudeFlaecheAPI `json:"gebaeude"`
+	AnzahlMitarbeiter int32                `json:"anzahlMitarbeiter"`
+	ITGeraete         []ITGeraeteAnzahl    `json:"itGeraete"`
+}
+
+type UmfrageHauptverantwortlicherRes struct {
+	KaelteEmissionen float64 `json:"kaelteEmissionen"`
+	WaermeEmissionen float64 `json:"waermeEmissionen"`
+	StromEmissionen  float64 `json:"stromEmissionen"`
 }
 
 type GebaeudeFlaecheAPI struct {
