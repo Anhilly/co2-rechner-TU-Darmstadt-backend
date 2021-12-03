@@ -42,6 +42,7 @@ func PostHauptverantwortlicher(res http.ResponseWriter, req *http.Request) {
 	umfrageRes.WaermeEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 1)
 	umfrageRes.StromEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 2)
 	umfrageRes.KaelteEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 3)
+	umfrageRes.ITGeraeteEmissionen, _ = co2computation.BerechneITGeraete(umfrageReq.ITGeraete)
 
 	response, _ := json.Marshal(umfrageRes)
 

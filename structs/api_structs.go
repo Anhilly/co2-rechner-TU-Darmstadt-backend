@@ -50,9 +50,10 @@ type UmfrageHauptverantwortlicherReq struct {
 }
 
 type UmfrageHauptverantwortlicherRes struct {
-	KaelteEmissionen float64 `json:"kaelteEmissionen"`
-	WaermeEmissionen float64 `json:"waermeEmissionen"`
-	StromEmissionen  float64 `json:"stromEmissionen"`
+	KaelteEmissionen    float64 `json:"kaelteEmissionen"`
+	WaermeEmissionen    float64 `json:"waermeEmissionen"`
+	StromEmissionen     float64 `json:"stromEmissionen"`
+	ITGeraeteEmissionen float64 `json:"itGeraeteEmissionen"`
 }
 
 type GebaeudeFlaecheAPI struct {
