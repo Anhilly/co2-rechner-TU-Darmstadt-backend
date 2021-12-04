@@ -7,11 +7,20 @@ import (
 )
 
 var (
-	ErrPersonenzahlZuKlein  = errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
-	ErrTankartUnbekannt     = errors.New("BerechneDienstreisen: Tankart nicht vorhanden")
+	// Fehler durch Nutzereingabe
+	ErrPersonenzahlZuKlein = errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
+	// Fehler durch Nutzereingabe (oder fehlt in Datenbank)
+	ErrTankartUnbekannt = errors.New("BerechneDienstreisen: Tankart nicht vorhanden")
+	// Fehler durch Nutzereingabe (oder fehlt in Datenbank)
 	ErrStreckentypUnbekannt = errors.New("BerechneDienstreisen: Streckentyp nicht vorhanden")
-	ErrStreckeNegativ       = errors.New("BerechneDienstreisen / BerechnePendelweg: Strecke ist negativ")
-	ErrAnzahlNegativ        = errors.New("BerechneITGeraete: Anzahl an IT-Geraeten ist negativ")
+	// Fehler durch Nutzereingabe
+	ErrStreckeNegativ = errors.New("Berechne*: Strecke ist negativ")
+	// Fehler durch Nutzereingabe
+	ErrAnzahlNegativ = errors.New("BerechneITGeraete: Anzahl an IT-Geraeten ist negativ")
+	// Fehler durch fehlende Implemetierung einer Berechnung
+	ErrBerechnungUnbekannt = errors.New("BerechneDienstreisen: Keine Berechnung fuer angegeben ID vorhanden")
+	// Fehler durch falsche Einheit in der Datenbank
+	ErrEinheitUnbekannt = errors.New("Berechne*: Einheit unbekannt")
 )
 
 /**
@@ -57,13 +66,13 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 				return 0, ErrStreckentypUnbekannt
 			}
 		default:
-			return 0, errors.New("BerechneDienstreisen: ID nicht vorhanden")
+			return 0, ErrBerechnungUnbekannt
 		}
 
 		if medium.Einheit == "g/Pkm" {
 			emission += float64(co2Faktor * dienstreise.Strecke * 2)
 		} else {
-			return 0, errors.New("BerechneDienstreisen: Einheit unbekannt")
+			return 0, ErrEinheitUnbekannt
 		}
 	}
 
@@ -103,7 +112,7 @@ func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero in
 		if medium.Einheit == "g/Pkm" {
 			emissionen += float64(arbeitstage*2*weg.Strecke*medium.CO2Faktor) / float64(weg.Personenanzahl)
 		} else {
-			return 0, errors.New("BerechnePendelweg: Einheit unbekannt")
+			return 0, ErrEinheitUnbekannt
 		}
 	}
 
@@ -136,7 +145,7 @@ func BerechneITGeraete(itGeraeteDaten []structs.ITGeraeteAnzahl) (float64, error
 				emissionen += float64(itGeraet.Anzahl * kategorie.CO2FaktorJahr)
 			}
 		} else {
-			return 0, errors.New("BerechneITGeraete: Einheit unbekannt")
+			return 0, ErrEinheitUnbekannt
 		}
 	}
 

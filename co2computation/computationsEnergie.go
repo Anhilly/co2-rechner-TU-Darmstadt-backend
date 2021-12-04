@@ -2,6 +2,7 @@ package co2computation
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"math"
@@ -9,8 +10,14 @@ import (
 )
 
 var (
+	// Fehler durch Nutzereingabe
 	ErrJahrNichtVorhanden = errors.New("getEnergieCO2Faktor: Kein CO2 Faktor für angegebens Jahr vorhanden")
-	ErrFlaecheNegativ     = errors.New("gebaeudeNormalfall: Flaechenanteil ist negativ")
+	// Fehler durch Nutzereingabe
+	ErrFlaecheNegativ = errors.New("gebaeudeNormalfall: Flaechenanteil ist negativ")
+	// Fehler durch fehlende Behandlung eines Gebaeudespezialfalls im Code
+	ErrGebaeudeSpezialfall = errors.New("BerechneEnergieverbrauch: Spezialfall fuer Gebaeude nicht abgedeckt")
+	// Fehler durch fehlende Behandlung eines Zaehlerspezialfalls im Code
+	ErrZaehlerSpezialfall = errors.New("gebaeudeNormalfall: Spezialfall fuer Zaehler nicht abgedeckt")
 )
 
 /**
@@ -42,11 +49,11 @@ func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI,
 			gesamtemissionen += emissionen
 
 		default:
-			return 0, errors.New("BerechneEnergieverbrauch: Spezialfall nicht abgedeckt")
+			return 0, ErrGebaeudeSpezialfall
 		}
 	}
 
-	return math.Round(gesamtemissionen * 100) / 100, nil
+	return math.Round(gesamtemissionen*100) / 100, nil
 }
 
 /**
@@ -70,7 +77,7 @@ func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
 		return 0, ErrJahrNichtVorhanden
 	}
 	if energiewerte.Einheit != "g/kWh" { // Einheit muss immer g/kWh sein
-		return 0, errors.New("getEnergieCO2Faktor: Einheit unbekannt")
+		return 0, ErrEinheitUnbekannt
 	}
 
 	return co2Faktor, nil
@@ -142,7 +149,7 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 			gesamtverbrauch += verbrauch
 
 		default:
-			return 0, errors.New("BerechneEnergieverbrauch: Spezialfall für Zaehler unbekannt")
+			return 0, ErrZaehlerSpezialfall
 		}
 	}
 
@@ -164,7 +171,7 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaudeNr int32) (fl
 	var ngf float64
 
 	if len(zaehler.GebaeudeRef) == 0 {
-		return 0, 0, errors.New("zaehlerNormalfall: Zaehler " + strconv.FormatInt(int64(zaehler.PKEnergie), 10) + " hat keine Refernzen auf Gebaeude")
+		return 0, 0, fmt.Errorf("zaehlerNormalfall: Zaehler %d hat keine Referenzen auf Gebaeude", strconv.FormatInt(int64(zaehler.PKEnergie), 10))
 	}
 
 	// addiere gespeicherten Verbrauch des Jahres auf Gesamtverbrauch auf
@@ -175,7 +182,7 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaudeNr int32) (fl
 		}
 	}
 	if verbrauch == -1 {
-		return 0, 0, errors.New("zaehlerNormalfall: Kein Verbrauch für das Jahr " + strconv.FormatInt(int64(jahr), 10) + ", Zaehler: " + strconv.FormatInt(int64(zaehler.PKEnergie), 10))
+		return 0, 0, fmt.Errorf("zaehlerNormalfall: Kein Verbrauch für das Jahr %d , Zaehler: %d", strconv.FormatInt(int64(jahr), 10), strconv.FormatInt(int64(zaehler.PKEnergie), 10))
 	}
 
 	switch zaehler.Einheit {
@@ -184,7 +191,7 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaudeNr int32) (fl
 	case "kWh":
 		verbrauch = verbrauch
 	default:
-		return 0, 0, errors.New("zaehlerNormalfall: Einheit von Zaehler " + strconv.FormatInt(int64(zaehler.PKEnergie), 10) + " unbekannt")
+		return 0, 0, fmt.Errorf("zaehlerNormalfall: Einheit von Zaehler %d unbekannt", strconv.FormatInt(int64(zaehler.PKEnergie), 10))
 	}
 
 	// NGF aller referenzierten Gebaeude wird aufaddiert, um Gesamtflaeche für Verbrauch zu haben
@@ -217,7 +224,7 @@ func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andereZaehlerID int
 		}
 	}
 	if verbrauch == -1 {
-		return 0, errors.New("zaehlerSpezialfall: Kein Verbrauch für das Jahr " + strconv.FormatInt(int64(jahr), 10) + ", Zaehler: " + strconv.FormatInt(int64(zaehler.PKEnergie), 10))
+		return 0, fmt.Errorf("zaehlerSpezialfall: Kein Verbrauch für das Jahr %d , Zaehler: %d", strconv.FormatInt(int64(jahr), 10), strconv.FormatInt(int64(zaehler.PKEnergie), 10))
 	}
 
 	subtraktionszaehler, err := database.KaeltezaehlerFind(andereZaehlerID)
@@ -231,7 +238,7 @@ func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andereZaehlerID int
 		}
 	}
 	if subtraktionsverbrauch == -1 {
-		return 0, errors.New("zaehlerSpezialfall: Kein Verbrauch für das Jahr " + strconv.FormatInt(int64(jahr), 10) + ", Zaehler: " + strconv.FormatInt(int64(zaehler.PKEnergie), 10))
+		return 0, fmt.Errorf("zaehlerSpezialfall: Kein Verbrauch für das Jahr %d , Zaehler: %d", strconv.FormatInt(int64(jahr), 10), strconv.FormatInt(int64(zaehler.PKEnergie), 10))
 	}
 
 	differenz := verbrauch - subtraktionsverbrauch
