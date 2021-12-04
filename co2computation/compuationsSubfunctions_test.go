@@ -2,6 +2,7 @@ package co2computation
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
@@ -188,15 +189,16 @@ func TestZaehlerNormalfall(t *testing.T) {
 	t.Run("zaehlerNormalfall: Zaehler ohne Referenz zu Gebaeude", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler := structs.Zaehler{PKEnergie: 0}
+		var pkEnergie int32 = 0
+		zaehler := structs.Zaehler{PKEnergie: pkEnergie}
 		var jahr int32 = 2020
 		var gebaeudeNr int32 = 1101
 
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
-		is.Equal(err, errors.New("zaehlerNormalfall: Zaehler 0 hat keine Refernzen auf Gebaeude")) // Funktion wirft Error
-		is.Equal(verbrauch, 0.0)                                                                   // Fehlerfall liefert 0.0
-		is.Equal(ngf, 0.0)                                                                         // Fehlerfall liefert 0.0
+		is.Equal(err, fmt.Errorf(ErrStrGebaeuderefFehlt, "zaehlerNormalfall", pkEnergie)) // Funktion wirft Error
+		is.Equal(verbrauch, 0.0)                                                          // Fehlerfall liefert 0.0
+		is.Equal(ngf, 0.0)                                                                // Fehlerfall liefert 0.0
 	})
 
 	t.Run("zaehlerNormalfall: Jahr nicht vorhanden in Zaehlerdaten", func(t *testing.T) {
@@ -208,13 +210,13 @@ func TestZaehlerNormalfall(t *testing.T) {
 
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
-		is.Equal(err, errors.New("zaehlerNormalfall: Kein Verbrauch für das Jahr 0, Zaehler: 2084")) // Funktion wirft Error
-		is.Equal(verbrauch, 0.0)                                                                     // Fehlerfall liefert 0.0
-		is.Equal(ngf, 0.0)                                                                           // Fehlerfall liefert 0.0
+		is.Equal(err, fmt.Errorf(ErrStrVerbrauchFehlt, "zaehlerNormalfall", jahr, 2084)) // Funktion wirft Error
+		is.Equal(verbrauch, 0.0)                                                         // Fehlerfall liefert 0.0
+		is.Equal(ngf, 0.0)                                                               // Fehlerfall liefert 0.0
 	})
 
 	// dieser Fall sollte in der realen Welt nicht auftreten, sonst ist Fehler in den Daten
-	t.Run("zaehlerNormalfall: Zaehler ohne Referenz zu Gebaeude", func(t *testing.T) {
+	t.Run("zaehlerNormalfall: Einheit in Zaehler unbekannt", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		location, _ := time.LoadLocation("Etc/GMT")
@@ -226,7 +228,7 @@ func TestZaehlerNormalfall(t *testing.T) {
 					Zeitstempel: time.Date(2000, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
-			Einheit:     "unbekannt",
+			Einheit:     "tV",
 			GebaeudeRef: []int32{1},
 		}
 		var jahr int32 = 2000
@@ -234,13 +236,13 @@ func TestZaehlerNormalfall(t *testing.T) {
 
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
-		is.Equal(err, errors.New("zaehlerNormalfall: Einheit von Zaehler 0 unbekannt")) // Funktion wirft Error
-		is.Equal(verbrauch, 0.0)                                                        // Fehlerfall liefert 0.0
-		is.Equal(ngf, 0.0)                                                              // Fehlerfall liefert 0.0
+		is.Equal(err, errors.New("zaehlerNormalfall: Einheit tV unbekannt")) // Funktion wirft Error
+		is.Equal(verbrauch, 0.0)                                             // Fehlerfall liefert 0.0
+		is.Equal(ngf, 0.0)                                                   // Fehlerfall liefert 0.0
 	})
 
 	// dieser Fall sollte in der realen Welt nicht auftreten, sonst ist Fehler in den Daten
-	t.Run("zaehlerNormalfall: Zaehler ohne Referenz zu Gebaeude", func(t *testing.T) {
+	t.Run("zaehlerNormalfall: referenziertes Gebaeude nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		location, _ := time.LoadLocation("Etc/GMT")

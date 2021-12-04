@@ -21,7 +21,7 @@ func TestComputations(t *testing.T) {
 func TestBerechneITGeraete(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	// normale Berechnungen
+	// Normalfall
 	t.Run("BerechneITGeraete: Slice = nil", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -29,8 +29,8 @@ func TestBerechneITGeraete(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
-		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 0.0) // bei leerer Eingabe gibt es keine Emissionen
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
 	})
 
 	t.Run("BerechneITGeraete: leere Eingabe", func(t *testing.T) {
@@ -40,8 +40,8 @@ func TestBerechneITGeraete(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
-		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 0.0) // bei leerer Eingabe gibt es keine Emissionen
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
 	})
 
 	t.Run("BerechneITGeraete: einelementige Eingabe", func(t *testing.T) {
@@ -51,8 +51,8 @@ func TestBerechneITGeraete(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
-		is.NoErr(err)                  // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 147000.0) // CO2FaktorJahr (588000) fuer Notebooks (ID = 1)
+		is.NoErr(err)                  // Normalfall wirft keine Errors
+		is.Equal(emissionen, 147000.0) // erwartetes Ergebnis: 147000.0 (CO2FaktorJahr fuer Notebooks (ID = 1))
 	})
 
 	t.Run("BerechneITGeraete: komplexe Eingabe", func(t *testing.T) {
@@ -69,8 +69,8 @@ func TestBerechneITGeraete(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
-		is.NoErr(err)                   // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 1594235.0) // Erwarteter Wert: 1594235
+		is.NoErr(err)                   // Normalfall wirft keine Errors
+		is.Equal(emissionen, 1594235.0) // Erwarteter Wert: 1594235.0
 	})
 
 	t.Run("BerechneITGeraete: Anzahl 0", func(t *testing.T) {
@@ -87,8 +87,8 @@ func TestBerechneITGeraete(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
-		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 0.0) // Erwarteter Wert: 0.0
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // Erwarteter Wert: 0.0 (kein Anzahl = keine Emissionen)
 	})
 
 	t.Run("BerechneITGeraete: Toner", func(t *testing.T) {
@@ -101,7 +101,7 @@ func TestBerechneITGeraete(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
-		is.NoErr(err)                 // bei normaler Berechnung sollte kein Error geworfen werden
+		is.NoErr(err)                 // Normalfall wirft keine Errors
 		is.Equal(emissionen, 27000.0) // Erwarteter Wert: 27000.0
 	})
 
@@ -116,7 +116,7 @@ func TestBerechneITGeraete(t *testing.T) {
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
 		is.Equal(err, io.EOF)     // EOF von der Dantenbank erwartet
-		is.Equal(emissionen, 0.0) // Erwarteter Wert: 0.0
+		is.Equal(emissionen, 0.0) // Fehlerfall liefert 0.0
 	})
 
 	t.Run("BerechneITGeraete: negative Anzahl", func(t *testing.T) {
@@ -128,15 +128,15 @@ func TestBerechneITGeraete(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
-		is.Equal(err, co2computation.ErrAnzahlNegativ) // Funktion wirft co2computation.ErrAnzahlNegativ
-		is.Equal(emissionen, 0.0)                      // Erwarteter Wert: 0.0
+		is.Equal(err, co2computation.ErrAnzahlNegativ) // Funktion wirft ErrAnzahlNegativ
+		is.Equal(emissionen, 0.0)                      // Fehlerfall liefert 0.0
 	})
 }
 
 func TestBerechnePendelweg(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	// normale Berechnungen
+	// Normalfall
 	t.Run("BerechnePendelweg: Slice = nil", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -145,8 +145,8 @@ func TestBerechnePendelweg(t *testing.T) {
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.NoErr(err)             // soll ErrPersonenzahlZuKlein werfen
-		is.Equal(emissionen, 0.0) // bei Fehler ist Ergebnis 0.0
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
 	})
 
 	t.Run("BerechnePendelweg: leerer Slice", func(t *testing.T) {
@@ -157,8 +157,8 @@ func TestBerechnePendelweg(t *testing.T) {
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 0.0) // bei leerer Eingabe gibt es keine Emissionen
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
 	})
 
 	t.Run("BerechnePendelweg: tageImBuero = 0", func(t *testing.T) {
@@ -171,8 +171,8 @@ func TestBerechnePendelweg(t *testing.T) {
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 0.0) // bei leerer Eingabe gibt es keine Emissionen
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Pendelweg = keine Emissionen)
 	})
 
 	t.Run("BerechnePendelweg: leerer Slice, tageImBuero = 0", func(t *testing.T) {
@@ -183,8 +183,8 @@ func TestBerechnePendelweg(t *testing.T) {
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 0.0) // bei leerer Eingabe gibt es keine Emissionen
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
 	})
 
 	t.Run("BerechnePendelweg: einfache Eingabe", func(t *testing.T) {
@@ -197,7 +197,7 @@ func TestBerechnePendelweg(t *testing.T) {
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.NoErr(err)                // bei normaler Berechnung sollte kein Error geworfen werden
+		is.NoErr(err)                // Normalfall wirft keine Errors
 		is.Equal(emissionen, 3680.0) // erwartetes Ergebnis: 3680.0
 	})
 
@@ -215,7 +215,7 @@ func TestBerechnePendelweg(t *testing.T) {
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.NoErr(err)                   // bei normaler Berechnung sollte kein Error geworfen werden
+		is.NoErr(err)                   // Normalfall wirft keine Errors
 		is.Equal(emissionen, 2181504.0) // erwartetes Ergebnis: 2181504.0
 	})
 
@@ -230,8 +230,8 @@ func TestBerechnePendelweg(t *testing.T) {
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.Equal(err, io.EOF)     // Datenbank gibt EOF Error zurueck, wenn ID unbekannt
-		is.Equal(emissionen, 0.0) // bei Fehler ist Ergebnis 0.0
+		is.Equal(err, io.EOF)     // Datenbank wirft EOF Error
+		is.Equal(emissionen, 0.0) // Fehlerfall liefert 0.0
 	})
 
 	t.Run("BerechnePendelweg: Personenanzahl < 1", func(t *testing.T) {
@@ -244,8 +244,8 @@ func TestBerechnePendelweg(t *testing.T) {
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.Equal(err, co2computation.ErrPersonenzahlZuKlein) // soll ErrPersonenzahlZuKlein werfen
-		is.Equal(emissionen, 0.0)                            // bei Fehler ist Ergebnis 0.0
+		is.Equal(err, co2computation.ErrPersonenzahlZuKlein) // Funktion wirft ErrPersonenzahlZuKlein
+		is.Equal(emissionen, 0.0)                            // Fehlerfall liefert 0.0
 	})
 
 	t.Run("BerechnePendelweg: negative Strecke", func(t *testing.T) {
@@ -258,15 +258,15 @@ func TestBerechnePendelweg(t *testing.T) {
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.Equal(err, co2computation.ErrStreckeNegativ) // soll ErrStreckeNegativ werfen
-		is.Equal(emissionen, 0.0)                       // bei Fehler ist Ergebnis 0.0
+		is.Equal(err, co2computation.ErrStreckeNegativ) // Funktion wirft ErrStreckeNegativ
+		is.Equal(emissionen, 0.0)                       // Fehlerfall liefert 0.0
 	})
 }
 
 func TestBerechneDienstreisen(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	// normale Berechnungen
+	// Normalfall
 	t.Run("BerechneDienstreisen: Slice = nil", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -274,8 +274,8 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 0.0) // bei nil als Eingabe gibt es keine Emissionen
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
 	})
 
 	t.Run("BerechneDienstreisen: leerer Slice", func(t *testing.T) {
@@ -285,8 +285,8 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 0.0) // bei leerer Eingabe gibt es keine Emissionen
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
 	})
 
 	t.Run("BerechneDienstreisen: einfache Eingabe Bahn", func(t *testing.T) {
@@ -298,7 +298,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)                // bei normaler Berechnung sollte kein Error geworfen werden
+		is.NoErr(err)                // Normalfall wirft keine Errors
 		is.Equal(emissionen, 1600.0) // erwartetes Ergebnis: 1600.0
 	})
 
@@ -311,7 +311,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)               // bei normaler Berechnung sollte kein Error geworfen werden
+		is.NoErr(err)               // Normalfall wirft keine Errors
 		is.Equal(emissionen, 160.0) // erwartetes Ergebnis: 160.0
 	})
 
@@ -324,7 +324,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)                 // bei normaler Berechnung sollte kein Error geworfen werden
+		is.NoErr(err)                 // Normalfall wirft keine Errors
 		is.Equal(emissionen, 48800.0) // erwartetes Ergebnis: 48800.0
 	})
 
@@ -337,7 +337,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)                // bei normaler Berechnung sollte kein Error geworfen werden
+		is.NoErr(err)                // Normalfall wirft keine Errors
 		is.Equal(emissionen, 5200.0) // erwartetes Ergebnis: 5200.0
 	})
 
@@ -350,7 +350,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)                  // bei normaler Berechnung sollte kein Error geworfen werden
+		is.NoErr(err)                  // Normalfall wirft keine Errors
 		is.Equal(emissionen, 177600.0) // erwartetes Ergebnis: 177600.0
 	})
 
@@ -363,7 +363,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)                // bei normaler Berechnung sollte kein Error geworfen werden
+		is.NoErr(err)                // Normalfall wirft keine Errors
 		is.Equal(emissionen, 8360.0) // erwartetes Ergebnis: 8360.0
 	})
 
@@ -381,7 +381,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)                   // bei normaler Berechnung sollte kein Error geworfen werden
+		is.NoErr(err)                   // Normalfall wirft keine Errors
 		is.Equal(emissionen, 3014416.0) // erwartetes Ergebnis: 3014416.0
 	})
 
@@ -398,8 +398,8 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)             // bei normaler Berechnung sollte kein Error geworfen werden
-		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (keine Strecke = keine Emissionen)
 	})
 
 	// Errortests

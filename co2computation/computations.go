@@ -2,6 +2,7 @@ package co2computation
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 )
@@ -19,8 +20,6 @@ var (
 	ErrAnzahlNegativ = errors.New("BerechneITGeraete: Anzahl an IT-Geraeten ist negativ")
 	// Fehler durch fehlende Implemetierung einer Berechnung
 	ErrBerechnungUnbekannt = errors.New("BerechneDienstreisen: Keine Berechnung fuer angegeben ID vorhanden")
-	// Fehler durch falsche Einheit in der Datenbank
-	ErrEinheitUnbekannt = errors.New("Berechne_: Einheit unbekannt")
 )
 
 /**
@@ -72,7 +71,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 		if medium.Einheit == "g/Pkm" {
 			emission += float64(co2Faktor * dienstreise.Strecke * 2)
 		} else {
-			return 0, ErrEinheitUnbekannt
+			return 0, fmt.Errorf(ErrStrEinheitUnbekannt, "BerechneDienstreisen", medium.Einheit)
 		}
 	}
 
@@ -112,7 +111,7 @@ func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero in
 		if medium.Einheit == "g/Pkm" {
 			emissionen += float64(arbeitstage*2*weg.Strecke*medium.CO2Faktor) / float64(weg.Personenanzahl)
 		} else {
-			return 0, ErrEinheitUnbekannt
+			return 0, fmt.Errorf(ErrStrEinheitUnbekannt, "BerechnePendelweg", medium.Einheit)
 		}
 	}
 
@@ -145,7 +144,7 @@ func BerechneITGeraete(itGeraeteDaten []structs.ITGeraeteAnzahl) (float64, error
 				emissionen += float64(itGeraet.Anzahl * kategorie.CO2FaktorJahr)
 			}
 		} else {
-			return 0, ErrEinheitUnbekannt
+			return 0, fmt.Errorf(ErrStrEinheitUnbekannt, "BerechneITGeraete", kategorie.Einheit)
 		}
 	}
 
