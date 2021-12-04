@@ -8,13 +8,16 @@ import (
 	"net/http"
 )
 
-func StartServer() {
+const (
+	port = ":9000"
+)
 
+func StartServer() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
 
-	//Nur zum Testen!!!
+	// Diese Middleware befindet sich hier nur waehrend der entwicklung, die verarbeitung und configuration von cors wird in Produktion von unserem Webserver uebernommen.
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
 		AllowedOrigins: []string{"https://*", "http://*"},
@@ -28,5 +31,5 @@ func StartServer() {
 
 	r.Mount("/umfrage", RouteUmfrage())
 
-	log.Fatalln(http.ListenAndServe(":9000", r))
+	log.Fatalln(http.ListenAndServe(port, r))
 }

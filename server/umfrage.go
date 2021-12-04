@@ -18,6 +18,7 @@ func RouteUmfrage() chi.Router {
 	return r
 }
 
+//Temporaere Funktion zum testen des Frontends
 func PostMitarbeiter(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
 	umfrageReq := structs.UmfrageMitarbeiterReq{}
@@ -33,6 +34,7 @@ func PostMitarbeiter(res http.ResponseWriter, req *http.Request) {
 	res.Write(response)
 }
 
+//Temporaere Funktion zum testen des Frontends
 func PostHauptverantwortlicher(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
 	umfrageReq := structs.UmfrageHauptverantwortlicherReq{}
