@@ -14,13 +14,13 @@ var (
 	// Fehler durch Nutzereingabe (oder fehlt in Datenbank)
 	ErrStreckentypUnbekannt = errors.New("BerechneDienstreisen: Streckentyp nicht vorhanden")
 	// Fehler durch Nutzereingabe
-	ErrStreckeNegativ = errors.New("Berechne*: Strecke ist negativ")
+	ErrStreckeNegativ = errors.New("Berechne_: Strecke ist negativ")
 	// Fehler durch Nutzereingabe
 	ErrAnzahlNegativ = errors.New("BerechneITGeraete: Anzahl an IT-Geraeten ist negativ")
 	// Fehler durch fehlende Implemetierung einer Berechnung
 	ErrBerechnungUnbekannt = errors.New("BerechneDienstreisen: Keine Berechnung fuer angegeben ID vorhanden")
 	// Fehler durch falsche Einheit in der Datenbank
-	ErrEinheitUnbekannt = errors.New("Berechne*: Einheit unbekannt")
+	ErrEinheitUnbekannt = errors.New("Berechne_: Einheit unbekannt")
 )
 
 /**
