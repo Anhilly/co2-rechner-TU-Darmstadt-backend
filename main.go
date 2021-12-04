@@ -16,5 +16,5 @@ func main() {
 
 	server.StartServer()
 
-	database.DisconnectDatabase()
+	//database.DisconnectDatabase()
 }
