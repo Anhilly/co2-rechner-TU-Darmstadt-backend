@@ -73,7 +73,7 @@ func TestBerechneITGeraete(t *testing.T) {
 		is.Equal(emissionen, 1594235.0) // Erwarteter Wert: 1594235.0
 	})
 
-	t.Run("BerechneITGeraete: Anzahl 0", func(t *testing.T) {
+	t.Run("BerechneITGeraete: Anzahl 0 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		itGeraeteDaten := []structs.ITGeraeteAnzahl{
@@ -106,7 +106,7 @@ func TestBerechneITGeraete(t *testing.T) {
 	})
 
 	// Fehlertests
-	t.Run("BerechneITGeraete: ID nicht vorhanden", func(t *testing.T) {
+	t.Run("BerechneITGeraete: ID = 100 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		itGeraeteDaten := []structs.ITGeraeteAnzahl{
@@ -115,11 +115,11 @@ func TestBerechneITGeraete(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
-		is.Equal(err, io.EOF)     // EOF von der Dantenbank erwartet
+		is.Equal(err, io.EOF)     // Datenbank wirft EOF
 		is.Equal(emissionen, 0.0) // Fehlerfall liefert 0.0
 	})
 
-	t.Run("BerechneITGeraete: negative Anzahl", func(t *testing.T) {
+	t.Run("BerechneITGeraete: negative Anzahl eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		itGeraeteDaten := []structs.ITGeraeteAnzahl{
@@ -131,6 +131,8 @@ func TestBerechneITGeraete(t *testing.T) {
 		is.Equal(err, co2computation.ErrAnzahlNegativ) // Funktion wirft ErrAnzahlNegativ
 		is.Equal(emissionen, 0.0)                      // Fehlerfall liefert 0.0
 	})
+
+	// Fehler ErrStrEinheitUnbekannt momentan nicht abpruefbar. Benoetigt falschen Datensatz in Datenbank
 }
 
 func TestBerechnePendelweg(t *testing.T) {
@@ -161,7 +163,7 @@ func TestBerechnePendelweg(t *testing.T) {
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
 	})
 
-	t.Run("BerechnePendelweg: tageImBuero = 0", func(t *testing.T) {
+	t.Run("BerechnePendelweg: tageImBuero = 0 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		pendelwegDaten := []structs.PendelwegElement{
@@ -175,7 +177,7 @@ func TestBerechnePendelweg(t *testing.T) {
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Pendelweg = keine Emissionen)
 	})
 
-	t.Run("BerechnePendelweg: leerer Slice, tageImBuero = 0", func(t *testing.T) {
+	t.Run("BerechnePendelweg: leerer Slice, tageImBuero = 0 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		pendelwegDaten := []structs.PendelwegElement{}
@@ -220,7 +222,7 @@ func TestBerechnePendelweg(t *testing.T) {
 	})
 
 	// Errortests
-	t.Run("BerechnePendelweg: ID = 100", func(t *testing.T) {
+	t.Run("BerechnePendelweg: ID = 100 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		pendelwegDaten := []structs.PendelwegElement{
@@ -234,7 +236,7 @@ func TestBerechnePendelweg(t *testing.T) {
 		is.Equal(emissionen, 0.0) // Fehlerfall liefert 0.0
 	})
 
-	t.Run("BerechnePendelweg: Personenanzahl < 1", func(t *testing.T) {
+	t.Run("BerechnePendelweg: Personenanzahl < 1 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		pendelwegDaten := []structs.PendelwegElement{
@@ -248,7 +250,7 @@ func TestBerechnePendelweg(t *testing.T) {
 		is.Equal(emissionen, 0.0)                            // Fehlerfall liefert 0.0
 	})
 
-	t.Run("BerechnePendelweg: negative Strecke", func(t *testing.T) {
+	t.Run("BerechnePendelweg: negative Strecke eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		pendelwegDaten := []structs.PendelwegElement{
@@ -261,6 +263,8 @@ func TestBerechnePendelweg(t *testing.T) {
 		is.Equal(err, co2computation.ErrStreckeNegativ) // Funktion wirft ErrStreckeNegativ
 		is.Equal(emissionen, 0.0)                       // Fehlerfall liefert 0.0
 	})
+
+	// Fehler ErrStrEinheitUnbekannt momentan nicht abpruefbar. Benoetigt falschen Datensatz in Datenbank
 }
 
 func TestBerechneDienstreisen(t *testing.T) {
@@ -385,7 +389,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 		is.Equal(emissionen, 3014416.0) // erwartetes Ergebnis: 3014416.0
 	})
 
-	t.Run("BerechneDienstreisen: Strecke = 0", func(t *testing.T) {
+	t.Run("BerechneDienstreisen: Strecke = 0 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		dienstreisenDaten := []structs.DienstreiseElement{
@@ -403,7 +407,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 	})
 
 	// Errortests
-	t.Run("BerechneDienstreisen: ID = 0", func(t *testing.T) {
+	t.Run("BerechneDienstreisen: ID = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		dienstreisenDaten := []structs.DienstreiseElement{
@@ -442,7 +446,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 		is.Equal(emissionen, 0.0)                             // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
-	t.Run("BerechneDienstreisen: negative Strecke", func(t *testing.T) {
+	t.Run("BerechneDienstreisen: negative Strecke eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		dienstreisenDaten := []structs.DienstreiseElement{
@@ -454,4 +458,6 @@ func TestBerechneDienstreisen(t *testing.T) {
 		is.Equal(err, co2computation.ErrStreckeNegativ) // Funktione wirft ErrStreckeNegativ)
 		is.Equal(emissionen, 0.0)                       // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
+
+	// Fehler ErrStrEinheitUnbekannt momentan nicht abpruefbar. Benoetigt falschen Datensatz in Datenbank
 }

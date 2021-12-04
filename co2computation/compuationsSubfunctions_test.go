@@ -22,13 +22,6 @@ func TestComputaionsSubfunctions(t *testing.T) {
 	t.Run("TestGebaeudeNormalfall", TestGebaeudeNormalfall)
 }
 
-func TestTester2(t *testing.T) {
-	database.ConnectDatabase()
-	defer database.DisconnectDatabase()
-
-	t.Run("TestGebaeudeNormalfall", TestGebaeudeNormalfall)
-}
-
 func TestGetEnergieCO2Faktor(t *testing.T) {
 	is := is.NewRelaxed(t)
 
@@ -41,8 +34,8 @@ func TestGetEnergieCO2Faktor(t *testing.T) {
 
 		co2Faktor, err := getEnergieCO2Faktor(idEnergieversorgung, jahr)
 
-		is.NoErr(err)                   // Normalfall sollte keinen Error verursachen
-		is.Equal(co2Faktor, int32(144)) // tritt ein Fehler auf wird 0 zurückgegeben
+		is.NoErr(err)                   // Normalfall wirft keine Errors
+		is.Equal(co2Faktor, int32(144)) // erwartetes Ergebnis: 144
 	})
 
 	t.Run("getEnergieversorgung: ID = 2, Jahr = 2020", func(t *testing.T) {
@@ -53,8 +46,8 @@ func TestGetEnergieCO2Faktor(t *testing.T) {
 
 		co2Faktor, err := getEnergieCO2Faktor(idEnergieversorgung, jahr)
 
-		is.NoErr(err)                   // Normalfall sollte keinen Error verursachen
-		is.Equal(co2Faktor, int32(285)) // tritt ein Fehler auf wird 0 zurückgegeben
+		is.NoErr(err)                   // Normalfall wirft keine Errors
+		is.Equal(co2Faktor, int32(285)) // erwartetes Ergebnis: 285
 	})
 
 	t.Run("getEnergieversorgung: ID = 3, Jahr = 2020", func(t *testing.T) {
@@ -65,12 +58,12 @@ func TestGetEnergieCO2Faktor(t *testing.T) {
 
 		co2Faktor, err := getEnergieCO2Faktor(idEnergieversorgung, jahr)
 
-		is.NoErr(err)                  // Normalfall sollte keinen Error verursachen
-		is.Equal(co2Faktor, int32(72)) // tritt ein Fehler auf wird 0 zurückgegeben
+		is.NoErr(err)                  // Normalfall wirft keine Errors
+		is.Equal(co2Faktor, int32(72)) // erwartetes Ergebnis: 72
 	})
 
 	// Errortests
-	t.Run("getEnergieversorgung: ID = 0", func(t *testing.T) {
+	t.Run("getEnergieversorgung: ID = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var idEnergieversorgung int32 = 0
@@ -78,11 +71,11 @@ func TestGetEnergieCO2Faktor(t *testing.T) {
 
 		co2Faktor, err := getEnergieCO2Faktor(idEnergieversorgung, jahr)
 
-		is.Equal(err, io.EOF)         // Datenbank wirft EOF fuer unbekannte IDs
-		is.Equal(co2Faktor, int32(0)) // tritt ein Fehler auf wird 0 zurückgegeben
+		is.Equal(err, io.EOF)         // Datenbank wirft EOF
+		is.Equal(co2Faktor, int32(0)) // Fehlerfall liefert 0.0
 	})
 
-	t.Run("getEnergieversorgung: Jahr = 0", func(t *testing.T) {
+	t.Run("getEnergieversorgung: Jahr = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var idEnergieversorgung int32 = 1
@@ -90,8 +83,8 @@ func TestGetEnergieCO2Faktor(t *testing.T) {
 
 		co2Faktor, err := getEnergieCO2Faktor(idEnergieversorgung, jahr)
 
-		is.Equal(err, ErrJahrNichtVorhanden) // Funktion wirft ErrJahrNichtVorhanden fuer unbekanntes Jahr
-		is.Equal(co2Faktor, int32(0))        // tritt ein Fehler auf wird 0 zurückgegeben
+		is.Equal(err, ErrJahrNichtVorhanden) // Funktion wirft ErrJahrNichtVorhanden
+		is.Equal(co2Faktor, int32(0))        // Fehlerfall liefert 0.0
 	})
 }
 
@@ -109,8 +102,8 @@ func TestZaehlerNormalfall(t *testing.T) {
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
 		is.NoErr(err)                 // Normalfall wirft keine Errors
-		is.Equal(verbrauch, 704660.0) // erwartet 704660 (Verbrauch Jahr 2020)
-		is.Equal(ngf, 0.0)            // erwartet 0.0 da keine Gruppenzaehler
+		is.Equal(verbrauch, 704660.0) // erwartetes Ergebnis: 704660 (Verbrauch Jahr 2020)
+		is.Equal(ngf, 0.0)            // erwartetes Ergebnis: 0.0 (keine Gruppenzaehler = keine weitere Flaeche)
 	})
 
 	t.Run("zaehlerNormalfall: ID = 2253, Gruppenzaehler (Waermezaehler)", func(t *testing.T) {
@@ -123,8 +116,8 @@ func TestZaehlerNormalfall(t *testing.T) {
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
 		is.NoErr(err)            // Normalfall wirft keine Errors
-		is.Equal(verbrauch, 0.0) // erwartet 0.0 (Verbrauch Jahr 2020)
-		is.Equal(ngf, 3096.56)   // erwartet 3096.56 da Gruppenzaehler
+		is.Equal(verbrauch, 0.0) // erwartetes Ergebnis: 0.0 (Verbrauch Jahr 2020)
+		is.Equal(ngf, 3096.56)   // erwartetes Ergebnis: 3096.56 (Gruppenzaehler)
 	})
 
 	t.Run("zaehlerNormalfall: Umrechnung MWh in kWh (Waermezaehler)", func(t *testing.T) {
@@ -137,8 +130,8 @@ func TestZaehlerNormalfall(t *testing.T) {
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
 		is.NoErr(err)                 // Normalfall wirft keine Errors
-		is.Equal(verbrauch, 120200.0) // erwartet 120200 (Verbrauch Jahr 2020)
-		is.Equal(ngf, 0.0)            // erwartet 0.0 da keine Gruppenzaehler
+		is.Equal(verbrauch, 120200.0) // erwartetes Ergebnis: 120200 (Verbrauch Jahr 2020)
+		is.Equal(ngf, 0.0)            // erwartetes Ergebnis: 0.0 (kein Gruppenzaehler)
 	})
 
 	t.Run("zaehlerNormalfall: kWh beleibt kWh (Kaelterzaehler)", func(t *testing.T) {
@@ -151,8 +144,8 @@ func TestZaehlerNormalfall(t *testing.T) {
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
 		is.NoErr(err)                // Normalfall wirft keine Errors
-		is.Equal(verbrauch, 17336.0) // erwartet 17336.0 (Verbrauch Jahr 2021)
-		is.Equal(ngf, 0.0)           // erwartet 0.0 da keine Gruppenzaehler
+		is.Equal(verbrauch, 17336.0) // erwartetes Ergebnis: 17336.0 (Verbrauch Jahr 2021)
+		is.Equal(ngf, 0.0)           // erwartetes Ergebnis: 0.0 (kein Gruppenzaehler)
 	})
 
 	t.Run("zaehlerNormalfall: Stromzaehler", func(t *testing.T) {
@@ -165,8 +158,8 @@ func TestZaehlerNormalfall(t *testing.T) {
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
 		is.NoErr(err)                 // Normalfall wirft keine Errors
-		is.Equal(verbrauch, 208676.2) // erwartet 208676.2 (Verbrauch Jahr 2020)
-		is.Equal(ngf, 0.0)            // erwartet 0.0 da keine Gruppenzaehler
+		is.Equal(verbrauch, 208676.2) // erwartetes Ergebnis: 208676.2 (Verbrauch Jahr 2020)
+		is.Equal(ngf, 0.0)            // erwartetes Ergebnis: 0.0 (kein Gruppenzaehler)
 	})
 
 	// Test scheitert, das noch nicht explizit betrachtet
@@ -180,12 +173,12 @@ func TestZaehlerNormalfall(t *testing.T) {
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
 		is.NoErr(err)                // Normalfall wirft keine Errors
-		is.Equal(verbrauch, 55234.9) // erwartet 208676.2 (Verbrauch Jahr 2020)
-		is.Equal(ngf, 0.0)           // erwartet 0.0 da keine Gruppenzaehler
+		is.Equal(verbrauch, 55234.9) // erwartetes Ergebnis: 208676.2 (Verbrauch Jahr 2020)
+		is.Equal(ngf, 0.0)           // erwartetes Ergebnis: 0.0 (kein Gruppenzaehler)
 	})
 
 	// Errortests
-	// dieser Fall sollte in der realen Welt nicht auftreten, sonst ist Fehler in den Daten
+	// Fehler tritt nur durch Datenfehler in der Datenbank auf
 	t.Run("zaehlerNormalfall: Zaehler ohne Referenz zu Gebaeude", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -196,7 +189,7 @@ func TestZaehlerNormalfall(t *testing.T) {
 
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
-		is.Equal(err, fmt.Errorf(ErrStrGebaeuderefFehlt, "zaehlerNormalfall", pkEnergie)) // Funktion wirft Error
+		is.Equal(err, fmt.Errorf(ErrStrGebaeuderefFehlt, "zaehlerNormalfall", pkEnergie)) // Funktion wirft ErrStrGebaeuderefFehlt
 		is.Equal(verbrauch, 0.0)                                                          // Fehlerfall liefert 0.0
 		is.Equal(ngf, 0.0)                                                                // Fehlerfall liefert 0.0
 	})
@@ -210,12 +203,12 @@ func TestZaehlerNormalfall(t *testing.T) {
 
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
-		is.Equal(err, fmt.Errorf(ErrStrVerbrauchFehlt, "zaehlerNormalfall", jahr, 2084)) // Funktion wirft Error
+		is.Equal(err, fmt.Errorf(ErrStrVerbrauchFehlt, "zaehlerNormalfall", jahr, 2084)) // Funktion wirft ErrStrVerbrauchFehlt
 		is.Equal(verbrauch, 0.0)                                                         // Fehlerfall liefert 0.0
 		is.Equal(ngf, 0.0)                                                               // Fehlerfall liefert 0.0
 	})
 
-	// dieser Fall sollte in der realen Welt nicht auftreten, sonst ist Fehler in den Daten
+	// Fehler tritt nur durch Datenfehler in der Datenbank auf
 	t.Run("zaehlerNormalfall: Einheit in Zaehler unbekannt", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -236,12 +229,12 @@ func TestZaehlerNormalfall(t *testing.T) {
 
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
-		is.Equal(err, errors.New("zaehlerNormalfall: Einheit tV unbekannt")) // Funktion wirft Error
+		is.Equal(err, errors.New("zaehlerNormalfall: Einheit tV unbekannt")) // Funktion wirft ErrStrEinheitUnbekannt
 		is.Equal(verbrauch, 0.0)                                             // Fehlerfall liefert 0.0
 		is.Equal(ngf, 0.0)                                                   // Fehlerfall liefert 0.0
 	})
 
-	// dieser Fall sollte in der realen Welt nicht auftreten, sonst ist Fehler in den Daten
+	// Fehler tritt nur durch Datenfehler in der Datenbank auf
 	t.Run("zaehlerNormalfall: referenziertes Gebaeude nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -262,7 +255,7 @@ func TestZaehlerNormalfall(t *testing.T) {
 
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
-		is.Equal(err, io.EOF)    // Datenbank wirft EOF, weil Refenrenz nicht gefunden werden kann
+		is.Equal(err, io.EOF)    // Datenbank wirft EOF
 		is.Equal(verbrauch, 0.0) // Fehlerfall liefert 0.0
 		is.Equal(ngf, 0.0)       // Fehlerfall liefert 0.0
 	})
@@ -282,7 +275,7 @@ func TestZaehlerSpezialfall(t *testing.T) {
 		verbrauch, err := zaehlerSpezialfall(zaehler, jahr, andereZaehlerID)
 
 		is.NoErr(err)            // Normalfall wirft keine Errors
-		is.Equal(verbrauch, 0.0) // erwartet 0.0 (Verbrauch Jahr 2020)
+		is.Equal(verbrauch, 0.0) // erwartetes Ergebnis: 0.0 (Verbrauch Jahr 2020)
 	})
 
 	t.Run("zaehlerSpezialfall: Spezialfall = 3, ID = 3622, Jahr = 2020", func(t *testing.T) {
@@ -295,7 +288,7 @@ func TestZaehlerSpezialfall(t *testing.T) {
 		verbrauch, err := zaehlerSpezialfall(zaehler, jahr, andereZaehlerID)
 
 		is.NoErr(err)                 // Normalfall wirft keine Errors
-		is.Equal(verbrauch, 958260.0) // erwartet 958260.0 (Verbrauch Jahr 2020)
+		is.Equal(verbrauch, 958260.0) // erwartetes Ergebnis: 958260.0 (Verbrauch Jahr 2020)
 	})
 
 	t.Run("zaehlerSpezialfall: Spezialfall = 2, ID = 3621, Jahr = 2018", func(t *testing.T) {
@@ -308,7 +301,7 @@ func TestZaehlerSpezialfall(t *testing.T) {
 		verbrauch, err := zaehlerSpezialfall(zaehler, jahr, andereZaehlerID)
 
 		is.NoErr(err)                                    // Normalfall wirft keine Errors
-		is.Equal(math.Round(verbrauch*100)/100, 33100.0) // erwartet 33100.0 (Verbrauch Jahr 2020)
+		is.Equal(math.Round(verbrauch*100)/100, 33100.0) // erwartetes Ergebnis: 33100.0 (Verbrauch Jahr 2020)
 	})
 
 	// Errortests
@@ -321,8 +314,8 @@ func TestZaehlerSpezialfall(t *testing.T) {
 
 		verbrauch, err := zaehlerSpezialfall(zaehler, jahr, andereZaehlerID)
 
-		is.Equal(err, errors.New("zaehlerSpezialfall: Kein Verbrauch für das Jahr 0, Zaehler: 3622")) // Funktion kann Wert fuer Jahr nicht finden
-		is.Equal(verbrauch, 0.0)                                                                      // erwartet 0.0 da Fehlerfall
+		is.Equal(err, errors.New("zaehlerSpezialfall: Kein Verbrauch für das Jahr 0, Zaehler: 3622")) // Funktion wirft ErrStrVerbrauchFehlt
+		is.Equal(verbrauch, 0.0)                                                                      // Fehlerfall liefert 0.0
 	})
 }
 
@@ -330,7 +323,7 @@ func TestGebaeudeNormalfall(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("gebauedeNormalfall: Flaechenanteil = 0", func(t *testing.T) {
+	t.Run("gebauedeNormalfall: Flaechenanteil = 0 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		gebaude, _ := database.GebaeudeFind(1101)
@@ -341,8 +334,8 @@ func TestGebaeudeNormalfall(t *testing.T) {
 
 		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
 
-		is.NoErr(err)             // im Normalfall kein Error
-		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Falechenanteil = keine Emissionen)
 	})
 
 	t.Run("gebauedeNormalfall: keine Zaehler von bestimmten Typ", func(t *testing.T) {
@@ -356,8 +349,8 @@ func TestGebaeudeNormalfall(t *testing.T) {
 
 		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
 
-		is.NoErr(err)             // im Normalfall kein Error
-		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0
+		is.NoErr(err)             // Normalfall wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Zaehler = keine berechenbaren Emissionen)
 	})
 
 	t.Run("gebauedeNormalfall: einfach Eingabe", func(t *testing.T) {
@@ -371,7 +364,7 @@ func TestGebaeudeNormalfall(t *testing.T) {
 
 		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
 
-		is.NoErr(err)                                           // im Normalfall kein Error
+		is.NoErr(err)                                           // Normalfall wirft keine Errors
 		is.Equal(math.Round(emissionen*1000)/1000, 6604024.854) // erwartetes Ergebnis: 6604024.854
 	})
 
@@ -386,7 +379,7 @@ func TestGebaeudeNormalfall(t *testing.T) {
 
 		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
 
-		is.NoErr(err)                                           // im Normalfall kein Error
+		is.NoErr(err)                                           // Normalfall wirft keine Errors
 		is.Equal(math.Round(emissionen*1000)/1000, 8632077.005) // erwartetes Ergebnis: 8632077.005
 	})
 
@@ -401,12 +394,12 @@ func TestGebaeudeNormalfall(t *testing.T) {
 
 		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
 
-		is.NoErr(err)                                         // im Normalfall kein Error
+		is.NoErr(err)                                         // Normalfall wirft keine Errors
 		is.Equal(math.Round(emissionen*100)/100, 22709184.09) // erwartetes Ergebnis: 22709184.09
 	})
 
 	// Errortests
-	t.Run("gebauedeNormalfall: negativer Flaechenanteil", func(t *testing.T) {
+	t.Run("gebauedeNormalfall: negativer Flaechenanteil eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		gebaude, _ := database.GebaeudeFind(1101)
@@ -418,9 +411,10 @@ func TestGebaeudeNormalfall(t *testing.T) {
 		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaude, idEnergieversorgung, jahr, flaechenanteil)
 
 		is.Equal(err, ErrFlaecheNegativ) // Funktion wirft ErrFlaecheNegativ
-		is.Equal(emissionen, 0.0)        // im Fehlerfall Rückgabewert immer 0.0
+		is.Equal(emissionen, 0.0)        // Fehlerfall liefert 0.0
 	})
 
+	// Fehler tritt nur durch Datenfehler in der Datenbank auf
 	t.Run("gebauedeNormalfall: Gebaeude mit ungültiger Referenz", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -435,7 +429,7 @@ func TestGebaeudeNormalfall(t *testing.T) {
 
 		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaeude, idEnergieversorgung, jahr, flaechenanteil)
 
-		is.Equal(err, io.EOF)     // Datenbank wirft EOF, weil Zaehler unbekannt
-		is.Equal(emissionen, 0.0) // im Fehlerfall Rückgabewert immer 0.0
+		is.Equal(err, io.EOF)     // Datenbank wirft EOF
+		is.Equal(emissionen, 0.0) // Fehlerfall liefert 0.0
 	})
 }
