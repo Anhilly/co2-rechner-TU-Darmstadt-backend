@@ -257,16 +257,16 @@ linters:
   disable-all: true
   enable:
     ## enabled by default
-#   - deadcode          # Finds unused code
-#   - errcheck          # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases
+    - deadcode          # Finds unused code
+    - errcheck          # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases
     - gosimple          # Linter for Go source code that specializes in simplifying a code
     - govet             # Vet examines Go source code and reports suspicious constructs, such as Printf calls whose arguments do not align with the format string
     - ineffassign       # Detects when assignments to existing variables are not used
     - staticcheck       # Staticcheck is a go vet on steroids, applying a ton of static analysis checks
-#   - structcheck       # Finds unused struct fields
-#   - typecheck         # Like the front-end of a Go compiler, parses and type-checks Go code
-#   - unused            # Checks Go code for unused constants, variables, functions and types
-#   - varcheck          # Finds unused global variables and constants
+    - structcheck       # Finds unused struct fields
+    - typecheck         # Like the front-end of a Go compiler, parses and type-checks Go code
+    - unused            # Checks Go code for unused constants, variables, functions and types
+    - varcheck          # Finds unused global variables and constants
     ## disabled by default
 #   - asciicheck        # Simple linter to check that your code does not contain non-ASCII identifiers
 #   - bidichk           # Checks for dangerous unicode character sequences
@@ -279,9 +279,9 @@ linters:
                             # is not used - сhecks assignments with too many blank identifiers (e.g. x, _, _, _, := f())
     - dupl              # Tool for code clone detection
 #   - durationcheck     # check for two durations multiplied together
-#   - errname           # Checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error.
+    - errname           # Checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error.
     - errorlint         # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
-#   - exhaustive        # check exhaustiveness of enum switch statements
+    - exhaustive        # check exhaustiveness of enum switch statements
 #   - exhaustivestruct  # Checks types passed to the json encoding functions. Reports unsupported types and optionally reports occations, where the check for the returned error can be omitted.
                             # too strict - finds structs that have uninitialized fields # TODOs: maybe enable for some packages?
     - exportloopref     # checks for pointers to enclosing loop variables
@@ -308,10 +308,10 @@ linters:
                             # replaced with goimports, gofumports is not available yet
 #   - goheader          # Checks is file header matches to pattern
                             # is not used - checks that each file has the licence at the beginning
-#   - goimports         # (auto) In addition to fixing imports, goimports also formats your code in the same style as gofmt.
+    - goimports         # (auto) In addition to fixing imports, goimports also formats your code in the same style as gofmt.
 #   - golint            # The repository of the linter has been archived by the owner. Replaced by revive.
                             # deprecated - revive is used instead
-#   - gomnd             # An analyzer to detect magic numbers.
+    - gomnd             # An analyzer to detect magic numbers.
 #   - gomoddirectives   # Manage the use of 'replace', 'retract', and 'excludes' directives in go.mod.
 #   - gomodguard        # Allow and block list linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations.
     - goprintffuncname  # Checks that printf-like functions are named with f at the end
@@ -320,23 +320,23 @@ linters:
                             # is not used - checks that your code uses short syntax for if-statements whenever possible
 #   - importas          # Enforces consistent import aliases
                             # is not used - enforces consistent import aliases
-    - interfacer        # The repository of the linter has been archived by the owner.
+#   - interfacer        # The repository of the linter has been archived by the owner.
                             # deprecated and has false positives
 #   - ireturn           # Accept Interfaces, Return Concrete Types
                             # good, but too strict - accept interfaces, return concrete types
-#   - lll               # Reports long lines
+    - lll               # Reports long lines
 #   - makezero          # Finds slice declarations with non-zero initial length
-    - maligned          # The repository of the linter has been archived by the owner. Replaced by govet 'fieldalignment'.
+#   - maligned          # The repository of the linter has been archived by the owner. Replaced by govet 'fieldalignment'.
                             # deprecated
 #   - misspell          # (auto) Finds commonly misspelled English words in comments
                             # useless - correct commonly misspelled English words... quickly
-#   - nakedret          # Finds naked returns in functions greater than a specified function length
-#   - nestif            # Reports deeply nested if statements
-#   - nilerr            # Finds the code that returns nil even if it checks that the error is not nil.
-#   - nilnil            # Checks that there is no simultaneous return of nil error and an invalid value.
+    - nakedret          # Finds naked returns in functions greater than a specified function length
+    - nestif            # Reports deeply nested if statements
+    - nilerr            # Finds the code that returns nil even if it checks that the error is not nil.
+    - nilnil            # Checks that there is no simultaneous return of nil error and an invalid value.
 #   - nlreturn          # nlreturn checks for a new line before return and branch statements to increase code clarity
                             # too strict - requires a new line before return and branch statements
-#   - noctx             # noctx finds sending http request without context.Context
+    - noctx             # noctx finds sending http request without context.Context
 #   - nolintlint        # Reports ill-formed or insufficient nolint directives
 #   - paralleltest      # paralleltest detects missing usage of t.Parallel() method in your Go test
                             # too many false positives
@@ -357,10 +357,10 @@ linters:
                             # is not used - requires to use t.Helper()
 #   - tparallel         # tparallel detects inappropriate usage of t.Parallel() method in your Go test codes
     - unconvert         # Remove unnecessary type conversions
-#   - unparam           # Reports unused function parameters
+    - unparam           # Reports unused function parameters
 #   - varnamelen        # checks that the length of a variable's name matches its scope
                             # great idea, but too many false positives - checking length of variable's name matches its usage scope
-#   - wastedassign      # wastedassign finds wasted assignment statements.
+    - wastedassign      # wastedassign finds wasted assignment statements.
     - whitespace        # (auto) Tool for detection of leading and trailing whitespace
 #   - wrapcheck         # Checks that errors returned from external packages are wrapped
                             # too strict - requires wrapping errors from external packages (even from the same repo) and interfaces
