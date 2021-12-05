@@ -328,9 +328,9 @@ linters-settings:
     capital: false
 
   godox:
-    # report any comments starting with keywords, this is useful for TODO or FIXME comments that
+    # report any comments starting with keywords, this is useful for TODOs or FIXMEs comments that
     # might be left in the code accidentally and should be resolved before merging
-    keywords: # default keywords are TODO, BUG, and FIXME, these can be overwritten by this setting
+    keywords: # default keywords are TODOs, BUG, and FIXMEs, these can be overwritten by this setting
       - NOTE
       - OPTIMIZE # marks code that should be optimized before merging
       - HACK # marks hack-arounds that should be removed before merging

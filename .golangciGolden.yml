@@ -34,10 +34,10 @@ linters-settings:
     exported-fields: false # default false
 
   unused:
-    check-exported: false # default false # TODO: enable after fixing false positives
+    check-exported: false # default false # TODOs: enable after fixing false positives
 
   varcheck:
-    exported-fields: false # default false # TODO: enable after fixing false positives
+    exported-fields: false # default false # TODOs: enable after fixing false positives
 
   cyclop:
     max-complexity: 30 # the maximal code complexity to report # default 10
@@ -319,7 +319,7 @@ linters:
     ## disabled
     #- depguard # replaced with gomodguard
     #- dogsled # is not used - сhecks assignments with too many blank identifiers (e.g. x, _, _, _, := f())
-    #- exhaustivestruct # too strict - finds structs that have uninitialized fields # TODO: maybe enable for some packages?
+    #- exhaustivestruct # too strict - finds structs that have uninitialized fields # TODOs: maybe enable for some packages?
     #- forcetypeassert # errcheck is used instead
     #- gci # is not used - sorts imports
     #- godox # is not used - complains about TODOs in comments
