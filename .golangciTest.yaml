@@ -321,14 +321,14 @@ linters:
                         # Go linter that checks if package imports are in a list of acceptable packages
     #- dogsled              # is not used - сhecks assignments with too many blank identifiers (e.g. x, _, _, _, := f())
                         # Checks assignments with too many blank identifiers (e.g. x, , , _, := f())
-    #- exhaustivestruct     # too strict - finds structs that have uninitialized fields # TODO: maybe enable for some packages?
+    #- exhaustivestruct     # too strict - finds structs that have uninitialized fields # TODOs: maybe enable for some packages?
                         # Checks types passed to the json encoding functions. Reports unsupported types and optionally reports occations, where the check for the returned error can be omitted.
     #- forcetypeassert      # errcheck is used instead
                         # finds forced type assertions
     #- gci                  # is not used - sorts imports
                         # (auto) Gci control golang package import order and make it always deterministic.
     #- godox                # is not used - complains about TODOs in comments
-                        # Tool for detection of FIXME, TODO and other comment keywords
+                        # Tool for detection of FIXMEs, TODOs and other comment keywords
     #- goerr113             # too strict - checks the errors handling expressions
                         # Golang linter to check the errors handling expressions
     #- gofmt                # replaced with goimports
