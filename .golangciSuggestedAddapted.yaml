@@ -39,10 +39,10 @@ linters-settings:
   varcheck:
     exported-fields: false # default false # TODOs: enable after fixing false positives
 
-  cyclop:
-    max-complexity: 30 # the maximal code complexity to report # default 10
-    package-average: 10.0 # the maximal average package complexity. If it's higher than 0.0 (float) the check is enabled # default 0.0
-    skip-tests: false # should ignore tests # default false
+  #cyclop:
+  #  max-complexity: 30 # the maximal code complexity to report # default 10
+  #  package-average: 10.0 # the maximal average package complexity. If it's higher than 0.0 (float) the check is enabled # default 0.0
+  #  skip-tests: false # should ignore tests # default false
   
   dupl:
     threshold: 150 # default 150
@@ -60,10 +60,10 @@ linters-settings:
     default-signifies-exhaustive: false # if true, switch is considered exhaustive as long as a 'default' case is present # default false
     ignore-pattern: "" # enum members matching regexp (including import path) do not require a case clause to satisfy exhaustiveness # default ""
   
-  forbidigo:
-    forbid: # forbid the following identifiers # default ^(fmt\.Print(|f|ln)|print|println)$
-      - ^(fmt\.Print(|f|ln)|print|println)$
-    exclude-godoc-examples: true # exclude godoc examples from forbidigo checks # default is true
+  #forbidigo:
+  #  forbid: # forbid the following identifiers # default ^(fmt\.Print(|f|ln)|print|println)$
+  #    - ^(fmt\.Print(|f|ln)|print|println)$
+  #  exclude-godoc-examples: true # exclude godoc examples from forbidigo checks # default is true
   
   funlen:
     lines: 100 # default 60
@@ -112,10 +112,10 @@ linters-settings:
   gocyclo:
     min-complexity: 30 # default 30
   
-  godot:
-    scope: declarations # comments to be checked: `declarations` (default), `toplevel`, or `all`
-    exclude: [] # list of regexps for excluding particular comment lines from check # default []
-    capital: false # check that each sentence starts with a capital letter # default false
+  #godot:
+  #  scope: declarations # comments to be checked: `declarations` (default), `toplevel`, or `all`
+  #  exclude: [] # list of regexps for excluding particular comment lines from check # default []
+  #  capital: false # check that each sentence starts with a capital letter # default false
   
   gomnd:
     settings:
@@ -126,41 +126,41 @@ linters-settings:
         # ignored-files: "_test.go" # default "_test.go" # don't use this setting because of bug inside gomnd
         ignored-functions: "time.Date" # default "time.Date"
   
-  gomoddirectives:
-    replace-allow-list: [] # list of allowed `replace` directives # default []
-    replace-local: false # allow local `replace` directives # default false
-    exclude-forbidden: false # forbid the use of `exclude` directives # default false
-    retract-allow-no-explanation: false # allow to use `retract` directives without explanation # default false
+  #gomoddirectives:
+  #  replace-allow-list: [] # list of allowed `replace` directives # default []
+  #  replace-local: false # allow local `replace` directives # default false
+  #  exclude-forbidden: false # forbid the use of `exclude` directives # default false
+  #  retract-allow-no-explanation: false # allow to use `retract` directives without explanation # default false
   
-  gomodguard:
-    allowed:
-      modules: [] # default []
-      domains: [] # default []
-    blocked:
-      modules:
-        - github.com/golang/protobuf:
-            recommendations:
-              - google.golang.org/protobuf
-            reason: "see https://developers.google.com/protocol-buffers/docs/reference/go/faq#modules"
-        - github.com/satori/go.uuid:
-            recommendations:
-              - github.com/google/uuid
-            reason: "satori's package is not maintained"
-        - github.com/gofrs/uuid:
-            recommendations:
-              - github.com/google/uuid
-            reason: "see recommendation from dev-infra team: https://confluence.gtforge.com/x/gQI6Aw"
-      versions: [] # default []
-      local_replace_directives: true # default false
+  #gomodguard:
+  #  allowed:
+  #    modules: [] # default []
+  #    domains: [] # default []
+  #  blocked:
+  #    modules:
+  #      - github.com/golang/protobuf:
+  #          recommendations:
+  #            - google.golang.org/protobuf
+  #          reason: "see https://developers.google.com/protocol-buffers/docs/reference/go/faq#modules"
+  #      - github.com/satori/go.uuid:
+  #          recommendations:
+  #            - github.com/google/uuid
+  #          reason: "satori's package is not maintained"
+  #      - github.com/gofrs/uuid:
+  #          recommendations:
+  #            - github.com/google/uuid
+  #          reason: "see recommendation from dev-infra team: https://confluence.gtforge.com/x/gQI6Aw"
+  #    versions: [] # default []
+  #    local_replace_directives: true # default false
   
   lll:
     line-length: 120 # default 120
   
-  makezero:
-    always: false # default false
+  #makezero:
+  #  always: false # default false
   
-  maligned:
-    suggest-new: true # default false
+  #maligned:
+  #  suggest-new: true # default false
   
   #misspell:
   #  locale: us
@@ -180,36 +180,36 @@ linters-settings:
       - map
       - chan
   
-  nolintlint:
-    allow-unused: false # default false
-    allow-leading-space: true # default true
-    allow-no-explanation: [funlen, gocognit, lll] # default []
-    require-explanation: true # default false
-    require-specific: true # default false
+  #nolintlint:
+  #  allow-unused: false # default false
+  #  allow-leading-space: true # default true
+  #  allow-no-explanation: [funlen, gocognit, lll] # default []
+  #  require-explanation: true # default false
+  #  require-specific: true # default false
   
   prealloc:
     simple: false # default true
     range-loops: true # default true
     for-loops: false # default false
   
-  predeclared:
-    ignore: "" # comma-separated list of predeclared identifiers to not report on # default ""
-    q: false # include method names and field names (i.e., qualified names) in checks # default false
+  #predeclared:
+  #  ignore: "" # comma-separated list of predeclared identifiers to not report on # default ""
+  #  q: false # include method names and field names (i.e., qualified names) in checks # default false
  
-  promlinter:
-    # Promlinter cannot infer all metrics name in static analysis.
-    # Enable strict mode will also include the errors caused by failing to parse the args.
-    strict: false # default false
-    # Please refer to https://github.com/yeya24/promlinter#usage for detailed usage.
-    disabled-linters:
-    #  - "Help"
-    #  - "MetricUnits"
-    #  - "Counter"
-    #  - "HistogramSummaryReserved"
-    #  - "MetricTypeInName"
-    #  - "ReservedChars"
-    #  - "CamelCase"
-    #  - "lintUnitAbbreviations"
+  #promlinter:
+  #  # Promlinter cannot infer all metrics name in static analysis.
+  #  # Enable strict mode will also include the errors caused by failing to parse the args.
+  #  strict: false # default false
+  #  # Please refer to https://github.com/yeya24/promlinter#usage for detailed usage.
+  #  disabled-linters:
+  #  #  - "Help"
+  #  #  - "MetricUnits"
+  #  #  - "Counter"
+  #  #  - "HistogramSummaryReserved"
+  #  #  - "MetricTypeInName"
+  #  #  - "ReservedChars"
+  #  #  - "CamelCase"
+  #  #  - "lintUnitAbbreviations"
   
   revive: # default rules are ignored if any of following settings is defined
     #ignore-generated-header: false # when set to false, ignores files with "GENERATED" header, similar to golint # default false
@@ -227,10 +227,10 @@ linters-settings:
     #  - name: "xxx"
     #    severity: "xxx"
   
-  rowserrcheck:
-    packages:
-      - database/sql
-      - github.com/jmoiron/sqlx
+  #rowserrcheck:
+  #  packages:
+  #    - database/sql
+  #    - github.com/jmoiron/sqlx
   
   stylecheck:
     go: "1.17" # default 1.13
@@ -239,8 +239,8 @@ linters-settings:
     initialisms: [ "ACL", "API", "ASCII", "CPU", "CSS", "DNS", "EOF", "GUID", "HTML", "HTTP", "HTTPS", "ID", "IP", "JSON", "QPS", "RAM", "RPC", "SLA", "SMTP", "SQL", "SSH", "TCP", "TLS", "TTL", "UDP", "UI", "GID", "UID", "UUID", "URI", "URL", "UTF8", "VM", "XML", "XMPP", "XSRF", "XSS" ] # https://staticcheck.io/docs/options#initialisms
     http-status-code-whitelist: [ "200", "400", "404", "500" ] # https://staticcheck.io/docs/options#http_status_code_whitelist
   
-  tenv:
-    all: true # check all functions in _test.go, not only test functions # default false
+  #tenv:
+  #  all: true # check all functions in _test.go, not only test functions # default false
   
   testpackage:
     skip-regexp: (export|internal)_test\.go # default (export|internal)_test\.go
@@ -248,10 +248,10 @@ linters-settings:
   unparam:
     check-exported: true # default false
   
-  wrapcheck:
-    ignoreSigs: [] # specifies substrings of signatures to ignore. Overrides default https://github.com/tomarrell/wrapcheck#configuration # default []
-    ignoreSigRegexps: [] # this is similar to the ignoreSigs, but gives slightly more flexibility # default []
-    ignorePackageGlobs: [] # see https://github.com/tomarrell/wrapcheck#configuration # default []
+  #wrapcheck:
+  #  ignoreSigs: [] # specifies substrings of signatures to ignore. Overrides default https://github.com/tomarrell/wrapcheck#configuration # default []
+  #  ignoreSigRegexps: [] # this is similar to the ignoreSigs, but gives slightly more flexibility # default []
+  #  ignorePackageGlobs: [] # see https://github.com/tomarrell/wrapcheck#configuration # default []
  
 linters:
   disable-all: true
@@ -352,7 +352,7 @@ linters:
 #   - tagliatelle       # Checks the struct tags.
                             # is not used - checks the struct tags
 #   - tenv              # tenv is analyzer that detects using os.Setenv instead of t.Setenv since Go1.17
-#   - testpackage       # linter that makes you use a separate _test package
+    - testpackage       # linter that makes you use a separate _test package
 #   - thelper           # thelper detects golang test helpers without t.Helper() call and checks the consistency of test helpers
                             # is not used - requires to use t.Helper()
 #   - tparallel         # tparallel detects inappropriate usage of t.Parallel() method in your Go test codes
