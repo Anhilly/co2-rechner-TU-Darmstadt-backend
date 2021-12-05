@@ -10,9 +10,9 @@ import (
 var (
 	// Fehler durch Nutzereingabe
 	ErrPersonenzahlZuKlein = errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
-	// Fehler durch Nutzereingabe (oder fehlt in Datenbank)
+	// Fehler durch Nutzereingabe (oder Wert fehlt in Datenbank)
 	ErrTankartUnbekannt = errors.New("BerechneDienstreisen: Tankart nicht vorhanden")
-	// Fehler durch Nutzereingabe (oder fehlt in Datenbank)
+	// Fehler durch Nutzereingabe (oder Wert fehlt in Datenbank)
 	ErrStreckentypUnbekannt = errors.New("BerechneDienstreisen: Streckentyp nicht vorhanden")
 	// Fehler durch Nutzereingabe
 	ErrStreckeNegativ = errors.New("Berechne_: Strecke ist negativ")
