@@ -20,7 +20,7 @@ var (
 	// Fehler durch falsche Daten in Datenbank
 	ErrStrGebaeuderefFehlt = "%s: Zaehler %d hat keine Referenzen auf Gebaeude"
 	// Fehler durch fehlende Werte in Datenbank
-	ErrStrVerbrauchFehlt = "%s : Kein Verbrauch für das Jahr %d, Zaehler: %d"
+	ErrStrVerbrauchFehlt = "%s: Kein Verbrauch für das Jahr %d, Zaehler: %d"
 	// Fehler durch nicht behandelte Einheit oder Fehler in der Datenbank
 	ErrStrEinheitUnbekannt = "%s: Einheit %s unbekannt"
 )
