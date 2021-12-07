@@ -40,7 +40,7 @@ func PostHauptverantwortlicher(res http.ResponseWriter, req *http.Request) {
 	umfrageReq := structs.UmfrageHauptverantwortlicherReq{}
 	umfrageRes := structs.UmfrageHauptverantwortlicherRes{}
 	json.Unmarshal(s, &umfrageReq)
-	//TODO Jahr soll nicht hardcoded sein, sondern als parameter mitübergeben werden.
+	// TODO Jahr soll nicht hardcoded sein, sondern als parameter mitübergeben werden.
 	umfrageRes.WaermeEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 1)
 	umfrageRes.StromEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 2)
 	umfrageRes.KaelteEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 3)

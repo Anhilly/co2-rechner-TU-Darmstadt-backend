@@ -10,10 +10,16 @@ import (
 )
 
 func TestFind(t *testing.T) {
-	database.ConnectDatabase()
-	defer database.DisconnectDatabase()
+	is := is.NewRelaxed(t)
 
-	t.Run("TestITGeareteFind", TestITGeraeteFind)
+	err := database.ConnectDatabase()
+	is.NoErr(err)
+	defer func() {
+		err := database.DisconnectDatabase()
+		is.NoErr(err)
+	}()
+
+	t.Run("TestITGeraeteFind", TestITGeraeteFind)
 	t.Run("TestEnergieversorgungFind", TestEnergieversorgungFind)
 	t.Run("TestDienstreisenFind", TestDienstreisenFind)
 	t.Run("TestGebaeudeFind", TestGebaeudeFind)
@@ -30,8 +36,16 @@ func TestITGeraeteFind(t *testing.T) {
 
 		data, err := database.ITGeraeteFind(1)
 
-		is.NoErr(err)                                                                                                                                              // Error seitens der Datenbank
-		is.Equal(data, structs.ITGeraete{IDITGerate: 1, Kategorie: "Notebooks", CO2FaktorGesamt: 588000, CO2FaktorJahr: 147000, Einheit: "g/Stueck", Revision: 1}) // Überprüfung des zurückgelieferten Elements
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			structs.ITGeraete{
+				IDITGerate:      1,
+				Kategorie:       "Notebooks",
+				CO2FaktorGesamt: 588000,
+				CO2FaktorJahr:   147000,
+				Einheit:         "g/Stueck",
+				Revision:        1,
+			}) // Überprüfung des zurückgelieferten Elements
 	})
 
 	t.Run("ITGeraeteFind: ID = 0", func(t *testing.T) {
@@ -39,7 +53,7 @@ func TestITGeraeteFind(t *testing.T) {
 
 		data, err := database.ITGeraeteFind(0)
 
-		is.Equal(err, io.EOF)               // Datenbank gibt EOF error
+		is.Equal(err, io.EOF)               // Datenbank wirft EOF-Error
 		is.Equal(data, structs.ITGeraete{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
@@ -52,8 +66,15 @@ func TestDienstreisenFind(t *testing.T) {
 
 		data, err := database.DienstreisenFind(1)
 
-		is.NoErr(err)                                                                                                                                           // Error seitens der Datenbank
-		is.Equal(data, structs.Dienstreisen{IDDienstreisen: 1, Medium: "Bahn", Einheit: "g/Pkm", Revision: 1, CO2Faktor: []structs.CO2Dienstreisen{{Wert: 8}}}) // Überprüfung des zurückgelieferten Elements
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			structs.Dienstreisen{
+				IDDienstreisen: 1,
+				Medium:         "Bahn",
+				Einheit:        "g/Pkm",
+				Revision:       1,
+				CO2Faktor:      []structs.CO2Dienstreisen{{Wert: 8}},
+			}) // Überprüfung des zurückgelieferten Elements
 	})
 
 	t.Run("DienstreisenFind: ID = 0", func(t *testing.T) {
@@ -61,7 +82,7 @@ func TestDienstreisenFind(t *testing.T) {
 
 		data, err := database.DienstreisenFind(0)
 
-		is.Equal(err, io.EOF)                  // Datenbank gibt EOF error
+		is.Equal(err, io.EOF)                  // Datenbank wirft EOF-Error
 		is.Equal(data, structs.Dienstreisen{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
@@ -74,13 +95,14 @@ func TestEnergieversorgungFind(t *testing.T) {
 
 		data, err := database.EnergieversorgungFind(1)
 
-		is.NoErr(err) // Error seitens der Datenbank
+		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data, structs.Energieversorgung{
 			IDEnergieversorgung: 1,
 			Kategorie:           "Fernwaerme",
 			Einheit:             "g/kWh",
 			Revision:            1,
-			CO2Faktor:           []structs.CO2Energie{{Wert: 144, Jahr: 2020}}}) // Überprüfung des zurückgelieferten Elements
+			CO2Faktor:           []structs.CO2Energie{{Wert: 144, Jahr: 2020}},
+		}) // Überprüfung des zurückgelieferten Elements
 	})
 
 	t.Run("EnergieversorgungFind: ID = 0", func(t *testing.T) {
@@ -88,7 +110,7 @@ func TestEnergieversorgungFind(t *testing.T) {
 
 		data, err := database.EnergieversorgungFind(0)
 
-		is.Equal(err, io.EOF)                       // Datenbank gibt EOF error
+		is.Equal(err, io.EOF)                       // Datenbank wirft EOF-Error
 		is.Equal(data, structs.Energieversorgung{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
@@ -101,7 +123,7 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(1101)
 
-		is.NoErr(err) // Error seitens der Datenbank
+		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data, structs.Gebaeude{
 			Nr:          1101,
 			Bezeichnung: "Universitaetszentrum, karo 5, Audimax",
@@ -119,7 +141,8 @@ func TestGebaeudeFind(t *testing.T) {
 			Revision:    1,
 			KaelteRef:   []int32{},
 			WaermeRef:   []int32{2084},
-			StromRef:    []int32{}}) // Überprüfung des zurückgelieferten Elements
+			StromRef:    []int32{},
+		}) // Überprüfung des zurückgelieferten Elements
 	})
 
 	t.Run("GebaeudeFind: ID = 0", func(t *testing.T) {
@@ -127,21 +150,21 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(0)
 
-		is.Equal(err, io.EOF)              // Datenbank gibt EOF error
+		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
 		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
 
-func TestKaeltezaehlerFind(t *testing.T) {
+func TestKaeltezaehlerFind(t *testing.T) { //nolint:dupl
 	is := is.NewRelaxed(t)
 
 	t.Run("KaeltezaehlerFind: ID = 4023", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		location, _ := time.LoadLocation("Etc/GMT")
 		data, err := database.KaeltezaehlerFind(4023)
-		location, err := time.LoadLocation("Etc/GMT")
 
-		is.NoErr(err) // Error seitens der Datenbank
+		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data, structs.Zaehler{Zaehlertyp: "Kaelte",
 			PKEnergie:   4023,
 			Bezeichnung: "3101 Kaelte Hauptzaehler",
@@ -175,7 +198,7 @@ func TestKaeltezaehlerFind(t *testing.T) {
 
 		data, err := database.KaeltezaehlerFind(0)
 
-		is.Equal(err, io.EOF)             // Datenbank gibt EOF error
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
 		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
@@ -183,13 +206,13 @@ func TestKaeltezaehlerFind(t *testing.T) {
 func TestWaermezaehlerFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	t.Run("WearmeFind: ID = 2107", func(t *testing.T) {
+	t.Run("WaermeFind: ID = 2107", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		location, _ := time.LoadLocation("Etc/GMT")
 		data, err := database.WaermezaehlerFind(2107)
-		location, err := time.LoadLocation("Etc/GMT")
 
-		is.NoErr(err) // Error seitens der Datenbank
+		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data, structs.Zaehler{Zaehlertyp: "Waerme",
 			PKEnergie:   2107,
 			Bezeichnung: " 2101,2102,2108 Waerme Gruppenzaehler",
@@ -219,21 +242,21 @@ func TestWaermezaehlerFind(t *testing.T) {
 
 		data, err := database.WaermezaehlerFind(0)
 
-		is.Equal(err, io.EOF)             // Datenbank gibt EOF error
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
 		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
 
-func TestStromzaehlerFind(t *testing.T) {
+func TestStromzaehlerFind(t *testing.T) { //nolint:dupl
 	is := is.NewRelaxed(t)
 
-	t.Run("WearmeFind: ID = 5967", func(t *testing.T) {
+	t.Run("WaermeFind: ID = 5967", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		location, _ := time.LoadLocation("Etc/GMT")
 		data, err := database.StromzaehlerFind(5967)
-		location, err := time.LoadLocation("Etc/GMT")
 
-		is.NoErr(err) // Error seitens der Datenbank
+		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data, structs.Zaehler{Zaehlertyp: "Strom",
 			PKEnergie:   5967,
 			Bezeichnung: "2201 Strom Hauptzaehler",
@@ -267,7 +290,7 @@ func TestStromzaehlerFind(t *testing.T) {
 
 		data, err := database.StromzaehlerFind(0)
 
-		is.Equal(err, io.EOF)             // Datenbank gibt EOF error
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
 		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }

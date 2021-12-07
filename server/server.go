@@ -17,7 +17,8 @@ func StartServer() {
 
 	r.Use(middleware.Logger)
 
-	// Diese Middleware befindet sich hier nur waehrend der entwicklung, die verarbeitung und configuration von cors wird in Produktion von unserem Webserver uebernommen.
+	// Diese Middleware befindet sich hier nur waehrend der Entwicklung,
+	// die Verarbeitung und configuration von cors wird in Produktion von unserem Webserver uebernommen.
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
 		AllowedOrigins: []string{"https://*", "http://*"},
@@ -26,10 +27,12 @@ func StartServer() {
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		MaxAge:           300, //nolint:gomnd    // Maximum value not ignored by any of major browsers
 	}))
 
 	r.Mount("/umfrage", RouteUmfrage())
+
+	log.Println("Server Started")
 
 	log.Fatalln(http.ListenAndServe(port, r))
 }

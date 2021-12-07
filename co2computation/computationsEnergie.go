@@ -25,15 +25,21 @@ var (
 	ErrStrEinheitUnbekannt = "%s: Einheit %s unbekannt"
 )
 
+const (
+	idEnergieversorgungWaerme int32 = 1
+	idEnergieversorgungStrom  int32 = 2
+	idEnergieversorgungKaelte int32 = 3
+)
+
 /**
 Die Funktion berechnet für die gegeben Gebaeude, Flaechenanteile und Jahr die entsprechenden Emissionen hinsichtlich der
 übergebenen ID fuer die entsprechende Energie (Waerme = 1, Strom = 2, Kaelte = 3).
 Ergebniseinheit: g
 */
-func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI, jahr int32, idEnergieversorung int32) (float64, error) {
+func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI, jahr int32, idEnergieversorgung int32) (float64, error) {
 	var gesamtemissionen float64
 
-	co2Faktor, err := getEnergieCO2Faktor(idEnergieversorung, jahr)
+	co2Faktor, err := getEnergieCO2Faktor(idEnergieversorgung, jahr)
 	if err != nil {
 		return 0, err
 	}
@@ -47,7 +53,7 @@ func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI,
 
 		switch gebaeude.Spezialfall {
 		case 1: // Normalfall
-			emissionen, err := gebaeudeNormalfall(co2Faktor, gebaeude, idEnergieversorung, jahr, gebaeudeFlaeche.Flaechenanteil)
+			emissionen, err := gebaeudeNormalfall(co2Faktor, gebaeude, idEnergieversorgung, jahr, gebaeudeFlaeche.Flaechenanteil)
 			if err != nil {
 				return 0, err
 			}
@@ -58,7 +64,7 @@ func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI,
 		}
 	}
 
-	return math.Round(gesamtemissionen*100) / 100, nil //Ergebnisrundung auf 2 Nachkommastellen
+	return math.Round(gesamtemissionen*100) / 100, nil // Ergebnisrundung auf 2 Nachkommastellen
 }
 
 /**
@@ -68,7 +74,7 @@ Ergebniseinheit: g/kWh
 func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
 	var co2Faktor int32 = -1
 
-	// Bestimmung CO2 Faktor für angegebens Jahr
+	// Bestimmung CO2 Faktor für angegebenes Jahr
 	energiewerte, err := database.EnergieversorgungFind(id)
 	if err != nil {
 		return 0, err
@@ -104,25 +110,25 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 	}
 
 	switch idEnergieversorgung { // waehlt Zaehlerreferenzen entsprechend ID
-	case 1: // Waerme
+	case idEnergieversorgungWaerme: // Waerme
 		refGebaeude = gebaeude.WaermeRef
-	case 2: // Strom
+	case idEnergieversorgungStrom: // Strom
 		refGebaeude = gebaeude.StromRef
-	case 3: // Kaelte
+	case idEnergieversorgungKaelte: // Kaelte
 		refGebaeude = gebaeude.KaelteRef
 	}
 
-	// Betrachte alle im Gebauede referenzierten Zaehler
+	// Betrachte alle im Gebaeude referenzierten Zaehler
 	for _, zaehlerID := range refGebaeude {
 		var zaehler structs.Zaehler
 		var err error
 
-		switch idEnergieversorgung { //holt Zaehler aus Datenbank mit entsprechender Deetenbank Funktion
-		case 1: // Waerme
+		switch idEnergieversorgung { // holt Zaehler aus Datenbank mit entsprechender Datenbank Funktion
+		case idEnergieversorgungWaerme: // Waerme
 			zaehler, err = database.WaermezaehlerFind(zaehlerID)
-		case 2: // Strom
+		case idEnergieversorgungStrom: // Strom
 			zaehler, err = database.StromzaehlerFind(zaehlerID)
-		case 3: // Kaelte
+		case idEnergieversorgungKaelte: // Kaelte
 			zaehler, err = database.KaeltezaehlerFind(zaehlerID)
 		}
 		if err != nil {
@@ -170,10 +176,10 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 }
 
 /**
-Funktion stellt den Normalfall zur Bestimmung des Verbauchs und zugehöriger Gebaeudeflaeche dar.
+Funktion stellt den Normalfall zur Bestimmung des Verbrauchs und zugehöriger Gebaeudeflaeche dar.
 Ergebniseinheit: kWh, m^2
 */
-func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaudeNr int32) (float64, float64, error) {
+func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaeudeNr int32) (float64, float64, error) {
 	var ngf float64
 
 	if len(zaehler.GebaeudeRef) == 0 {
@@ -201,10 +207,10 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaudeNr int32) (fl
 	}
 
 	// NGF aller referenzierten Gebaeude wird aufaddiert, um die Gesamtflaeche fuer den Verbrauch zu bekommen
-	// Die Flaeche des Gebaeudes, der diesen Zaehler refenrenziert hat, wurde schon behandelt.
-	// Dies verhindert, dass die Flaeche bei einem Gebaeude mit mehreren Zaehlern verfach addiert wird
+	// Die Flaeche des Gebaeudes, der diesen Zaehler referenziert hat, wurde schon behandelt.
+	// Dies verhindert, dass die Flaeche bei einem Gebaeude mit mehreren Zaehlern mehrfach addiert wird
 	for _, refGebaeudeID := range zaehler.GebaeudeRef {
-		if refGebaeudeID == gebaudeNr {
+		if refGebaeudeID == gebaeudeNr {
 			continue
 		}
 
@@ -220,11 +226,11 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaudeNr int32) (fl
 
 /**
 Die Funktion stellt den Spezialfall 2 und 3 für die Kaeltezaehler 3621 und 3622 dar. Es ist eine abgewandelte Version
-des Normalfalls und genau auf diese Zaehler zugeschnitte.
+des Normalfalls und genau auf diese Zaehler zugeschnitten.
 Ergebniseinheit: kWh
 */
 func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andereZaehlerID int32) (float64, error) {
-	var verbrauch float64 = -1 // Verbauch des Gruppenzaehlers
+	var verbrauch float64 = -1 // Verbrauch des Gruppenzaehlers
 	for _, zaehlerstand := range zaehler.Zaehlerdaten {
 		if int32(zaehlerstand.Zeitstempel.Year()) == jahr {
 			verbrauch = zaehlerstand.Wert
@@ -238,7 +244,7 @@ func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andereZaehlerID int
 	if err != nil {
 		return 0, err
 	}
-	var subtraktionsverbrauch float64 = -1 // Verbauch des Zaehlers, der substrahiert werden muss
+	var subtraktionsverbrauch float64 = -1 // Verbrauch des Zaehlers, der subtrahiert werden muss
 	for _, zaehlerstand := range subtraktionszaehler.Zaehlerdaten {
 		if int32(zaehlerstand.Zeitstempel.Year()) == jahr {
 			subtraktionsverbrauch = zaehlerstand.Wert

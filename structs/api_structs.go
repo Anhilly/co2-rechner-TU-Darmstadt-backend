@@ -21,7 +21,7 @@ type UmfrageMitarbeiterRes struct {
 }
 
 /* For testing:
-//ein temporärer JSON für eine monotlitische Umfrage
+//ein temporärer JSON für eine monolithische Umfrage
 type UmfrageReq struct {
 	// Hauptverantwortlicher
 	Gebaeude          []GebaeudeFlaeche `json:"gebaeude"`
