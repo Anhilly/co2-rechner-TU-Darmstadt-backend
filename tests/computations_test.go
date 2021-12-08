@@ -10,15 +10,21 @@ import (
 )
 
 func TestComputations(t *testing.T) {
-	database.ConnectDatabase()
-	defer database.DisconnectDatabase()
+	is := is.NewRelaxed(t)
+
+	err := database.ConnectDatabase()
+	is.NoErr(err)
+	defer func() {
+		err := database.DisconnectDatabase()
+		is.NoErr(err)
+	}()
 
 	t.Run("TestBerechneITGeraete", TestBerechneITGeraete)
 	t.Run("TestBerechnePendelweg", TestBerechnePendelweg)
 	t.Run("TestBerechneDienstreisen", TestBerechneDienstreisen)
 }
 
-func TestBerechneITGeraete(t *testing.T) {
+func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 	is := is.NewRelaxed(t)
 
 	// Normalfall
@@ -135,7 +141,7 @@ func TestBerechneITGeraete(t *testing.T) {
 	// Fehler ErrStrEinheitUnbekannt momentan nicht abpruefbar. Benoetigt falschen Datensatz in Datenbank
 }
 
-func TestBerechnePendelweg(t *testing.T) {
+func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	is := is.NewRelaxed(t)
 
 	// Normalfall
@@ -267,7 +273,7 @@ func TestBerechnePendelweg(t *testing.T) {
 	// Fehler ErrStrEinheitUnbekannt momentan nicht abpruefbar. Benoetigt falschen Datensatz in Datenbank
 }
 
-func TestBerechneDienstreisen(t *testing.T) {
+func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	is := is.NewRelaxed(t)
 
 	// Normalfall
@@ -429,7 +435,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.Equal(err, co2computation.ErrTankartUnbekannt) // Funktione wirft ErrTankartUnbekannt
+		is.Equal(err, co2computation.ErrTankartUnbekannt) // Funktion wirft ErrTankartUnbekannt
 		is.Equal(emissionen, 0.0)                         // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
@@ -442,7 +448,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.Equal(err, co2computation.ErrStreckentypUnbekannt) // Funktione wirft ErrStreckentypUnbekannt
+		is.Equal(err, co2computation.ErrStreckentypUnbekannt) // Funktion wirft ErrStreckentypUnbekannt
 		is.Equal(emissionen, 0.0)                             // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
@@ -455,7 +461,7 @@ func TestBerechneDienstreisen(t *testing.T) {
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.Equal(err, co2computation.ErrStreckeNegativ) // Funktione wirft ErrStreckeNegativ)
+		is.Equal(err, co2computation.ErrStreckeNegativ) // Funktion wirft ErrStreckeNegativ
 		is.Equal(emissionen, 0.0)                       // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 

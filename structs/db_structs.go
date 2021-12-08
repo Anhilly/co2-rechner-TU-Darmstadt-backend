@@ -87,7 +87,7 @@ type Waermezaehler struct {
 	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
 } */
 
-//Collection energieversorgung
+// Collection energieversorgung
 type Energieversorgung struct {
 	IDEnergieversorgung int32        `json:"idEnergieversorgung" bson:"idEnergieversorgung"` // (index)
 	Kategorie           string       `json:"kategorie" bson:"kategorie"`
@@ -101,7 +101,7 @@ type CO2Energie struct {
 	Jahr int32 `json:"jahr" bson:"jahr"`
 }
 
-//Collection itGeraete
+// Collection itGeraete
 type ITGeraete struct {
 	IDITGerate      int32  `json:"idITGeraete" bson:"idITGeraete"` // (index)
 	Kategorie       string `json:"kategorie" bson:"kategorie"`
@@ -111,7 +111,7 @@ type ITGeraete struct {
 	Revision        int32  `json:"revision" bson:"revision"`
 }
 
-//Collection dienstreisen
+// Collection dienstreisen
 type Dienstreisen struct {
 	IDDienstreisen int32             `json:"idDienstreisen" bson:"idDienstreisen"` // (index)
 	Medium         string            `json:"medium" bson:"medium"`
@@ -126,7 +126,7 @@ type CO2Dienstreisen struct {
 	Wert        int32  `json:"wert" bson:"wert"`
 }
 
-//Collection pendelweg
+// Collection pendelweg
 type Pendelweg struct {
 	IDPendelweg int32  `json:"idPendelweg" bson:"idPendelweg"` // (index)
 	Medium      string `json:"medium" bson:"medium"`

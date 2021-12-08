@@ -6,15 +6,10 @@ import (
 )
 
 func main() {
-	//importer.ImportEnergieversorgung()
-	//importer.ImportGebaeude()
-	//importer.ImportStromzaehler()
-	//importer.ImportWaermedaten()
-	//importer.ImportKaeltedaten()
-
-	database.ConnectDatabase()
+	err := database.ConnectDatabase()
+	if err != nil {
+		panic(err)
+	}
 
 	server.StartServer()
-
-	//database.DisconnectDatabase()
 }

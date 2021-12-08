@@ -15,11 +15,17 @@ var (
 	// Fehler durch Nutzereingabe (oder Wert fehlt in Datenbank)
 	ErrStreckentypUnbekannt = errors.New("BerechneDienstreisen: Streckentyp nicht vorhanden")
 	// Fehler durch Nutzereingabe
-	ErrStreckeNegativ = errors.New("Berechne_: Strecke ist negativ")
+	ErrStreckeNegativ = errors.New("BerechneDienstreise / BerechnePendelweg: Strecke ist negativ")
 	// Fehler durch Nutzereingabe
 	ErrAnzahlNegativ = errors.New("BerechneITGeraete: Anzahl an IT-Geraeten ist negativ")
-	// Fehler durch fehlende Implemetierung einer Berechnung
+	// Fehler durch fehlende Implementierung einer Berechnung
 	ErrBerechnungUnbekannt = errors.New("BerechneDienstreisen: Keine Berechnung fuer angegeben ID vorhanden")
+)
+
+const ( // nach IDs in der Datenbank
+	DienstreiseIDBahn     int32 = 1
+	DienstreiseIDAuto     int32 = 2
+	DienstreiseIDFlugzeug int32 = 3
 )
 
 /**
@@ -43,10 +49,11 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 			return 0, err
 		}
 
-		switch medium.IDDienstreisen { // muss explizit behandelt werden, da je nach Medium der CO2 Faktor anders bestimmt wird
-		case 1: // Bahn
+		// muss explizit behandelt werden, da je nach Medium der CO2 Faktor anders bestimmt wird
+		switch medium.IDDienstreisen {
+		case DienstreiseIDBahn: // Bahn
 			co2Faktor = medium.CO2Faktor[0].Wert
-		case 2: // Auto
+		case DienstreiseIDAuto: // Auto
 			for _, faktor := range medium.CO2Faktor {
 				if faktor.Tankart == dienstreise.Tankart {
 					co2Faktor = faktor.Wert
@@ -55,7 +62,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 			if co2Faktor == -1 {
 				return 0, ErrTankartUnbekannt
 			}
-		case 3: // Flugzeug
+		case DienstreiseIDFlugzeug: // Flugzeug
 			for _, faktor := range medium.CO2Faktor {
 				if faktor.Streckentyp == dienstreise.Streckentyp {
 					co2Faktor = faktor.Wert
@@ -69,7 +76,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 		}
 
 		if medium.Einheit == "g/Pkm" {
-			emission += float64(co2Faktor * dienstreise.Strecke * 2)
+			emission += float64(co2Faktor * dienstreise.Strecke * 2) //nolint:gomnd
 		} else {
 			return 0, fmt.Errorf(ErrStrEinheitUnbekannt, "BerechneDienstreisen", medium.Einheit)
 		}
@@ -79,7 +86,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 }
 
 /**
-Die Funktion berechnet die Gesamtemissionen auf Basis der gegeben Pendelwege und der Tage im Büro.
+Die Funktion berechnet die Gesamtemissionen auf Basis der gegebenen Pendelwege und der Tage im Büro.
 Ergebniseinheit: g
 */
 func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero int32) (float64, error) {
