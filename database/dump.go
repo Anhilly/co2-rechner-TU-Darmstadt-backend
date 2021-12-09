@@ -39,7 +39,7 @@ Funktion spielt einen Dump, der in "containerDir + directoryName" liegt, wieder 
 func RestoreDump(directoryName string) error {
 	cmd := exec.Command("docker", "exec", "-i", "mongodb", "/usr/bin/mongorestore",
 		"--username", username, "--password", password, "--authenticationDatabase", "admin",
-		"--db", dbName, containerDir+directoryName+"/"+dbName)
+		"--drop", "--db", dbName, containerDir+directoryName+"/"+dbName)
 
 	err := cmd.Run()
 	if err != nil {
