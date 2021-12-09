@@ -10,8 +10,8 @@ func RouteDB() chi.Router {
 
 	r.Post("/addFaktor", PostAddFaktor)
 	r.Post("/addZaehlerdaten", PostAddZaehlerdaten)
-	r.Post("/addZaehler", PostAddZaehler)
-	r.Post("/addGebaeude", PostAddGebaeude)
+	r.Post("/insertZaehler", PostInsertZaehler)
+	r.Post("/insertGebaeude", PostInsertGebaeude)
 
 	return r
 }
@@ -24,10 +24,10 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 
 }
 
-func PostAddZaehler(res http.ResponseWriter, req *http.Request) {
+func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 
 }
 
-func PostAddGebaeude(res http.ResponseWriter, req *http.Request) {
+func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 
 }
