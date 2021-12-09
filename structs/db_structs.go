@@ -134,3 +134,53 @@ type Pendelweg struct {
 	Einheit     string `json:"einheit" bson:"einheit"`
 	Revision    int32  `json:"revision" bson:"revision"`
 }
+
+//Collection nutzerdaten
+type Nutzerdaten struct {
+	NutzerNr int32  `json:"nutzerNr" bson:"nutzerNr"` // (index)
+	Email    string `json:"email" bson:"email"`
+	Passwort string `json:"passwort" bson:"passwort"`
+	Revision int32  `json:"revision" bson:"revision"`
+}
+
+//Collection mitarbeiterUmfrage
+type MitarbeiterUmfrage struct {
+	MitarbeiterUmfrageNr int32                `json:"mitarbeiterUmfrageNr" bson:"mitarbeiter_umfrage_nr"` // (index)
+	Pendelweg            []UmfragePendelweg   `json:"pendelweg" bson:"pendelweg"`
+	TageImBuero          int32                `json:"tageImBuero" bson:"tageImBuero"`
+	Dienstreise          []UmfrageDienstreise `json:"dienstreise" bson:"dienstreise"`
+	ITGeraete            []ITGeraeteUmfrage   `json:"itGereate" bson:"itGeraete"`
+	Revision             int32                `json:"revision" bson:"revision"`
+}
+
+type UmfragePendelweg struct {
+	Strecke        int32 `json:"strecke" bson:"strecke"`
+	IDPendelweg    int32 `json:"idPendelweg" bson:"idPendelweg"` // -> IDPendelweg in Pendelweg
+	PersonenAnzahl int32 `json:"personenanzahl" bson:"personenanzahl"`
+}
+
+type UmfrageDienstreise struct {
+	IDDienstreise int32  `json:"idDienstreise" bson:"idDienstreise"` // -> IDDienstreisen in Dienstreisen
+	Streckentyp   string `json:"streckentyp" bson:"streckentyp"`
+	Strecke       int    `json:"strecke" bson:"strecke"`
+	Tankart       string `json:"tankart" bson:"tankart"`
+}
+
+type ITGeraeteUmfrage struct {
+	IDITGeraete int32 `json:"idITGeraete" bson:"idITGeraete"` // -> IDITGeraete in ITGereate
+	Anzahl      int32 `json:"anzahl" bson:"anzahl"`
+}
+
+//Collection umfrage
+type Umfrage struct {
+	UmfrageNr         int32              `json:"umfrageNr" bson:"umfrageNr"` // (index)
+	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl" bson:"mitarbeiteranzahl"`
+	Gebaeude          []GebaeudeUmfrage  `json:"gebaeude" bson:"gebaeude"`
+	ITGeraete         []ITGeraeteUmfrage `json:"itGeraete" bson:"ITGeraete"`
+	Revision          int32              `json:"revision" bson:"revision"`
+}
+
+type GebaeudeUmfrage struct {
+	GebaeudeNr  int32 `json:"gebaeudeNr" bson:"gebaeudeNr"` // -> Nr in Gebaeude
+	Nutzflaeche int32 `json:"nutzflaeche" bson:"nutzflaeche"`
+}
