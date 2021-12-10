@@ -206,7 +206,7 @@ func TestKaeltezaehlerFind(t *testing.T) { //nolint:dupl
 func TestWaermezaehlerFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	t.Run("WaermeFind: ID = 2107", func(t *testing.T) {
+	t.Run("WaermezaehlerFind: ID = 2107", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		location, _ := time.LoadLocation("Etc/GMT")
@@ -250,7 +250,7 @@ func TestWaermezaehlerFind(t *testing.T) {
 func TestStromzaehlerFind(t *testing.T) { //nolint:dupl
 	is := is.NewRelaxed(t)
 
-	t.Run("WaermeFind: ID = 5967", func(t *testing.T) {
+	t.Run("StromzaehlerFind: ID = 5967", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		location, _ := time.LoadLocation("Etc/GMT")
