@@ -137,8 +137,7 @@ type Pendelweg struct {
 
 //Collection nutzerdaten
 type Nutzerdaten struct {
-	NutzerNr int32  `json:"nutzerNr" bson:"nutzerNr"` // (index)
-	Email    string `json:"email" bson:"email"`
+	Email    string `json:"email" bson:"email"` // (index)
 	Passwort string `json:"passwort" bson:"passwort"`
 	Revision int32  `json:"revision" bson:"revision"`
 }
