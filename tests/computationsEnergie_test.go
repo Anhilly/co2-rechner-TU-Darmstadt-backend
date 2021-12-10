@@ -97,6 +97,22 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		is.Equal(emissionen, 1085282.24) // erwartetes Ergebnis: 1085282.24
 	})
 
+	// Test ueberprueft, ob Referenzen von Gebaeude 1321 korrekt angepasst
+	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Gebaeude 1321 hat nur noch ein Zaehler ", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
+			{GebaeudeNr: 1321, Flaechenanteil: 1000},
+		}
+		var jahr int32 = 2020
+		var idEnergieversorgung int32 = 2
+
+		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+
+		is.NoErr(err)                    // Normalfall wirft keine Errors
+		is.Equal(emissionen, 8804937.41) // erwartetes Ergebnis: 8804937.41
+	})
+
 	t.Run("BerechneEnergieverbrauch: komplexe Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
