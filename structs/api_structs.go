@@ -92,7 +92,7 @@ type AddZaehlerdaten struct {
 	Wert      float64 `json:"wert"`
 }
 
-type AddZaehler struct {
+type InsertZaehler struct {
 	PKEnergie           int32   `json:"pkEnergie"`
 	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
 	Bezeichnung         string  `json:"bezeichnung"`
@@ -100,7 +100,7 @@ type AddZaehler struct {
 	GebaeudeRef         []int32 `json:"gebaeudeRef"`
 }
 
-type AddGebaeude struct {
+type InsertGebaeude struct {
 	Nr          int32           `json:"nr"`
 	Bezeichnung string          `json:"bezeichnung"`
 	Flaeche     GebaeudeFlaeche `json:"flaeche"`
