@@ -87,9 +87,9 @@ type AddCO2Faktor struct {
 }
 
 type AddZaehlerdaten struct {
-	PKEnergie int32 `json:"pkEnergie"`
-	Jahr      int32 `json:"jahr"`
-	Wert      int32 `json:"wert"`
+	PKEnergie int32   `json:"pkEnergie"`
+	Jahr      int32   `json:"jahr"`
+	Wert      float64 `json:"wert"`
 }
 
 type AddZaehler struct {
