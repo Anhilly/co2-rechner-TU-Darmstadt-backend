@@ -245,6 +245,116 @@ func TestWaermezaehlerFind(t *testing.T) {
 		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
 		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
+
+	// Zaehler soll nicht beachtet werden, 1473 Waerme Hauptzaehler Justitzzentrum
+	t.Run("WaermezaehlerFind: ID = 2014", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(2014)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, 1475 Waerme Hauptzaehler Landgericht Gebaeude A
+	t.Run("WaermezaehlerFind: ID = 2015", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(2015)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, 1476 Waerme Hauptzaehler Landgericht Gebaeude B
+	t.Run("WaermezaehlerFind: ID = 2016", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(2016)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, 1477 Waerme Hauptzaehler Regierungspraesidium
+	t.Run("WaermezaehlerFind: ID = 2256", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(2256)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, 1479 Waerme Hauptzaehler Staatsbauamt
+	t.Run("WaermezaehlerFind: ID = 3613", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(3613)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, 1480 Waerme Hauptzaehler Landesmuseum
+	t.Run("WaermezaehlerFind: ID = 3614", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(3614)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, 1481 Waerme Hauptzaehler Staatsarchiv
+	t.Run("WaermezaehlerFind: ID = 2102", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(2012)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, 1213a Altbau Frauenhofer Institut (LBF) Waerme
+	t.Run("WaermezaehlerFind: ID = 2377", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(2377)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, 1213b Frauenhofer Institut (LBF) Neubau Waerme
+	t.Run("WaermezaehlerFind: ID = 2378", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(2378)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Geb_Rechenwerk_Neues_RP_Entega_ENERGIE
+	t.Run("WaermezaehlerFind: ID = 4193", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(4193)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Geb_Rechenwerk_Neues_RP_Steag_ENERGIE
+	t.Run("WaermezaehlerFind: ID = 4194", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.WaermezaehlerFind(4194)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
 }
 
 func TestStromzaehlerFind(t *testing.T) { //nolint:dupl
@@ -285,7 +395,17 @@ func TestStromzaehlerFind(t *testing.T) { //nolint:dupl
 		})
 	})
 
-	t.Run("StromzaehlerFind: ID = 0", func(t *testing.T) {
+	t.Run("StromzaehlerFind: ID = 0 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.StromzaehlerFind(0)
+
+		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// dieser Zaehler wurde rausgenommen, weil die Einheit kW ist
+	t.Run("StromzaehlerFind: ID = 3576 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data, err := database.StromzaehlerFind(0)
