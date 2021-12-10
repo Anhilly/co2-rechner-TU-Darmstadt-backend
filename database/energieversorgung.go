@@ -66,7 +66,9 @@ func EnergieversorgungAddFaktor(data structs.AddCO2Faktor) error {
 	_, err = collection.UpdateOne(
 		ctx,
 		bson.D{{"idEnergieversorgung", data.IDEnergieversorgung}},
-		bson.D{{"$push", bson.D{{"CO2Faktor", bson.D{{"wert", data.Wert}, {"jahr", data.Jahr}}}}}},
+		bson.D{{"$push",
+			bson.D{{"CO2Faktor",
+				bson.D{{"wert", data.Wert}, {"jahr", data.Jahr}}}}}},
 	)
 	if err != nil {
 		return err
