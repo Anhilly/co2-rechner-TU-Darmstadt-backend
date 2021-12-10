@@ -294,3 +294,28 @@ func TestStromzaehlerFind(t *testing.T) { //nolint:dupl
 		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
+
+func testNutzerdatenFind(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	//Nicht vorhandener Dateneintrag
+	t.Run("NutzerdatenFind: email = 'keineValideEmail'", func(t *testing.T) {
+
+		is := is.NewRelaxed(t)
+		data, err := database.NutzerdatenFind("keineValideEmail")
+		is.Equal(err, io.EOF)                 // End of file error geworfen
+		is.Equal(data, structs.Nutzerdaten{}) // Bei Fehler leeres
+	})
+
+	//Vorhandener Dateneintrag
+	t.Run("NutzerdatenFind: email = 'my@email.com'", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+		data, err := database.NutzerdatenFind("my@email.com")
+		is.NoErr(err) //Kein Fehler wird geworfen
+		is.Equal(data, structs.Nutzerdaten{
+			Email:    "my@email.com",
+			Passwort: "testPassword",
+			Revision: 1,
+		})
+	})
+}
