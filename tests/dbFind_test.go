@@ -26,6 +26,7 @@ func TestFind(t *testing.T) {
 	t.Run("TestKaelteFind", TestKaeltezaehlerFind)
 	t.Run("TestWaermeFind", TestWaermezaehlerFind)
 	t.Run("TestStromFind", TestStromzaehlerFind)
+	t.Run("TestNutzerdatenFind", testNutzerdatenFind)
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -298,24 +299,24 @@ func TestStromzaehlerFind(t *testing.T) { //nolint:dupl
 func testNutzerdatenFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	//Nicht vorhandener Dateneintrag
-	t.Run("NutzerdatenFind: email = 'keineValideEmail'", func(t *testing.T) {
+	// Normalfall
+	t.Run("NutzerdatenFind: email = 'anton@tobi.com'", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+		data, err := database.NutzerdatenFind("anton@tobi.com")
+		is.NoErr(err) //Kein Fehler wird geworfen
+		is.Equal(data, structs.Nutzerdaten{
+			Email:    "anton@tobi.com",
+			Passwort: "test_pw",
+			Revision: 1,
+		})
+	})
+
+	// Errortests
+	t.Run("NutzerdatenFind: email = 'keineValideEmail' (nicht vorhanden)", func(t *testing.T) {
 
 		is := is.NewRelaxed(t)
 		data, err := database.NutzerdatenFind("keineValideEmail")
 		is.Equal(err, io.EOF)                 // End of file error geworfen
-		is.Equal(data, structs.Nutzerdaten{}) // Bei Fehler leeres
-	})
-
-	//Vorhandener Dateneintrag
-	t.Run("NutzerdatenFind: email = 'my@email.com'", func(t *testing.T) {
-		is := is.NewRelaxed(t)
-		data, err := database.NutzerdatenFind("my@email.com")
-		is.NoErr(err) //Kein Fehler wird geworfen
-		is.Equal(data, structs.Nutzerdaten{
-			Email:    "my@email.com",
-			Passwort: "testPassword",
-			Revision: 1,
-		})
+		is.Equal(data, structs.Nutzerdaten{}) // Bei Fehler leeres struct
 	})
 }
