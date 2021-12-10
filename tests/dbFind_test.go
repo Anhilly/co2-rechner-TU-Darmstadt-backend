@@ -145,7 +145,7 @@ func TestGebaeudeFind(t *testing.T) {
 		}) // Überprüfung des zurückgelieferten Elements
 	})
 
-	t.Run("GebaeudeFind: ID = 0", func(t *testing.T) {
+	t.Run("GebaeudeFind: ID = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data, err := database.GebaeudeFind(0)
@@ -153,6 +153,87 @@ func TestGebaeudeFind(t *testing.T) {
 		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
 		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
+
+	// Gebaeude soll nicht beachtet werden, Justitzzentrum
+	t.Run("GebaeudeFind: ID = 1473 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.GebaeudeFind(1437)
+
+		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Gebaeude soll nicht beachtet werden, Landgericht Gebaeude A
+	t.Run("GebaeudeFind: ID = 1475 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.GebaeudeFind(1475)
+
+		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Gebaeude soll nicht beachtet werden, Landgericht Gebaeude B
+	t.Run("GebaeudeFind: ID = 1476 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.GebaeudeFind(1476)
+
+		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Gebaeude soll nicht beachtet werden, Regierungspraesidium
+	t.Run("GebaeudeFind: ID = 1477 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.GebaeudeFind(1477)
+
+		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Gebaeude soll nicht beachtet werden, Staatsbauamt
+	t.Run("GebaeudeFind: ID = 1479 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.GebaeudeFind(1479)
+
+		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Gebaeude soll nicht beachtet werden, Landesmuseum
+	t.Run("GebaeudeFind: ID = 1480 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.GebaeudeFind(1480)
+
+		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Gebaeude soll nicht beachtet werden, Staatsarchiv
+	t.Run("GebaeudeFind: ID = 1481 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.GebaeudeFind(1481)
+
+		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Gebaeude soll nicht beachtet werden, Frauenhofer Institut (LBF)
+	t.Run("GebaeudeFind: ID = 1213 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.GebaeudeFind(1213)
+
+		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
+		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
 }
 
 func TestKaeltezaehlerFind(t *testing.T) { //nolint:dupl
