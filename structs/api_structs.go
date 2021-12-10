@@ -78,3 +78,14 @@ type DienstreiseElement struct {
 	Strecke       int32  `json:"strecke"`
 	Tankart       string `json:"tankart"`
 }
+
+type AnmeldungReq struct {
+	Email    string `json:"username"`
+	Passwort string `json:"password"`
+}
+
+type AnmeldungRes struct {
+	Message     string `json:"message"`
+	Success     bool   `json:"success"`
+	Cookietoken string `json:"cookietoken"`
+}
