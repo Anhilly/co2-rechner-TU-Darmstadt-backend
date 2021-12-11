@@ -234,6 +234,20 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 	})
 
 	// Errortests
+	t.Run("ZaehlerAddZaehlerdaten: IDEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           0,
+			Wert:                1000.0,
+			Jahr:                3000,
+			IDEnergieversorgung: 0,
+		}
+
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Funktion wirft ErrIDEnergieversorgungNichtVorhanden
+	})
+
 	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, ID nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 

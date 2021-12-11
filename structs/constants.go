@@ -28,3 +28,18 @@ const ( // nach IDs in der Datenbank
 	IDDienstreiseAuto     int32 = 2
 	IDDienstreiseFlugzeug int32 = 3
 )
+
+const ( // fuer Einheiten
+	EinheitkWh     = "kWh"
+	EinheitMWh     = "MWh"
+	Einheitqm      = "m^2"
+	EinheitgkWh    = "g/kWh"
+	EinheitgPkm    = "g/Pkm"
+	EinheitgStueck = "g/Stueck"
+)
+
+const ( // fuer Zaehertypen
+	ZaehlertypWaerme = "Waerme"
+	ZaehlertypKaelte = "Kaelte"
+	ZaehlertypStrom  = "Strom"
+)

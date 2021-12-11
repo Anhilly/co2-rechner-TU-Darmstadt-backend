@@ -53,7 +53,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 			return 0, structs.ErrBerechnungUnbekannt
 		}
 
-		if medium.Einheit == "g/Pkm" {
+		if medium.Einheit == structs.EinheitgPkm {
 			emission += float64(co2Faktor * dienstreise.Strecke * 2) //nolint:gomnd
 		} else {
 			return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechneDienstreisen", medium.Einheit)
@@ -93,7 +93,7 @@ func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero in
 			return 0, err
 		}
 
-		if medium.Einheit == "g/Pkm" {
+		if medium.Einheit == structs.EinheitgPkm {
 			emissionen += float64(arbeitstage*2*weg.Strecke*medium.CO2Faktor) / float64(weg.Personenanzahl)
 		} else {
 			return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechnePendelweg", medium.Einheit)
@@ -122,7 +122,7 @@ func BerechneITGeraete(itGeraeteDaten []structs.ITGeraeteAnzahl) (float64, error
 			return 0, err
 		}
 
-		if kategorie.Einheit == "g/Stueck" {
+		if kategorie.Einheit == structs.EinheitgStueck {
 			if kategorie.IDITGerate == 8 || kategorie.IDITGerate == 10 { // Druckerpatronen und Toner
 				emissionen += float64(itGeraet.Anzahl * kategorie.CO2FaktorGesamt)
 			} else { // alle anderen IT Geräte

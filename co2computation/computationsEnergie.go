@@ -63,7 +63,7 @@ func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
 	if co2Faktor == -1 {
 		return 0, structs.ErrJahrNichtVorhanden
 	}
-	if energiewerte.Einheit != "g/kWh" { // Einheit muss immer g/kWh sein
+	if energiewerte.Einheit != structs.EinheitgkWh { // Einheit muss immer g/kWh sein
 		return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "getCO2FaktorEnergie", energiewerte.Einheit)
 	}
 
@@ -164,9 +164,9 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaeudeNr int32) (f
 	}
 
 	switch zaehler.Einheit {
-	case "MWh":
+	case structs.EinheitMWh:
 		verbrauch *= 1000
-	case "kWh":
+	case structs.EinheitkWh:
 		// da Verbrauch schon in kWh muss nichts gemacht werden
 	default:
 		return 0, 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "zaehlerNormalfall", zaehler.Einheit)

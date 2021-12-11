@@ -540,4 +540,16 @@ func TestZaehlerFind(t *testing.T) {
 		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
 		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
+
+	t.Run("ZaehlerFind: IDEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 1
+		var idEnergieversorgung int32 = 0
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Funktion wirft ErrIDEnergieversorgungNichtVorhanden
+		is.Equal(data, structs.Zaehler{})                           // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
 }

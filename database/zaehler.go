@@ -21,13 +21,13 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 	switch idEnergieversorgung {
 	case structs.IDEnergieversorgungWaerme: // Waerme
 		collectionname = structs.WaermezaehlerCol
-		zaehlertyp = "Waerme"
+		zaehlertyp = structs.ZaehlertypWaerme
 	case structs.IDEnergieversorgungStrom: // Strom
 		collectionname = structs.StromzaehlerCol
-		zaehlertyp = "Strom"
+		zaehlertyp = structs.ZaehlertypStrom
 	case structs.IDEnergieversorgungKaelte: // Kaelte
 		collectionname = structs.KaeltezaehlerCol
-		zaehlertyp = "Kaelte"
+		zaehlertyp = structs.ZaehlertypKaelte
 	default:
 		return structs.Zaehler{}, structs.ErrIDEnergieversorgungNichtVorhanden
 	}
