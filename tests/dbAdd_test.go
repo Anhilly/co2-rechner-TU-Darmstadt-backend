@@ -5,6 +5,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
+	"go.mongodb.org/mongo-driver/mongo"
 	"io"
 	"testing"
 	"time"
@@ -32,6 +33,7 @@ func TestAdd(t *testing.T) {
 	t.Run("TestWaermezaehlerAddZaehlerdaten", TestWaermezaehlerAddZaehlerdaten)
 	t.Run("TestStromzaehlerAddZaehlerdaten", TestStromzaehlerAddZaehlerdaten)
 	t.Run("TestKaeltezaehlerAddZaehlerdaten", TestKaeltezaehlerAddZaehlerdaten)
+	t.Run("TestGebaeudeAddZaehlerref", TestGebaeudeAddZaehlerref)
 }
 
 func TestEnergieversorgungAddFaktor(t *testing.T) {
@@ -319,5 +321,134 @@ func TestKaeltezaehlerAddZaehlerdaten(t *testing.T) {
 
 		err := database.KaeltezaehlerAddZaehlerdaten(data)
 		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+	})
+}
+
+func TestGebaeudeAddZaehlerref(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("GebaeudeAddZaehlerref: ID = 1101, idEnergieversorgung = 1", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var nr int32 = 1101
+		var ref int32 = 999
+		var idEnergieversorgung int32 = 1
+
+		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updatedDoc, _ := database.GebaeudeFind(nr)
+		is.Equal(updatedDoc, structs.Gebaeude{
+			Nr:          1101,
+			Bezeichnung: "Universitaetszentrum, karo 5, Audimax",
+			Flaeche: structs.GebaeudeFlaeche{
+				HNF:     6395.56,
+				NNF:     3081.85,
+				NGF:     15365.03,
+				FF:      5539.21,
+				VF:      5887.62,
+				FreiF:   96.57,
+				GesamtF: 21000.81,
+			},
+			Einheit:     "m^2",
+			Spezialfall: 1,
+			Revision:    1,
+			KaelteRef:   []int32{},
+			WaermeRef:   []int32{2084, 999},
+			StromRef:    []int32{},
+		}) // Ueberpruefung des zurueckgelieferten Elements
+	})
+
+	t.Run("GebaeudeAddZaehlerref: ID = 1102, idEnergieversorgung = 2", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var nr int32 = 1102
+		var ref int32 = 999
+		var idEnergieversorgung int32 = 2
+
+		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updatedDoc, _ := database.GebaeudeFind(nr)
+		is.Equal(updatedDoc, structs.Gebaeude{
+			Nr:          1102,
+			Bezeichnung: "Altes Hauptgebaeude (Westfluegel)",
+			Flaeche: structs.GebaeudeFlaeche{
+				HNF:     2632.27,
+				NNF:     168.53,
+				NGF:     4152.24,
+				FF:      99,
+				VF:      1351.44,
+				FreiF:   0,
+				GesamtF: 4251.24,
+			},
+			Einheit:     "m^2",
+			Spezialfall: 1,
+			Revision:    1,
+			KaelteRef:   []int32{},
+			WaermeRef:   []int32{2348},
+			StromRef:    []int32{999},
+		}) // Ueberpruefung des zurueckgelieferten Elements
+	})
+
+	t.Run("GebaeudeAddZaehlerref: ID = 1103, idEnergieversorgung = 3", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var nr int32 = 1103
+		var ref int32 = 999
+		var idEnergieversorgung int32 = 3
+
+		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updatedDoc, _ := database.GebaeudeFind(nr)
+		is.Equal(updatedDoc, structs.Gebaeude{
+			Nr:          1103,
+			Bezeichnung: "Altes Hauptgebaeude",
+			Flaeche: structs.GebaeudeFlaeche{
+				HNF:     11745.22,
+				NNF:     2191.86,
+				NGF:     20297.78,
+				FF:      2438.26,
+				VF:      6360.7,
+				FreiF:   0,
+				GesamtF: 22736.04,
+			},
+			Einheit:     "m^2",
+			Spezialfall: 1,
+			Revision:    1,
+			KaelteRef:   []int32{999},
+			WaermeRef:   []int32{2349, 2350, 2351, 2352, 2353, 2354},
+			StromRef:    []int32{},
+		}) // Ueberpruefung des zurueckgelieferten Elements
+	})
+
+	t.Run("GebaeudeAddZaehlerref: Doppelte Referenz", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var nr int32 = 1108
+		var ref int32 = 2250
+		var idEnergieversorgung int32 = 1
+
+		doc, _ := database.GebaeudeFind(nr)
+
+		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updatedDoc, _ := database.GebaeudeFind(nr)
+		is.Equal(updatedDoc, doc) // Ueberpruefung des zurueckgelieferten Elements
+	})
+
+	// Errortests
+	t.Run("GebaeudeAddZaehlerref: ID = 0 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var nr int32 = 0
+		var ref int32 = 999
+		var idEnergieversorgung int32 = 3
+
+		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 	})
 }
