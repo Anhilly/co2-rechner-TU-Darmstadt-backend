@@ -424,6 +424,7 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
+	// dieser Fall sollte nicht auftreten
 	t.Run("GebaeudeAddZaehlerref: Doppelte Referenz", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
