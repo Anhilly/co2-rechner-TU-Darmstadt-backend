@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
@@ -9,6 +10,11 @@ import (
 
 const (
 	waermezaehlerCol = "waermezaehler"
+)
+
+var (
+	ErrZaehlerVorhanden    = errors.New("Es ist schon ein Zaehler mit dem PK vorhanden!")
+	ErrFehlendeGebaeuderef = errors.New("Neuer Zaehler hat keine Referenzen auf Gebaeude!")
 )
 
 /**
@@ -73,6 +79,47 @@ func WaermezaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func WaermezaehlerInsert(data structs.InsertZaehler) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(waermezaehlerCol)
+
+	if len(data.GebaeudeRef) == 0 {
+		return ErrFehlendeGebaeuderef
+	}
+
+	_, err := WaermezaehlerFind(data.PKEnergie)
+	if err == nil { // kein Error = Nr schon vorhanden
+		return ErrZaehlerVorhanden
+	}
+
+	_, err = collection.InsertOne(
+		ctx,
+		structs.Zaehler{
+			PKEnergie:    data.PKEnergie,
+			Bezeichnung:  data.Bezeichnung,
+			Einheit:      data.Einheit,
+			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Spezialfall:  1,
+			Revision:     1,
+			GebaeudeRef:  data.GebaeudeRef,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, referenz := range data.GebaeudeRef {
+		err := GebaeudeAddZaehlerref(referenz, data.PKEnergie, data.IDEnergieversorgung)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
