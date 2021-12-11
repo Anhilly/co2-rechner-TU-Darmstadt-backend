@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"time"
 )
 
 const (
@@ -53,4 +54,58 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 	data.Zaehlertyp = zaehlertyp
 
 	return data, nil
+}
+
+/**
+Funktion updated einen Zaehler in der Datenbank um den Zaehlerwert {jahr, wert}, falls Zaehler vorhanden
+und Jahr noch nicht vorhanden.
+*/
+func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
+	var collectionname string
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	defer cancel()
+
+	switch data.IDEnergieversorgung { //TODO: Ersetzte Zahlen mit Konstanten
+	case 1: // Waerme
+		collectionname = waermezaehlerCol
+	case 2: // Strom
+		collectionname = stromzaehlerCol
+	case 3: // Kaelte
+		collectionname = kaeltezaehlerCol
+	default:
+		return ErrIDEnergieversorgungNichtVorhanden
+	}
+
+	collection := client.Database(dbName).Collection(collectionname)
+
+	// Ueberpruefung, ob PK in Datenbank vorhanden
+	currentDoc, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+	if err != nil {
+		return err
+	}
+
+	// Ueberpruefung, ob schon Wert zu angegebenen Jahr existiert
+	for _, zaehlerdatum := range currentDoc.Zaehlerdaten {
+		if int32(zaehlerdatum.Zeitstempel.Year()) == data.Jahr {
+			return ErrJahrVorhanden
+		}
+	}
+
+	// Update des Eintrages
+	location, _ := time.LoadLocation("Etc/GMT")
+	zeitstemple := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
+
+	_, err = collection.UpdateOne(
+		ctx,
+		bson.D{{"pkEnergie", data.PKEnergie}},
+		bson.D{{"$push",
+			bson.D{{"zaehlerdaten",
+				bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstemple}}}}}},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

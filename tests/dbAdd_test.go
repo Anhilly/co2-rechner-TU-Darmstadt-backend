@@ -30,9 +30,10 @@ func TestAdd(t *testing.T) {
 	}(dir)
 
 	t.Run("TestEnergieversorgungAddFaktor", TestEnergieversorgungAddFaktor)
-	t.Run("TestWaermezaehlerAddZaehlerdaten", TestWaermezaehlerAddZaehlerdaten)
-	t.Run("TestStromzaehlerAddZaehlerdaten", TestStromzaehlerAddZaehlerdaten)
-	t.Run("TestKaeltezaehlerAddZaehlerdaten", TestKaeltezaehlerAddZaehlerdaten)
+	//t.Run("TestWaermezaehlerAddZaehlerdaten", TestWaermezaehlerAddZaehlerdaten)
+	//t.Run("TestStromzaehlerAddZaehlerdaten", TestStromzaehlerAddZaehlerdaten)
+	//t.Run("TestKaeltezaehlerAddZaehlerdaten", TestKaeltezaehlerAddZaehlerdaten)
+	t.Run("TestZaehlerAddZaehlerdaten", TestZaehlerAddZaehlerdaten)
 	t.Run("TestGebaeudeAddZaehlerref", TestGebaeudeAddZaehlerref)
 }
 
@@ -91,6 +92,7 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 	})
 }
 
+/*
 func TestWaermezaehlerAddZaehlerdaten(t *testing.T) {
 	is := is.NewRelaxed(t)
 
@@ -102,10 +104,11 @@ func TestWaermezaehlerAddZaehlerdaten(t *testing.T) {
 			PKEnergie: 2107,
 			Wert:      1000.0,
 			Jahr:      3000,
+			IDEnergieversorgung: 1,
 		}
 		location, _ := time.LoadLocation("Etc/GMT")
 
-		err := database.WaermezaehlerAddZaehlerdaten(data)
+		err := database.ZaehlerAddZaehlerdaten(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
 		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, 1)
@@ -146,9 +149,10 @@ func TestWaermezaehlerAddZaehlerdaten(t *testing.T) {
 			PKEnergie: 0,
 			Wert:      1000.0,
 			Jahr:      3000,
+			IDEnergieversorgung: 1,
 		}
 
-		err := database.WaermezaehlerAddZaehlerdaten(data)
+		err := database.ZaehlerAddZaehlerdaten(data)
 		is.Equal(err, io.EOF) // Datenbank wirft EOF-Error
 	})
 
@@ -159,9 +163,10 @@ func TestWaermezaehlerAddZaehlerdaten(t *testing.T) {
 			PKEnergie: 2107,
 			Wert:      1000.0,
 			Jahr:      2020,
+			IDEnergieversorgung: 1,
 		}
 
-		err := database.WaermezaehlerAddZaehlerdaten(data)
+		err := database.ZaehlerAddZaehlerdaten(data)
 		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 }
@@ -177,10 +182,11 @@ func TestStromzaehlerAddZaehlerdaten(t *testing.T) {
 			PKEnergie: 5967,
 			Wert:      1000.0,
 			Jahr:      3000,
+			IDEnergieversorgung: 2,
 		}
 		location, _ := time.LoadLocation("Etc/GMT")
 
-		err := database.StromzaehlerAddZaehlerdaten(data)
+		err := database.ZaehlerAddZaehlerdaten(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
 		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, 2)
@@ -225,9 +231,10 @@ func TestStromzaehlerAddZaehlerdaten(t *testing.T) {
 			PKEnergie: 0,
 			Wert:      1000.0,
 			Jahr:      3000,
+			IDEnergieversorgung: 2,
 		}
 
-		err := database.StromzaehlerAddZaehlerdaten(data)
+		err := database.ZaehlerAddZaehlerdaten(data)
 		is.Equal(err, io.EOF) // Datenbank wirft EOF-Error
 	})
 
@@ -238,9 +245,10 @@ func TestStromzaehlerAddZaehlerdaten(t *testing.T) {
 			PKEnergie: 5967,
 			Wert:      1000.0,
 			Jahr:      2020,
+			IDEnergieversorgung: 2,
 		}
 
-		err := database.StromzaehlerAddZaehlerdaten(data)
+		err := database.ZaehlerAddZaehlerdaten(data)
 		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 }
@@ -256,10 +264,11 @@ func TestKaeltezaehlerAddZaehlerdaten(t *testing.T) {
 			PKEnergie: 4023,
 			Wert:      1000.0,
 			Jahr:      3000,
+			IDEnergieversorgung: 3,
 		}
 		location, _ := time.LoadLocation("Etc/GMT")
 
-		err := database.KaeltezaehlerAddZaehlerdaten(data)
+		err := database.ZaehlerAddZaehlerdaten(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
 		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, 3)
@@ -304,9 +313,10 @@ func TestKaeltezaehlerAddZaehlerdaten(t *testing.T) {
 			PKEnergie: 0,
 			Wert:      1000.0,
 			Jahr:      3000,
+			IDEnergieversorgung: 3,
 		}
 
-		err := database.KaeltezaehlerAddZaehlerdaten(data)
+		err := database.ZaehlerAddZaehlerdaten(data)
 		is.Equal(err, io.EOF) // Datenbank wirft EOF-Error
 	})
 
@@ -317,9 +327,240 @@ func TestKaeltezaehlerAddZaehlerdaten(t *testing.T) {
 			PKEnergie: 4023,
 			Wert:      1000.0,
 			Jahr:      2020,
+			IDEnergieversorgung: 3,
 		}
 
-		err := database.KaeltezaehlerAddZaehlerdaten(data)
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+	})
+}*/
+
+func TestZaehlerAddZaehlerdaten(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, ID = 2017", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           2107,
+			Wert:                1000.0,
+			Jahr:                3001,
+			IDEnergieversorgung: 1,
+		}
+		location, _ := time.LoadLocation("Etc/GMT")
+
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+
+		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Waerme",
+			PKEnergie:   2107,
+			Bezeichnung: " 2101,2102,2108 Waerme Gruppenzaehler",
+			Zaehlerdaten: []structs.Zaehlerwerte{
+				{
+					Wert:        788.66,
+					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        794.8,
+					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        736.9,
+					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        1000.0,
+					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+			},
+			Einheit:     "MWh",
+			Spezialfall: 1,
+			Revision:    1,
+			GebaeudeRef: []int32{2101, 2102, 2108},
+		}) // Ueberpruefung des geaenderten Elementes
+	})
+
+	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, ID = 5967", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           5967,
+			Wert:                1000.0,
+			Jahr:                3001,
+			IDEnergieversorgung: 2,
+		}
+		location, _ := time.LoadLocation("Etc/GMT")
+
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+
+		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Strom",
+			PKEnergie:   5967,
+			Bezeichnung: "2201 Strom Hauptzaehler",
+			Zaehlerdaten: []structs.Zaehlerwerte{
+				{
+					Wert:        126048.9,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        0.0,
+					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        0.0,
+					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        0.0,
+					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        1000.0,
+					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+			},
+			Einheit:     "kWh",
+			Spezialfall: 1,
+			Revision:    1,
+			GebaeudeRef: []int32{2201},
+		}) // Ueberpruefung des geaenderten Elementes
+	})
+
+	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, ID = 4023", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           4023,
+			Wert:                1000.0,
+			Jahr:                3001,
+			IDEnergieversorgung: 3,
+		}
+		location, _ := time.LoadLocation("Etc/GMT")
+
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+
+		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Kaelte",
+			PKEnergie:   4023,
+			Bezeichnung: "3101 Kaelte Hauptzaehler",
+			Zaehlerdaten: []structs.Zaehlerwerte{
+				{
+					Wert:        311.06,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        414.61,
+					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        555.3,
+					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        169.59,
+					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        1000.0,
+					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+			},
+			Einheit:     "MWh",
+			Spezialfall: 1,
+			Revision:    1,
+			GebaeudeRef: []int32{3101},
+		}) // Ueberpruefung des geaenderten Elementes
+	})
+
+	// Errortests
+	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, ID nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           0,
+			Wert:                1000.0,
+			Jahr:                3000,
+			IDEnergieversorgung: 1,
+		}
+
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.Equal(err, io.EOF) // Datenbank wirft EOF-Error
+	})
+
+	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, Jahr schon vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           2107,
+			Wert:                1000.0,
+			Jahr:                2020,
+			IDEnergieversorgung: 1,
+		}
+
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+	})
+
+	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, ID nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           0,
+			Wert:                1000.0,
+			Jahr:                3000,
+			IDEnergieversorgung: 2,
+		}
+
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.Equal(err, io.EOF) // Datenbank wirft EOF-Error
+	})
+
+	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, Jahr schon vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           5967,
+			Wert:                1000.0,
+			Jahr:                2020,
+			IDEnergieversorgung: 2,
+		}
+
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+	})
+
+	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, ID nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           0,
+			Wert:                1000.0,
+			Jahr:                3000,
+			IDEnergieversorgung: 3,
+		}
+
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.Equal(err, io.EOF) // Datenbank wirft EOF-Error
+	})
+
+	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, Jahr schon vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           4023,
+			Wert:                1000.0,
+			Jahr:                2020,
+			IDEnergieversorgung: 3,
+		}
+
+		err := database.ZaehlerAddZaehlerdaten(data)
 		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 }

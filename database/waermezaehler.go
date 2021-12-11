@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
-	"go.mongodb.org/mongo-driver/bson"
-	"time"
 )
 
 var (
@@ -44,6 +42,7 @@ func WaermezaehlerFind(pkEnergie int32) (structs.Zaehler, error) {
 Funktion updated ein Dokument in der Datenbank, um den Zaehlerwert {jahr, wert}, falls Dokument vorhanden
 und Jahr noch nicht vorhanden.
 */
+/*
 func WaermezaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
 	defer cancel()
@@ -79,7 +78,7 @@ func WaermezaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	}
 
 	return nil
-}
+}*/
 
 func WaermezaehlerInsert(data structs.InsertZaehler) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)

@@ -1,12 +1,5 @@
 package database
 
-import (
-	"context"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
-	"go.mongodb.org/mongo-driver/bson"
-	"time"
-)
-
 /**
 Die Funktion liefert einen Zaehler struct für den Stromzaehler mit pkEnergie gleich dem Parameter.
 */
@@ -38,6 +31,7 @@ func StromzaehlerFind(pkEnergie int32) (structs.Zaehler, error) {
 Funktion updated ein Dokument in der Datenbank, um den Zaehlerwert {jahr, wert}, falls Dokument vorhanden
 und Jahr noch nicht vorhanden.
 */
+/*
 func StromzaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
 	defer cancel()
@@ -73,4 +67,4 @@ func StromzaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	}
 
 	return nil
-}
+}*/
