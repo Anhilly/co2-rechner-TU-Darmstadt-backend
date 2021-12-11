@@ -12,7 +12,8 @@ const (
 )
 
 var (
-	ErrGebaeudeVorhanden = errors.New("Ein Gebaeude mit der angegeben Nummer existiert schon in der Datenbank")
+	ErrGebaeudeVorhanden                 = errors.New("Ein Gebaeude mit der angegeben Nummer existiert schon in der Datenbank")
+	ErrIDEnergieversorgungNichtVorhanden = errors.New("Die angegebene IDEnergieversorgungn ist nicht vorhanden!")
 )
 
 /**
@@ -86,14 +87,15 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 		referenzname = "stromRef"
 	case 3: // Kaelte
 		referenzname = "kaelteRef"
+	default:
+		return ErrIDEnergieversorgungNichtVorhanden
 	}
 
 	var updatedDoc bson.M
 	err := collection.FindOneAndUpdate(
 		ctx,
 		bson.D{{"nr", nr}},
-		// $addToSet verhindert, dass eine Referenz doppelt im Array steht (sollte nicht vorkommen)
-		bson.D{{"$addToSet", bson.D{{referenzname, ref}}}},
+		bson.D{{"$addToSet", bson.D{{referenzname, ref}}}}, // $addToSet verhindert, dass eine Referenz doppelt im Array steht (sollte nicht vorkommen)
 	).Decode(&updatedDoc)
 
 	if err != nil {

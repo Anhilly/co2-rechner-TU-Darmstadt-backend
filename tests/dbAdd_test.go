@@ -442,14 +442,25 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 	})
 
 	// Errortests
-	t.Run("GebaeudeAddZaehlerref: ID = 0 nicht vorhanden", func(t *testing.T) {
+	t.Run("GebaeudeAddZaehlerref: ID = -12 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var nr int32 = 0
+		var nr int32 = -12
 		var ref int32 = 999
 		var idEnergieversorgung int32 = 3
 
 		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+	})
+
+	t.Run("GebaeudeAddZaehlerref: IDEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var nr int32 = 1101
+		var ref int32 = 999
+		var idEnergieversorgung int32 = 0
+
+		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
+		is.Equal(err, database.ErrIDEnergieversorgungNichtVorhanden) // Datenbank wirft ErrNoDocuments
 	})
 }
