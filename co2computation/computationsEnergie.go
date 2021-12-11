@@ -26,9 +26,9 @@ var (
 )
 
 const (
-	idEnergieversorgungWaerme int32 = 1
-	idEnergieversorgungStrom  int32 = 2
-	idEnergieversorgungKaelte int32 = 3
+	IDEnergieversorgungWaerme int32 = 1
+	IDEnergieversorgungStrom  int32 = 2
+	IDEnergieversorgungKaelte int32 = 3
 )
 
 /**
@@ -110,11 +110,11 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 	}
 
 	switch idEnergieversorgung { // waehlt Zaehlerreferenzen entsprechend ID
-	case idEnergieversorgungWaerme: // Waerme
+	case IDEnergieversorgungWaerme: // Waerme
 		refGebaeude = gebaeude.WaermeRef
-	case idEnergieversorgungStrom: // Strom
+	case IDEnergieversorgungStrom: // Strom
 		refGebaeude = gebaeude.StromRef
-	case idEnergieversorgungKaelte: // Kaelte
+	case IDEnergieversorgungKaelte: // Kaelte
 		refGebaeude = gebaeude.KaelteRef
 	}
 
@@ -124,11 +124,11 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 		var err error
 
 		switch idEnergieversorgung { // holt Zaehler aus Datenbank mit entsprechender Datenbank Funktion
-		case idEnergieversorgungWaerme: // Waerme
+		case IDEnergieversorgungWaerme: // Waerme
 			zaehler, err = database.WaermezaehlerFind(zaehlerID)
-		case idEnergieversorgungStrom: // Strom
+		case IDEnergieversorgungStrom: // Strom
 			zaehler, err = database.StromzaehlerFind(zaehlerID)
-		case idEnergieversorgungKaelte: // Kaelte
+		case IDEnergieversorgungKaelte: // Kaelte
 			zaehler, err = database.KaeltezaehlerFind(zaehlerID)
 		}
 		if err != nil {
