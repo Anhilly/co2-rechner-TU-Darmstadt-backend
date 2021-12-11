@@ -9,8 +9,14 @@ var ( // Fehler von Add und Insert Funktionen
 	// Fehler durch Nutzereingabe
 	ErrFehlendeGebaeuderef = errors.New("Neuer Zaehler hat keine Referenzen auf Gebaeude")
 
-	// Fehler druch Nutzereingabe
+	// Fehler durch Nutzereingabe
 	ErrJahrVorhanden = errors.New("Ein Wert ist fuer das angegebene Jahr schon vorhanden")
+
+	// Fehler durch Nutzereingabe
+	ErrGebaeudeVorhanden = errors.New("Ein Gebaeude mit der angegeben Nummer existiert schon in der Datenbank")
+
+	// Fehler durch Nutzereingabe
+	ErrIDEnergieversorgungNichtVorhanden = errors.New("Die angegebene IDEnergieversorgung ist nicht vorhanden")
 )
 
 var ( // Fehler, die bei Berechnungen auftreten

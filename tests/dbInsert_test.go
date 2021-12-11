@@ -97,7 +97,7 @@ func TestGebaeudeInsert(t *testing.T) {
 		}
 
 		err := database.GebaeudeInsert(data)
-		is.Equal(err, database.ErrGebaeudeVorhanden) // Funktion wirft ErrGebaeudeVorhanden
+		is.Equal(err, structs.ErrGebaeudeVorhanden) // Funktion wirft ErrGebaeudeVorhanden
 	})
 }
 
@@ -213,6 +213,6 @@ func TestZaehlerInsert(t *testing.T) {
 		}
 
 		err := database.ZaehlerInsert(data)
-		is.Equal(err, database.ErrIDEnergieversorgungNichtVorhanden)
+		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden)
 	})
 }

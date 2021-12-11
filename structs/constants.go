@@ -10,6 +10,7 @@ const ( // Konstanten fuer Collection Namen
 	EnergieversorgungCol = "energieversorgung"
 	ITGeraeteCol         = "itGeraete"
 	PendelwegCol         = "pendelweg"
+	GebaeudeCol          = "gebaeude"
 )
 
 const TimeoutDuration time.Duration = 5 * time.Second // Timeout Zeit fuer Datenbank-Kontext

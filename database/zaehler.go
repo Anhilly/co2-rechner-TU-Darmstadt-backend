@@ -18,18 +18,18 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	switch idEnergieversorgung { //TODO: Ersetzte Zahlen mit Konstanten
-	case 1: // Waerme
+	switch idEnergieversorgung {
+	case structs.IDEnergieversorgungWaerme: // Waerme
 		collectionname = structs.WaermezaehlerCol
 		zaehlertyp = "Waerme"
-	case 2: // Strom
+	case structs.IDEnergieversorgungStrom: // Strom
 		collectionname = structs.StromzaehlerCol
 		zaehlertyp = "Strom"
-	case 3: // Kaelte
+	case structs.IDEnergieversorgungKaelte: // Kaelte
 		collectionname = structs.KaeltezaehlerCol
 		zaehlertyp = "Kaelte"
 	default:
-		return structs.Zaehler{}, ErrIDEnergieversorgungNichtVorhanden
+		return structs.Zaehler{}, structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
 	collection := client.Database(dbName).Collection(collectionname)
@@ -60,15 +60,15 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	switch data.IDEnergieversorgung { //TODO: Ersetzte Zahlen mit Konstanten
-	case 1: // Waerme
+	switch data.IDEnergieversorgung {
+	case structs.IDEnergieversorgungWaerme: // Waerme
 		collectionname = structs.WaermezaehlerCol
-	case 2: // Strom
+	case structs.IDEnergieversorgungStrom: // Strom
 		collectionname = structs.StromzaehlerCol
-	case 3: // Kaelte
+	case structs.IDEnergieversorgungKaelte: // Kaelte
 		collectionname = structs.KaeltezaehlerCol
 	default:
-		return ErrIDEnergieversorgungNichtVorhanden
+		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
 	collection := client.Database(dbName).Collection(collectionname)
@@ -88,14 +88,14 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 
 	// Update des Eintrages
 	location, _ := time.LoadLocation("Etc/GMT")
-	zeitstemple := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
+	zeitstempel := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
 
 	_, err = collection.UpdateOne(
 		ctx,
 		bson.D{{"pkEnergie", data.PKEnergie}},
 		bson.D{{"$push",
 			bson.D{{"zaehlerdaten",
-				bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstemple}}}}}},
+				bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
 	)
 	if err != nil {
 		return err
@@ -106,8 +106,8 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 
 /**
 Funktion fuegt einen Zaehler in die Datenbank ein, falls PK noch nicht vergeben. Außerdem werden die referenzierten
-Gebaeude um eine Refenrenz auf diesen Zaehler erweitert.
-Sollte die Funktion durch einen Fehler beendet werden, kann es zu inkonsisteneten Daten in der Datenbank fuehren!
+Gebaeude um eine Referenz auf diesen Zaehler erweitert.
+Sollte die Funktion durch einen Fehler beendet werden, kann es zu inkonsistenten Daten in der Datenbank fuehren!
 */
 func ZaehlerInsert(data structs.InsertZaehler) error {
 	var collectionname string
@@ -115,15 +115,15 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	switch data.IDEnergieversorgung { //TODO: Ersetzte Zahlen mit Konstanten
-	case 1: // Waerme
+	switch data.IDEnergieversorgung {
+	case structs.IDEnergieversorgungWaerme: // Waerme
 		collectionname = structs.WaermezaehlerCol
-	case 2: // Strom
+	case structs.IDEnergieversorgungStrom: // Strom
 		collectionname = structs.StromzaehlerCol
-	case 3: // Kaelte
+	case structs.IDEnergieversorgungKaelte: // Kaelte
 		collectionname = structs.KaeltezaehlerCol
 	default:
-		return ErrIDEnergieversorgungNichtVorhanden
+		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 	collection := client.Database(dbName).Collection(collectionname)
 

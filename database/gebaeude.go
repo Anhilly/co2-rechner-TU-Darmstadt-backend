@@ -2,18 +2,8 @@ package database
 
 import (
 	"context"
-	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
-)
-
-const (
-	gebaeudeCol = "gebaeude"
-)
-
-var (
-	ErrGebaeudeVorhanden                 = errors.New("Ein Gebaeude mit der angegeben Nummer existiert schon in der Datenbank")
-	ErrIDEnergieversorgungNichtVorhanden = errors.New("Die angegebene IDEnergieversorgungn ist nicht vorhanden!")
 )
 
 /**
@@ -24,7 +14,7 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(gebaeudeCol)
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
 
 	cursor, err := collection.Find(ctx, bson.D{{"nr", nr}}) //nolint:govet
 	if err != nil {
@@ -44,11 +34,11 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(gebaeudeCol)
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
 
 	_, err := GebaeudeFind(data.Nr)
 	if err == nil { // kein Error = Nr schon vorhanden
-		return ErrGebaeudeVorhanden
+		return structs.ErrGebaeudeVorhanden
 	}
 
 	_, err = collection.InsertOne(
@@ -78,24 +68,25 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(gebaeudeCol)
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
 
-	switch idEnergieversorgung { //TODO: Ersetzte Zahlen mit Konstanten
-	case 1: // Waerme
+	switch idEnergieversorgung {
+	case structs.IDEnergieversorgungWaerme: // Waerme
 		referenzname = "waermeRef"
-	case 2: // Strom
+	case structs.IDEnergieversorgungStrom: // Strom
 		referenzname = "stromRef"
-	case 3: // Kaelte
+	case structs.IDEnergieversorgungKaelte: // Kaelte
 		referenzname = "kaelteRef"
 	default:
-		return ErrIDEnergieversorgungNichtVorhanden
+		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
 	var updatedDoc bson.M
 	err := collection.FindOneAndUpdate(
 		ctx,
 		bson.D{{"nr", nr}},
-		bson.D{{"$addToSet", bson.D{{referenzname, ref}}}}, // $addToSet verhindert, dass eine Referenz doppelt im Array steht (sollte nicht vorkommen)
+		bson.D{{"$addToSet", // $addToSet verhindert, dass eine Referenz doppelt im Array steht (sollte nicht vorkommen)
+			bson.D{{referenzname, ref}}}},
 	).Decode(&updatedDoc)
 
 	if err != nil {

@@ -456,6 +456,6 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 		var idEnergieversorgung int32 = 0
 
 		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
-		is.Equal(err, database.ErrIDEnergieversorgungNichtVorhanden) // Datenbank wirft ErrNoDocuments
+		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Datenbank wirft ErrNoDocuments
 	})
 }
