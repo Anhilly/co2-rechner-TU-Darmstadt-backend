@@ -109,3 +109,61 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 
 	return nil
 }
+
+/**
+Funktion fuegt einen Zaehler in die Datenbank ein, falls PK noch nicht vergeben. Außerdem werden die referenzierten
+Gebaeude um eine Refenrenz auf diesen Zaehler erweitert.
+Sollte die Funktion durch einen Fehler beendet werden, kann es zu inkonsisteneten Daten in der Datenbank fuehren!
+*/
+func ZaehlerInsert(data structs.InsertZaehler) error {
+	var collectionname string
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	defer cancel()
+
+	switch data.IDEnergieversorgung { //TODO: Ersetzte Zahlen mit Konstanten
+	case 1: // Waerme
+		collectionname = waermezaehlerCol
+	case 2: // Strom
+		collectionname = stromzaehlerCol
+	case 3: // Kaelte
+		collectionname = kaeltezaehlerCol
+	default:
+		return ErrIDEnergieversorgungNichtVorhanden
+	}
+	collection := client.Database(dbName).Collection(collectionname)
+
+	if len(data.GebaeudeRef) == 0 {
+		return ErrFehlendeGebaeuderef
+	}
+
+	_, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+	if err == nil { // kein Error = Nr schon vorhanden
+		return ErrZaehlerVorhanden
+	}
+
+	_, err = collection.InsertOne(
+		ctx,
+		structs.Zaehler{
+			PKEnergie:    data.PKEnergie,
+			Bezeichnung:  data.Bezeichnung,
+			Einheit:      data.Einheit,
+			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Spezialfall:  1,
+			Revision:     1,
+			GebaeudeRef:  data.GebaeudeRef,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, referenz := range data.GebaeudeRef {
+		err := GebaeudeAddZaehlerref(referenz, data.PKEnergie, data.IDEnergieversorgung)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

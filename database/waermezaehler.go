@@ -1,9 +1,7 @@
 package database
 
 import (
-	"context"
 	"errors"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 )
 
 var (
@@ -80,6 +78,7 @@ func WaermezaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	return nil
 }*/
 
+/*
 func WaermezaehlerInsert(data structs.InsertZaehler) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
 	defer cancel()
@@ -119,4 +118,4 @@ func WaermezaehlerInsert(data structs.InsertZaehler) error {
 	}
 
 	return nil
-}
+}*/

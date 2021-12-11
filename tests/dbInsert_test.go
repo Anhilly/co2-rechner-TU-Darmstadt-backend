@@ -28,7 +28,8 @@ func TestInsert(t *testing.T) {
 	}(dir)
 
 	t.Run("TestGebaeudeInsert", TestGebaeudeInsert)
-	t.Run("TestWaermezaehlerInsert", TestWaermezaehlerInsert)
+	//t.Run("TestWaermezaehlerInsert", TestWaermezaehlerInsert)
+	t.Run("TestZaehlerInsert", TestZaehlerInsert)
 }
 
 func TestGebaeudeInsert(t *testing.T) {
@@ -101,6 +102,7 @@ func TestGebaeudeInsert(t *testing.T) {
 	})
 }
 
+/*
 func TestWaermezaehlerInsert(t *testing.T) {
 	is := is.NewRelaxed(t)
 
@@ -116,10 +118,10 @@ func TestWaermezaehlerInsert(t *testing.T) {
 			IDEnergieversorgung: 1,
 		}
 
-		err := database.WaermezaehlerInsert(data)
+		err := database.ZaehlerInsert(data)
 		is.NoErr(err)
 
-		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, 1)
+		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
 		is.NoErr(err)
 		is.Equal(neuerZaehler, structs.Zaehler{
 			Zaehlertyp:   "Waerme",
@@ -167,7 +169,7 @@ func TestWaermezaehlerInsert(t *testing.T) {
 			IDEnergieversorgung: 1,
 		}
 
-		err := database.WaermezaehlerInsert(data)
+		err := database.ZaehlerInsert(data)
 		is.Equal(err, database.ErrFehlendeGebaeuderef)
 	})
 
@@ -182,7 +184,7 @@ func TestWaermezaehlerInsert(t *testing.T) {
 			IDEnergieversorgung: 1,
 		}
 
-		err := database.WaermezaehlerInsert(data)
+		err := database.ZaehlerInsert(data)
 		is.Equal(err, database.ErrZaehlerVorhanden)
 	})
 
@@ -197,7 +199,7 @@ func TestWaermezaehlerInsert(t *testing.T) {
 			IDEnergieversorgung: 1,
 		}
 
-		err := database.WaermezaehlerInsert(data)
+		err := database.ZaehlerInsert(data)
 		is.Equal(err, mongo.ErrNoDocuments)
 	})
 
@@ -212,7 +214,123 @@ func TestWaermezaehlerInsert(t *testing.T) {
 			IDEnergieversorgung: 0,
 		}
 
-		err := database.WaermezaehlerInsert(data)
+		err := database.ZaehlerInsert(data)
+		is.Equal(err, database.ErrIDEnergieversorgungNichtVorhanden)
+	})
+}*/
+
+func TestZaehlerInsert(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("ZaehlerInsert: Waermezaehler, ID = 190", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.InsertZaehler{
+			PKEnergie:           19,
+			Bezeichnung:         "Testzaehler",
+			Einheit:             "kWh",
+			GebaeudeRef:         []int32{1101},
+			IDEnergieversorgung: 1,
+		}
+
+		err := database.ZaehlerInsert(data)
+		is.NoErr(err)
+
+		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(neuerZaehler, structs.Zaehler{
+			Zaehlertyp:   "Waerme",
+			PKEnergie:    19,
+			Bezeichnung:  "Testzaehler",
+			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Einheit:      "kWh",
+			Spezialfall:  1,
+			Revision:     1,
+			GebaeudeRef:  []int32{1101},
+		})
+
+		updatedGebaeude, err := database.GebaeudeFind(1101)
+		is.NoErr(err)
+		is.Equal(updatedGebaeude, structs.Gebaeude{
+			Nr:          1101,
+			Bezeichnung: "Universitaetszentrum, karo 5, Audimax",
+			Flaeche: structs.GebaeudeFlaeche{
+				HNF:     6395.56,
+				NNF:     3081.85,
+				NGF:     15365.03,
+				FF:      5539.21,
+				VF:      5887.62,
+				FreiF:   96.57,
+				GesamtF: 21000.81,
+			},
+			Einheit:     "m^2",
+			Spezialfall: 1,
+			Revision:    1,
+			KaelteRef:   []int32{},
+			WaermeRef:   []int32{2084, 19},
+			StromRef:    []int32{},
+		})
+	})
+
+	// Errortests
+	t.Run("ZaehlerInsert: keine Gebaeudereferenzen", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.InsertZaehler{
+			PKEnergie:           190,
+			Bezeichnung:         "Testzaehler",
+			Einheit:             "kWh",
+			GebaeudeRef:         []int32{},
+			IDEnergieversorgung: 1,
+		}
+
+		err := database.ZaehlerInsert(data)
+		is.Equal(err, database.ErrFehlendeGebaeuderef)
+	})
+
+	t.Run("ZaehlerInsert: Zaehler vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.InsertZaehler{
+			PKEnergie:           2107,
+			Bezeichnung:         "Testzaehler",
+			Einheit:             "kWh",
+			GebaeudeRef:         []int32{190},
+			IDEnergieversorgung: 1,
+		}
+
+		err := database.ZaehlerInsert(data)
+		is.Equal(err, database.ErrZaehlerVorhanden)
+	})
+
+	t.Run("ZaehlerInsert: ungueltige Gebaeudereferenz", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.InsertZaehler{
+			PKEnergie:           14,
+			Bezeichnung:         "Testzaehler",
+			Einheit:             "kWh",
+			GebaeudeRef:         []int32{12},
+			IDEnergieversorgung: 1,
+		}
+
+		err := database.ZaehlerInsert(data)
+		is.Equal(err, mongo.ErrNoDocuments)
+	})
+
+	t.Run("ZaehlerInsert: IDEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.InsertZaehler{
+			PKEnergie:           15,
+			Bezeichnung:         "Testzaehler",
+			Einheit:             "kWh",
+			GebaeudeRef:         []int32{12},
+			IDEnergieversorgung: 0,
+		}
+
+		err := database.ZaehlerInsert(data)
 		is.Equal(err, database.ErrIDEnergieversorgungNichtVorhanden)
 	})
 }
