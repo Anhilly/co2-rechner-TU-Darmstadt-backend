@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
@@ -11,6 +12,11 @@ const (
 	kaeltezaehlerCol = "kaeltezaehler"
 	stromzaehlerCol  = "stromzaehler"
 	waermezaehlerCol = "waermezaehler"
+)
+
+var (
+	ErrZaehlerVorhanden    = errors.New("Es ist schon ein Zaehler mit dem PK vorhanden!")
+	ErrFehlendeGebaeuderef = errors.New("Neuer Zaehler hat keine Referenzen auf Gebaeude!")
 )
 
 /**
