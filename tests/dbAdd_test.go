@@ -85,7 +85,7 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 		}
 
 		err := database.EnergieversorgungAddFaktor(data)
-		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+		is.Equal(err, structs.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 }
 
@@ -259,7 +259,7 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		}
 
 		err := database.ZaehlerAddZaehlerdaten(data)
-		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+		is.Equal(err, structs.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 
 	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, ID nicht vorhanden", func(t *testing.T) {
@@ -287,7 +287,7 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		}
 
 		err := database.ZaehlerAddZaehlerdaten(data)
-		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+		is.Equal(err, structs.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 
 	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, ID nicht vorhanden", func(t *testing.T) {
@@ -315,7 +315,7 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		}
 
 		err := database.ZaehlerAddZaehlerdaten(data)
-		is.Equal(err, database.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+		is.Equal(err, structs.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 }
 

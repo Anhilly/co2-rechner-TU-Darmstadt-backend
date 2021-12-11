@@ -2,17 +2,8 @@ package database
 
 import (
 	"context"
-	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
-)
-
-const (
-	energieversorgungCol = "energieversorgung"
-)
-
-var (
-	ErrJahrVorhanden = errors.New("Ein Wert ist fuer das angegebene Jahr schon vorhanden!")
 )
 
 /**
@@ -20,10 +11,10 @@ Die Funktion liefert einen Energieversorgung struct mit idEnergieversorgung glei
 */
 func EnergieversorgungFind(idEnergieversorgung int32) (structs.Energieversorgung, error) {
 	var data structs.Energieversorgung
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(energieversorgungCol)
+	collection := client.Database(dbName).Collection(structs.EnergieversorgungCol)
 
 	cursor, err := collection.Find(ctx, bson.D{{"idEnergieversorgung", idEnergieversorgung}}) //nolint:govet
 	if err != nil {
@@ -44,10 +35,10 @@ Funktion updated ein Dokument in der Datenbank, um den CO2-Faktor {jahr, wert}, 
 und Jahr noch nicht vorhanden.
 */
 func EnergieversorgungAddFaktor(data structs.AddCO2Faktor) error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(energieversorgungCol)
+	collection := client.Database(dbName).Collection(structs.EnergieversorgungCol)
 
 	// Ueberpruefung, ob ID in Datenbank vorhanden
 	currentDoc, err := EnergieversorgungFind(data.IDEnergieversorgung)
@@ -58,7 +49,7 @@ func EnergieversorgungAddFaktor(data structs.AddCO2Faktor) error {
 	// Ueberpruefung, ob schon Wert zu angegebenen Jahr existiert
 	for _, co2Faktor := range currentDoc.CO2Faktor {
 		if co2Faktor.Jahr == data.Jahr {
-			return ErrJahrVorhanden
+			return structs.ErrJahrVorhanden
 		}
 	}
 

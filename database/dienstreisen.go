@@ -6,19 +6,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-const (
-	dienstreisenCol = "dienstreisen"
-)
-
 /**
 Die Funktion liefert einen Dienstreisen struct mit idDienstreisen gleich dem Parameter.
 */
 func DienstreisenFind(idDienstreisen int32) (structs.Dienstreisen, error) {
 	var data structs.Dienstreisen
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(dienstreisenCol)
+	collection := client.Database(dbName).Collection(structs.DienstreisenCol)
 
 	cursor, err := collection.Find(ctx, bson.D{{"idDienstreisen", idDienstreisen}}) //nolint:govet
 	if err != nil {

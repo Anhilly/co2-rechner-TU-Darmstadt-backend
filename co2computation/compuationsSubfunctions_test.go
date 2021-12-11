@@ -89,8 +89,8 @@ func TestGetEnergieCO2Faktor(t *testing.T) { //nolint:funlen
 
 		co2Faktor, err := getEnergieCO2Faktor(idEnergieversorgung, jahr)
 
-		is.Equal(err, ErrJahrNichtVorhanden) // Funktion wirft ErrJahrNichtVorhanden
-		is.Equal(co2Faktor, int32(0))        // Fehlerfall liefert 0.0
+		is.Equal(err, structs.ErrJahrNichtVorhanden) // Funktion wirft ErrJahrNichtVorhanden
+		is.Equal(co2Faktor, int32(0))                // Fehlerfall liefert 0.0
 	})
 }
 
@@ -195,9 +195,9 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
-		is.Equal(err, fmt.Errorf(ErrStrGebaeuderefFehlt, "zaehlerNormalfall", pkEnergie)) // Funktion wirft ErrStrGebaeuderefFehlt
-		is.Equal(verbrauch, 0.0)                                                          // Fehlerfall liefert 0.0
-		is.Equal(ngf, 0.0)                                                                // Fehlerfall liefert 0.0
+		is.Equal(err, fmt.Errorf(structs.ErrStrGebaeuderefFehlt, "zaehlerNormalfall", pkEnergie)) // Funktion wirft ErrStrGebaeuderefFehlt
+		is.Equal(verbrauch, 0.0)                                                                  // Fehlerfall liefert 0.0
+		is.Equal(ngf, 0.0)                                                                        // Fehlerfall liefert 0.0
 	})
 
 	t.Run("zaehlerNormalfall: Jahr nicht vorhanden in Zaehlerdaten", func(t *testing.T) {
@@ -212,9 +212,9 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
-		is.Equal(err, fmt.Errorf(ErrStrVerbrauchFehlt, "zaehlerNormalfall", jahr, 2084)) // Funktion wirft ErrStrVerbrauchFehlt
-		is.Equal(verbrauch, 0.0)                                                         // Fehlerfall liefert 0.0
-		is.Equal(ngf, 0.0)                                                               // Fehlerfall liefert 0.0
+		is.Equal(err, fmt.Errorf(structs.ErrStrVerbrauchFehlt, "zaehlerNormalfall", jahr, 2084)) // Funktion wirft ErrStrVerbrauchFehlt
+		is.Equal(verbrauch, 0.0)                                                                 // Fehlerfall liefert 0.0
+		is.Equal(ngf, 0.0)                                                                       // Fehlerfall liefert 0.0
 	})
 
 	// Fehler tritt nur durch Datenfehler in der Datenbank auf
@@ -431,8 +431,8 @@ func TestGebaeudeNormalfall(t *testing.T) { //nolint:funlen
 
 		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaeude, idEnergieversorgung, jahr, flaechenanteil)
 
-		is.Equal(err, ErrFlaecheNegativ) // Funktion wirft ErrFlaecheNegativ
-		is.Equal(emissionen, 0.0)        // Fehlerfall liefert 0.0
+		is.Equal(err, structs.ErrFlaecheNegativ) // Funktion wirft ErrFlaecheNegativ
+		is.Equal(emissionen, 0.0)                // Fehlerfall liefert 0.0
 	})
 
 	// Fehler tritt nur durch Datenfehler in der Datenbank auf

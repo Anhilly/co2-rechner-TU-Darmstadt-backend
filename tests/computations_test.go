@@ -134,8 +134,8 @@ func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
-		is.Equal(err, co2computation.ErrAnzahlNegativ) // Funktion wirft ErrAnzahlNegativ
-		is.Equal(emissionen, 0.0)                      // Fehlerfall liefert 0.0
+		is.Equal(err, structs.ErrAnzahlNegativ) // Funktion wirft ErrAnzahlNegativ
+		is.Equal(emissionen, 0.0)               // Fehlerfall liefert 0.0
 	})
 
 	// Fehler ErrStrEinheitUnbekannt momentan nicht abpruefbar. Benoetigt falschen Datensatz in Datenbank
@@ -252,8 +252,8 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.Equal(err, co2computation.ErrPersonenzahlZuKlein) // Funktion wirft ErrPersonenzahlZuKlein
-		is.Equal(emissionen, 0.0)                            // Fehlerfall liefert 0.0
+		is.Equal(err, structs.ErrPersonenzahlZuKlein) // Funktion wirft ErrPersonenzahlZuKlein
+		is.Equal(emissionen, 0.0)                     // Fehlerfall liefert 0.0
 	})
 
 	t.Run("BerechnePendelweg: negative Strecke eingegeben", func(t *testing.T) {
@@ -266,8 +266,8 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.Equal(err, co2computation.ErrStreckeNegativ) // Funktion wirft ErrStreckeNegativ
-		is.Equal(emissionen, 0.0)                       // Fehlerfall liefert 0.0
+		is.Equal(err, structs.ErrStreckeNegativ) // Funktion wirft ErrStreckeNegativ
+		is.Equal(emissionen, 0.0)                // Fehlerfall liefert 0.0
 	})
 
 	// Fehler ErrStrEinheitUnbekannt momentan nicht abpruefbar. Benoetigt falschen Datensatz in Datenbank
@@ -435,8 +435,8 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.Equal(err, co2computation.ErrTankartUnbekannt) // Funktion wirft ErrTankartUnbekannt
-		is.Equal(emissionen, 0.0)                         // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(err, structs.ErrTankartUnbekannt) // Funktion wirft ErrTankartUnbekannt
+		is.Equal(emissionen, 0.0)                  // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
 	t.Run("BerechneDienstreisen: unbekannter Streckentyp", func(t *testing.T) {
@@ -448,8 +448,8 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.Equal(err, co2computation.ErrStreckentypUnbekannt) // Funktion wirft ErrStreckentypUnbekannt
-		is.Equal(emissionen, 0.0)                             // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(err, structs.ErrStreckentypUnbekannt) // Funktion wirft ErrStreckentypUnbekannt
+		is.Equal(emissionen, 0.0)                      // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
 	t.Run("BerechneDienstreisen: negative Strecke eingegeben", func(t *testing.T) {
@@ -461,8 +461,8 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.Equal(err, co2computation.ErrStreckeNegativ) // Funktion wirft ErrStreckeNegativ
-		is.Equal(emissionen, 0.0)                       // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(err, structs.ErrStreckeNegativ) // Funktion wirft ErrStreckeNegativ
+		is.Equal(emissionen, 0.0)                // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
 	// Fehler ErrStrEinheitUnbekannt momentan nicht abpruefbar. Benoetigt falschen Datensatz in Datenbank

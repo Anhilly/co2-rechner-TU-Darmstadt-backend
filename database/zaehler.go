@@ -2,21 +2,9 @@ package database
 
 import (
 	"context"
-	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
-)
-
-const (
-	kaeltezaehlerCol = "kaeltezaehler"
-	stromzaehlerCol  = "stromzaehler"
-	waermezaehlerCol = "waermezaehler"
-)
-
-var (
-	ErrZaehlerVorhanden    = errors.New("Es ist schon ein Zaehler mit dem PK vorhanden!")
-	ErrFehlendeGebaeuderef = errors.New("Neuer Zaehler hat keine Referenzen auf Gebaeude!")
 )
 
 /**
@@ -27,18 +15,18 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 	var collectionname string
 	var zaehlertyp string
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	switch idEnergieversorgung { //TODO: Ersetzte Zahlen mit Konstanten
 	case 1: // Waerme
-		collectionname = waermezaehlerCol
+		collectionname = structs.WaermezaehlerCol
 		zaehlertyp = "Waerme"
 	case 2: // Strom
-		collectionname = stromzaehlerCol
+		collectionname = structs.StromzaehlerCol
 		zaehlertyp = "Strom"
 	case 3: // Kaelte
-		collectionname = kaeltezaehlerCol
+		collectionname = structs.KaeltezaehlerCol
 		zaehlertyp = "Kaelte"
 	default:
 		return structs.Zaehler{}, ErrIDEnergieversorgungNichtVorhanden
@@ -69,16 +57,16 @@ und Jahr noch nicht vorhanden.
 func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	var collectionname string
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	switch data.IDEnergieversorgung { //TODO: Ersetzte Zahlen mit Konstanten
 	case 1: // Waerme
-		collectionname = waermezaehlerCol
+		collectionname = structs.WaermezaehlerCol
 	case 2: // Strom
-		collectionname = stromzaehlerCol
+		collectionname = structs.StromzaehlerCol
 	case 3: // Kaelte
-		collectionname = kaeltezaehlerCol
+		collectionname = structs.KaeltezaehlerCol
 	default:
 		return ErrIDEnergieversorgungNichtVorhanden
 	}
@@ -94,7 +82,7 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	// Ueberpruefung, ob schon Wert zu angegebenen Jahr existiert
 	for _, zaehlerdatum := range currentDoc.Zaehlerdaten {
 		if int32(zaehlerdatum.Zeitstempel.Year()) == data.Jahr {
-			return ErrJahrVorhanden
+			return structs.ErrJahrVorhanden
 		}
 	}
 
@@ -124,28 +112,28 @@ Sollte die Funktion durch einen Fehler beendet werden, kann es zu inkonsistenete
 func ZaehlerInsert(data structs.InsertZaehler) error {
 	var collectionname string
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	switch data.IDEnergieversorgung { //TODO: Ersetzte Zahlen mit Konstanten
 	case 1: // Waerme
-		collectionname = waermezaehlerCol
+		collectionname = structs.WaermezaehlerCol
 	case 2: // Strom
-		collectionname = stromzaehlerCol
+		collectionname = structs.StromzaehlerCol
 	case 3: // Kaelte
-		collectionname = kaeltezaehlerCol
+		collectionname = structs.KaeltezaehlerCol
 	default:
 		return ErrIDEnergieversorgungNichtVorhanden
 	}
 	collection := client.Database(dbName).Collection(collectionname)
 
 	if len(data.GebaeudeRef) == 0 {
-		return ErrFehlendeGebaeuderef
+		return structs.ErrFehlendeGebaeuderef
 	}
 
 	_, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
 	if err == nil { // kein Error = Nr schon vorhanden
-		return ErrZaehlerVorhanden
+		return structs.ErrZaehlerVorhanden
 	}
 
 	_, err = collection.InsertOne(

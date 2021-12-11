@@ -186,8 +186,8 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
-		is.Equal(err, co2computation.ErrJahrNichtVorhanden) // Funktion wirft ErrJahrNichtVorhanden
-		is.Equal(emissionen, 0.0)                           // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(err, structs.ErrJahrNichtVorhanden) // Funktion wirft ErrJahrNichtVorhanden
+		is.Equal(emissionen, 0.0)                    // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
 	t.Run("BerechneEnergieverbrauch: Gebaeude Nr = 0 nicht vorhanden", func(t *testing.T) {
@@ -216,7 +216,7 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
-		is.Equal(err, co2computation.ErrFlaecheNegativ) // Funktion wirft ErrFlaecheNegativ
-		is.Equal(emissionen, 0.0)                       // im Fehlerfall ist Emissionen = 0.0
+		is.Equal(err, structs.ErrFlaecheNegativ) // Funktion wirft ErrFlaecheNegativ
+		is.Equal(emissionen, 0.0)                // im Fehlerfall ist Emissionen = 0.0
 	})
 }

@@ -168,7 +168,7 @@ func TestZaehlerInsert(t *testing.T) {
 		}
 
 		err := database.ZaehlerInsert(data)
-		is.Equal(err, database.ErrFehlendeGebaeuderef)
+		is.Equal(err, structs.ErrFehlendeGebaeuderef)
 	})
 
 	t.Run("ZaehlerInsert: Zaehler vorhanden", func(t *testing.T) {
@@ -183,7 +183,7 @@ func TestZaehlerInsert(t *testing.T) {
 		}
 
 		err := database.ZaehlerInsert(data)
-		is.Equal(err, database.ErrZaehlerVorhanden)
+		is.Equal(err, structs.ErrZaehlerVorhanden)
 	})
 
 	t.Run("ZaehlerInsert: ungueltige Gebaeudereferenz", func(t *testing.T) {

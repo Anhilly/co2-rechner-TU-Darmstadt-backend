@@ -21,7 +21,7 @@ Die Funktion liefert einen Gebaeude struct mit nr gleich dem Parameter.
 */
 func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	var data structs.Gebaeude
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(gebaeudeCol)
@@ -41,7 +41,7 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 }
 
 func GebaeudeInsert(data structs.InsertGebaeude) error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(gebaeudeCol)
@@ -75,7 +75,7 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	var referenzname string
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(gebaeudeCol)

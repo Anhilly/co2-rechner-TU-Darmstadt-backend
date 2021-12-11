@@ -1,14 +1,13 @@
 package database
 
 import (
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"os/exec"
 	"time"
 )
 
-const containerDir = "/autoDump/"
-
 /**
-Funktion erstellt ein Dump der Abbildung mit mongodump im Verzeichnis "containerDir + directoryName + timestamp".
+Funktion erstellt ein Dump der Abbildung mit mongodump im Verzeichnis "DumpPath + directoryName + timestamp".
 Zurueckgeliefert wird der Ordnername mit Timestamp.
 */
 func CreateDump(directoryName string) (string, error) {
@@ -16,7 +15,7 @@ func CreateDump(directoryName string) (string, error) {
 
 	cmd := exec.Command("docker", "exec", "-i", "mongodb", "/usr/bin/mongodump",
 		"--username", username, "--password", password, "--authenticationDatabase", "admin",
-		"--db", dbName, "--out", containerDir+dirTimestamp)
+		"--db", dbName, "--out", structs.DumpPath+dirTimestamp)
 
 	err := cmd.Run()
 	if err != nil {
@@ -34,12 +33,12 @@ func CreateDump(directoryName string) (string, error) {
 }
 
 /**
-Funktion spielt einen Dump, der in "containerDir + directoryName" liegt, wieder in die Datenbank ein mittels mongorestore.
+Funktion spielt einen Dump, der in "DumpPath + directoryName" liegt, wieder in die Datenbank ein mittels mongorestore.
 */
 func RestoreDump(directoryName string) error {
 	cmd := exec.Command("docker", "exec", "-i", "mongodb", "/usr/bin/mongorestore",
 		"--username", username, "--password", password, "--authenticationDatabase", "admin",
-		"--drop", "--db", dbName, containerDir+directoryName+"/"+dbName)
+		"--drop", "--db", dbName, structs.DumpPath+directoryName+"/"+dbName)
 
 	err := cmd.Run()
 	if err != nil {

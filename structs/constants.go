@@ -1,0 +1,29 @@
+package structs
+
+import "time"
+
+const ( // Konstanten fuer Collection Namen
+	KaeltezaehlerCol     = "kaeltezaehler"
+	StromzaehlerCol      = "stromzaehler"
+	WaermezaehlerCol     = "waermezaehler"
+	DienstreisenCol      = "dienstreisen"
+	EnergieversorgungCol = "energieversorgung"
+	ITGeraeteCol         = "itGeraete"
+	PendelwegCol         = "pendelweg"
+)
+
+const TimeoutDuration time.Duration = 5 * time.Second // Timeout Zeit fuer Datenbank-Kontext
+
+const DumpPath = "/autoDump/" // Pfad fuer die automatischen Dumps
+
+const ( // nach IDs in der Datenbank
+	IDEnergieversorgungWaerme int32 = 1
+	IDEnergieversorgungStrom  int32 = 2
+	IDEnergieversorgungKaelte int32 = 3
+)
+
+const ( // nach IDs in der Datenbank
+	IDDienstreiseBahn     int32 = 1
+	IDDienstreiseAuto     int32 = 2
+	IDDienstreiseFlugzeug int32 = 3
+)
