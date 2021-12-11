@@ -120,17 +120,7 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 
 	// Betrachte alle im Gebaeude referenzierten Zaehler
 	for _, zaehlerID := range refGebaeude {
-		var zaehler structs.Zaehler
-		var err error
-
-		switch idEnergieversorgung { // holt Zaehler aus Datenbank mit entsprechender Datenbank Funktion
-		case IDEnergieversorgungWaerme: // Waerme
-			zaehler, err = database.WaermezaehlerFind(zaehlerID)
-		case IDEnergieversorgungStrom: // Strom
-			zaehler, err = database.StromzaehlerFind(zaehlerID)
-		case IDEnergieversorgungKaelte: // Kaelte
-			zaehler, err = database.KaeltezaehlerFind(zaehlerID)
-		}
+		zaehler, err := database.ZaehlerFind(zaehlerID, idEnergieversorgung) // holt Zaehler aus der Datenbank
 		if err != nil {
 			return 0, err
 		}
@@ -240,7 +230,7 @@ func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andereZaehlerID int
 		return 0, fmt.Errorf(ErrStrVerbrauchFehlt, "zaehlerSpezialfall", jahr, zaehler.PKEnergie)
 	}
 
-	subtraktionszaehler, err := database.KaeltezaehlerFind(andereZaehlerID)
+	subtraktionszaehler, err := database.ZaehlerFind(andereZaehlerID, IDEnergieversorgungKaelte)
 	if err != nil {
 		return 0, err
 	}

@@ -7,13 +7,10 @@ import (
 	"time"
 )
 
-const (
-	kaeltezaehlerCol = "kaeltezaehler"
-)
-
 /**
 Die Funktion liefert einen Zaehler struct für den Kaeltezaehler mit pkEnergie gleich dem Parameter.
 */
+/*
 func KaeltezaehlerFind(pkEnergie int32) (structs.Zaehler, error) {
 	var data structs.Zaehler
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
@@ -35,7 +32,7 @@ func KaeltezaehlerFind(pkEnergie int32) (structs.Zaehler, error) {
 	data.Zaehlertyp = "Kaelte"
 
 	return data, nil
-}
+}*/
 
 /**
 Funktion updated ein Dokument in der Datenbank, um den Zaehlerwert {jahr, wert}, falls Dokument vorhanden
@@ -48,7 +45,7 @@ func KaeltezaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	collection := client.Database(dbName).Collection(kaeltezaehlerCol)
 
 	// Ueberpruefung, ob PK in Datenbank vorhanden
-	currentDoc, err := KaeltezaehlerFind(data.PKEnergie)
+	currentDoc, err := ZaehlerFind(data.PKEnergie, 3)
 	if err != nil {
 		return err
 	}

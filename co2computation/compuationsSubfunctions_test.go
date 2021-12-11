@@ -101,7 +101,10 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 	t.Run("zaehlerNormalfall: ID = 2084, Einzelzaehler (Waermezaehler)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler, _ := database.WaermezaehlerFind(2084)
+		var pkEnergie int32 = 2084
+		var idEnergieversorgung int32 = 1
+
+		zaehler, _ := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 		var jahr int32 = 2020
 		var gebaeudeNr int32 = 1101
 
@@ -115,7 +118,10 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 	t.Run("zaehlerNormalfall: ID = 2253, Gruppenzaehler (Waermezaehler)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler, _ := database.WaermezaehlerFind(2253)
+		var pkEnergie int32 = 2253
+		var idEnergieversorgung int32 = 1
+
+		zaehler, _ := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 		var jahr int32 = 2020
 		var gebaeudeNr int32 = 0 // keine der Referenzen (1308, 1321) von Zaehler 2253
 
@@ -129,7 +135,10 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 	t.Run("zaehlerNormalfall: Umrechnung MWh in kWh (Waermezaehler)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler, _ := database.WaermezaehlerFind(2255)
+		var pkEnergie int32 = 2255
+		var idEnergieversorgung int32 = 1
+
+		zaehler, _ := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 		var jahr int32 = 2020
 		var gebaeudeNr int32 = 1314
 
@@ -140,10 +149,13 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 		is.Equal(ngf, 0.0)            // erwartetes Ergebnis: 0.0 (kein Gruppenzaehler)
 	})
 
-	t.Run("zaehlerNormalfall: kWh beleibt kWh (Kaeltezaehler)", func(t *testing.T) {
+	t.Run("zaehlerNormalfall: kWh bleibt kWh (Kaeltezaehler)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler, _ := database.KaeltezaehlerFind(6108)
+		var pkEnergie int32 = 6108
+		var idEnergieversorgung int32 = 3
+
+		zaehler, _ := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 		var jahr int32 = 2021
 		var gebaeudeNr int32 = 1220
 
@@ -157,7 +169,10 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 	t.Run("zaehlerNormalfall: Stromzaehler", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler, _ := database.StromzaehlerFind(3524)
+		var pkEnergie int32 = 3524
+		var idEnergieversorgung int32 = 2
+
+		zaehler, _ := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 		var jahr int32 = 2020
 		var gebaeudeNr int32 = 3506
 
@@ -188,7 +203,10 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 	t.Run("zaehlerNormalfall: Jahr nicht vorhanden in Zaehlerdaten", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler, _ := database.WaermezaehlerFind(2084)
+		var pkEnergie int32 = 2084
+		var idEnergieversorgung int32 = 1
+
+		zaehler, _ := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 		var jahr int32 = 0
 		var gebaeudeNr int32 = 1101
 
@@ -259,7 +277,10 @@ func TestZaehlerSpezialfall(t *testing.T) {
 	t.Run("zaehlerSpezialfall: Spezialfall = 2, ID = 3621, Jahr = 2020", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler, _ := database.KaeltezaehlerFind(3621)
+		var pkEnergie int32 = 3621
+		var idEnergieversorgung int32 = 3
+
+		zaehler, _ := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 		var jahr int32 = 2020
 		var andereZaehlerID int32 = 3619
 
@@ -272,7 +293,10 @@ func TestZaehlerSpezialfall(t *testing.T) {
 	t.Run("zaehlerSpezialfall: Spezialfall = 3, ID = 3622, Jahr = 2020", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler, _ := database.KaeltezaehlerFind(3622)
+		var pkEnergie int32 = 3622
+		var idEnergieversorgung int32 = 3
+
+		zaehler, _ := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 		var jahr int32 = 2020
 		var andereZaehlerID int32 = 3620
 
@@ -285,7 +309,10 @@ func TestZaehlerSpezialfall(t *testing.T) {
 	t.Run("zaehlerSpezialfall: Spezialfall = 2, ID = 3621, Jahr = 2018", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler, _ := database.KaeltezaehlerFind(3621)
+		var pkEnergie int32 = 3621
+		var idEnergieversorgung int32 = 3
+
+		zaehler, _ := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 		var jahr int32 = 2018
 		var andereZaehlerID int32 = 3619
 
@@ -299,7 +326,10 @@ func TestZaehlerSpezialfall(t *testing.T) {
 	t.Run("zaehlerSpezialfall: Jahr = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		zaehler, _ := database.KaeltezaehlerFind(3622)
+		var pkEnergie int32 = 3622
+		var idEnergieversorgung int32 = 3
+
+		zaehler, _ := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 		var jahr int32 = 0
 		var andereZaehlerID int32 = 3620
 

@@ -119,7 +119,7 @@ func TestWaermezaehlerInsert(t *testing.T) {
 		err := database.WaermezaehlerInsert(data)
 		is.NoErr(err)
 
-		neuerZaehler, err := database.WaermezaehlerFind(data.PKEnergie)
+		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, 1)
 		is.NoErr(err)
 		is.Equal(neuerZaehler, structs.Zaehler{
 			Zaehlertyp:   "Waerme",

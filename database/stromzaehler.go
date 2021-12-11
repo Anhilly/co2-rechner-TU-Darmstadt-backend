@@ -7,13 +7,10 @@ import (
 	"time"
 )
 
-const (
-	stromzaehlerCol = "stromzaehler"
-)
-
 /**
 Die Funktion liefert einen Zaehler struct für den Stromzaehler mit pkEnergie gleich dem Parameter.
 */
+/*
 func StromzaehlerFind(pkEnergie int32) (structs.Zaehler, error) {
 	var data structs.Zaehler
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
@@ -35,7 +32,7 @@ func StromzaehlerFind(pkEnergie int32) (structs.Zaehler, error) {
 	data.Zaehlertyp = "Strom"
 
 	return data, nil
-}
+}*/
 
 /**
 Funktion updated ein Dokument in der Datenbank, um den Zaehlerwert {jahr, wert}, falls Dokument vorhanden
@@ -48,7 +45,7 @@ func StromzaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	collection := client.Database(dbName).Collection(stromzaehlerCol)
 
 	// Ueberpruefung, ob PK in Datenbank vorhanden
-	currentDoc, err := StromzaehlerFind(data.PKEnergie)
+	currentDoc, err := ZaehlerFind(data.PKEnergie, 2)
 	if err != nil {
 		return err
 	}

@@ -108,7 +108,7 @@ func TestWaermezaehlerAddZaehlerdaten(t *testing.T) {
 		err := database.WaermezaehlerAddZaehlerdaten(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.WaermezaehlerFind(data.PKEnergie)
+		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, 1)
 
 		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Waerme",
 			PKEnergie:   2107,
@@ -183,7 +183,7 @@ func TestStromzaehlerAddZaehlerdaten(t *testing.T) {
 		err := database.StromzaehlerAddZaehlerdaten(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.StromzaehlerFind(data.PKEnergie)
+		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, 2)
 
 		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Strom",
 			PKEnergie:   5967,
@@ -262,7 +262,7 @@ func TestKaeltezaehlerAddZaehlerdaten(t *testing.T) {
 		err := database.KaeltezaehlerAddZaehlerdaten(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.KaeltezaehlerFind(data.PKEnergie)
+		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, 3)
 
 		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Kaelte",
 			PKEnergie:   4023,

@@ -8,10 +8,6 @@ import (
 	"time"
 )
 
-const (
-	waermezaehlerCol = "waermezaehler"
-)
-
 var (
 	ErrZaehlerVorhanden    = errors.New("Es ist schon ein Zaehler mit dem PK vorhanden!")
 	ErrFehlendeGebaeuderef = errors.New("Neuer Zaehler hat keine Referenzen auf Gebaeude!")
@@ -20,6 +16,7 @@ var (
 /**
 Die Funktion liefert einen Zaehler struct für den Waermezaehler mit pkEnergie gleich dem Parameter.
 */
+/*
 func WaermezaehlerFind(pkEnergie int32) (structs.Zaehler, error) {
 	var data structs.Zaehler
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
@@ -41,7 +38,7 @@ func WaermezaehlerFind(pkEnergie int32) (structs.Zaehler, error) {
 	data.Zaehlertyp = "Waerme"
 
 	return data, nil
-}
+}*/
 
 /**
 Funktion updated ein Dokument in der Datenbank, um den Zaehlerwert {jahr, wert}, falls Dokument vorhanden
@@ -54,7 +51,7 @@ func WaermezaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	collection := client.Database(dbName).Collection(waermezaehlerCol)
 
 	// Ueberpruefung, ob PK in Datenbank vorhanden
-	currentDoc, err := WaermezaehlerFind(data.PKEnergie)
+	currentDoc, err := ZaehlerFind(data.PKEnergie, 1)
 	if err != nil {
 		return err
 	}
@@ -94,7 +91,7 @@ func WaermezaehlerInsert(data structs.InsertZaehler) error {
 		return ErrFehlendeGebaeuderef
 	}
 
-	_, err := WaermezaehlerFind(data.PKEnergie)
+	_, err := ZaehlerFind(data.PKEnergie, 1)
 	if err == nil { // kein Error = Nr schon vorhanden
 		return ErrZaehlerVorhanden
 	}
