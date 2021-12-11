@@ -10,7 +10,7 @@ import (
 
 var (
 	//Nutzer will Account mit bestehender Email registrieren
-	ErrInsertExistingAccount = errors.New("Account with this Email already exists")
+	ErrInsertExistingAccount = errors.New("Account mit dieser Email existiert bereits")
 )
 
 const (
@@ -43,17 +43,22 @@ func NutzerdatenFind(emailNutzer string) (structs.Nutzerdaten, error) {
 	return data, nil
 }
 
+/**
+Fügt einen Datenbankeintrag in Form des Nutzerdaten structs ein, dabei wird das Passwort gehashed
+*/
 func NutzerdatenInsert(anmeldedaten structs.AnmeldungReq) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(nutzerdatenCol)
-
-	//Check if entry already exists
+	//Prüfe ob bereits ein Eintrag mit dieser Email existiert
 	_, err := NutzerdatenFind(anmeldedaten.Email)
 	if err != nil {
-		//No entry found
-		passwordhash, _ := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
+		//Kein Eintrag vorhanden
+		passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
+		if err != nil {
+			return err //Bcrypt hashing error
+		}
 		_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
 			Email:    anmeldedaten.Email,
 			Passwort: string(passwordhash),
@@ -64,6 +69,6 @@ func NutzerdatenInsert(anmeldedaten structs.AnmeldungReq) error {
 		}
 		return nil
 	}
-	//Entry with given email already exists
+	//Eintrag mit dieser Email existiert bereits
 	return ErrInsertExistingAccount
 }
