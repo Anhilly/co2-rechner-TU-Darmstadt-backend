@@ -14,6 +14,7 @@ import (
 
 var (
 	falschesPasswortError = errors.New("Die Kombination aus Passwort und Email stimmt nicht überein")
+	nichtExistenteEmail   = errors.New("Es existiert kein Konto mit dieser Email")
 )
 
 func RouteAuthentication() chi.Router {
@@ -48,11 +49,14 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		// Es existiert kein Account mit dieser Email
-		anmeldeRes.Message = err.Error()
+		// Sende genauere Fehlermeldung zurück, statt EOF
+		anmeldeRes.Message = nichtExistenteEmail.Error()
 		anmeldeRes.Success = false
+
 		response, _ := json.Marshal(anmeldeRes)
 		res.WriteHeader(http.StatusUnauthorized) // 401
 		res.Write(response)
+		return
 	}
 	// Vergleiche Passwort mit gespeichertem Hash
 	evaluation := bcrypt.CompareHashAndPassword([]byte(nutzerdaten.Passwort), []byte(anmeldeReq.Passwort))
@@ -72,6 +76,7 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		// Falsches Passwort
 		anmeldeRes.Message = falschesPasswortError.Error()
 		anmeldeRes.Success = false
+
 		response, _ := json.Marshal(anmeldeRes)
 		res.WriteHeader(http.StatusUnauthorized) // 401
 		res.Write(response)
