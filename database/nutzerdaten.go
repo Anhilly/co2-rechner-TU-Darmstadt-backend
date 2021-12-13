@@ -2,15 +2,9 @@ package database
 
 import (
 	"context"
-	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	//Nutzer will Account mit bestehender Email registrieren
-	ErrInsertExistingAccount = errors.New("Account mit dieser Email existiert bereits")
 )
 
 /**
@@ -66,5 +60,5 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 		return nil
 	}
 	//Eintrag mit dieser Email existiert bereits
-	return ErrInsertExistingAccount
+	return structs.ErrInsertExistingAccount
 }
