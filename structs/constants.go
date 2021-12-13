@@ -43,3 +43,8 @@ const ( // fuer Zaehertypen
 	ZaehlertypKaelte = "Kaelte"
 	ZaehlertypStrom  = "Strom"
 )
+
+const (
+	ResponseSuccess = "success"
+	ResponseError   = "error"
+)

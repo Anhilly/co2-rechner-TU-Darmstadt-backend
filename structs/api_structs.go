@@ -110,7 +110,7 @@ type InsertGebaeude struct {
 type Response struct {
 	Status string      `json:"status"`
 	Data   interface{} `json:"data"`
-	Error  Error       `json:"error"`
+	Error  interface{} `json:"error"`
 }
 
 type Error struct {
