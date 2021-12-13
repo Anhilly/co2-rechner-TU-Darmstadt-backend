@@ -107,13 +107,31 @@ type InsertGebaeude struct {
 	Flaeche     GebaeudeFlaeche `json:"flaeche"`
 }
 
-type AnmeldungReq struct {
+type AuthReq struct {
 	Email    string `json:"username"`
 	Passwort string `json:"password"`
 }
 
-type AnmeldungRes struct {
-	Message     string `json:"message"`
-	Success     bool   `json:"success"`
-	Cookietoken string `json:"cookietoken"`
+type AbmeldungReq struct {
+	Email string `json:"email"`
+}
+
+type Response struct {
+	Status string      `json:"status"`
+	Data   interface{} `json:"data"`  //Typisch nil, wenn Error oder nichts zu reporten
+	Error  interface{} `json:"error"` //Typisch nil, wenn kein Error
+}
+
+type AbmeldeRes struct {
+	Message string `json:"message"`
+}
+
+type AuthRes struct {
+	Message      string `json:"message"`
+	Sessiontoken string `json:"sessiontoken"`
+}
+
+type Error struct {
+	Code    int32  `json:"code"`
+	Message string `json:"message"`
 }
