@@ -6,6 +6,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -20,76 +21,54 @@ func RouteDB() chi.Router {
 	return r
 }
 
+func errorResponse(res http.ResponseWriter, err error, statuscode int) {
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseError,
+		Data:   nil,
+		Error: structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		},
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	res.WriteHeader(statuscode)
+	_, err = res.Write(response)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
 func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
 	data := structs.AddCO2Faktor{}
 	err = json.Unmarshal(s, &data)
 	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
-	//Datenerarbeitung
+	// Datenerarbeitung
 	ordner, err := database.CreateDump("PostAddFaktor")
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
 	err = database.EnergieversorgungAddFaktor(data)
 	if err != nil {
-		err := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
-
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Fatalln(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -100,18 +79,7 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 		Error:  nil,
 	})
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -122,73 +90,31 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
 	data := structs.AddZaehlerdaten{}
 	err = json.Unmarshal(s, &data)
 	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
 	//Datenerarbeitung
 	ordner, err := database.CreateDump("PostAddFaktor")
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
 	err = database.ZaehlerAddZaehlerdaten(data)
 	if err != nil {
-		err := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
-
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Fatalln(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -199,18 +125,7 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 		Error:  nil,
 	})
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -221,73 +136,31 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
 	data := structs.InsertZaehler{}
 	err = json.Unmarshal(s, &data)
 	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
 	//Datenerarbeitung
 	ordner, err := database.CreateDump("PostAddFaktor")
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
 	err = database.ZaehlerInsert(data)
 	if err != nil {
-		err := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
-
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Fatalln(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -298,18 +171,7 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 		Error:  nil,
 	})
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -320,73 +182,31 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
 	data := structs.InsertGebaeude{}
 	err = json.Unmarshal(s, &data)
 	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusBadRequest,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
 	//Datenerarbeitung
 	ordner, err := database.CreateDump("PostAddFaktor")
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
 	err = database.GebaeudeInsert(data)
 	if err != nil {
-		err := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
-
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Fatalln(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -397,18 +217,7 @@ func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 		Error:  nil,
 	})
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-
-		response, _ := json.Marshal(structs.Response{
-			Status: structs.ResponseError,
-			Data:   nil,
-			Error: structs.Error{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			},
-		})
-		_, _ = res.Write(response)
-
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
