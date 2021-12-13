@@ -13,19 +13,15 @@ var (
 	ErrInsertExistingAccount = errors.New("Account mit dieser Email existiert bereits")
 )
 
-const (
-	nutzerdatenCol = "nutzerdaten"
-)
-
 /**
 Die Funktion liefert einen Nutzerdaten struct mit email gleich dem Parameter.
 */
 func NutzerdatenFind(emailNutzer string) (structs.Nutzerdaten, error) {
 	var data structs.Nutzerdaten
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(nutzerdatenCol)
+	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
 
 	cursor, err := collection.Find(ctx, bson.D{{"email", emailNutzer}}) //nolint:govet
 	if err != nil {
@@ -46,11 +42,11 @@ func NutzerdatenFind(emailNutzer string) (structs.Nutzerdaten, error) {
 /**
 Fügt einen Datenbankeintrag in Form des Nutzerdaten structs ein, dabei wird das Passwort gehashed
 */
-func NutzerdatenInsert(anmeldedaten structs.AnmeldungReq) error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(nutzerdatenCol)
+	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
 	//Prüfe ob bereits ein Eintrag mit dieser Email existiert
 	_, err := NutzerdatenFind(anmeldedaten.Email)
 	if err != nil {
