@@ -106,3 +106,20 @@ type InsertGebaeude struct {
 	Bezeichnung string          `json:"bezeichnung"`
 	Flaeche     GebaeudeFlaeche `json:"flaeche"`
 }
+
+type Response struct {
+	Status string      `json:"status"`
+	Data   interface{} `json:"data"`
+	Error  Error       `json:"error"`
+}
+
+type Error struct {
+	Code    int32  `json:"code"`
+	Message string `json:"message"`
+}
+
+type Request struct {
+	Data         interface{} `json:"data"`
+	Sessiontoken string      `json:"sessiontoken"`
+	Email        string      `json:"email"`
+}
