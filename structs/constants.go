@@ -11,6 +11,7 @@ const ( // Konstanten fuer Collection Namen
 	ITGeraeteCol         = "itGeraete"
 	PendelwegCol         = "pendelweg"
 	GebaeudeCol          = "gebaeude"
+	NutzerdatenCol       = "nutzerdaten"
 )
 
 const TimeoutDuration time.Duration = 5 * time.Second // Timeout Zeit fuer Datenbank-Kontext
@@ -42,4 +43,9 @@ const ( // fuer Zaehertypen
 	ZaehlertypWaerme = "Waerme"
 	ZaehlertypKaelte = "Kaelte"
 	ZaehlertypStrom  = "Strom"
+)
+
+const ( //Status responses
+	ResponseSuccess = "success"
+	ResponseError   = "error"
 )
