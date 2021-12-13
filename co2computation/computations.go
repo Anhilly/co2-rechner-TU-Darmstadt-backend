@@ -1,31 +1,9 @@
 package co2computation
 
 import (
-	"errors"
 	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
-)
-
-var (
-	// Fehler durch Nutzereingabe
-	ErrPersonenzahlZuKlein = errors.New("BerechnePendelweg: Personenzahl ist kleiner als 1")
-	// Fehler durch Nutzereingabe (oder Wert fehlt in Datenbank)
-	ErrTankartUnbekannt = errors.New("BerechneDienstreisen: Tankart nicht vorhanden")
-	// Fehler durch Nutzereingabe (oder Wert fehlt in Datenbank)
-	ErrStreckentypUnbekannt = errors.New("BerechneDienstreisen: Streckentyp nicht vorhanden")
-	// Fehler durch Nutzereingabe
-	ErrStreckeNegativ = errors.New("BerechneDienstreise / BerechnePendelweg: Strecke ist negativ")
-	// Fehler durch Nutzereingabe
-	ErrAnzahlNegativ = errors.New("BerechneITGeraete: Anzahl an IT-Geraeten ist negativ")
-	// Fehler durch fehlende Implementierung einer Berechnung
-	ErrBerechnungUnbekannt = errors.New("BerechneDienstreisen: Keine Berechnung fuer angegeben ID vorhanden")
-)
-
-const ( // nach IDs in der Datenbank
-	DienstreiseIDBahn     int32 = 1
-	DienstreiseIDAuto     int32 = 2
-	DienstreiseIDFlugzeug int32 = 3
 )
 
 /**
@@ -41,7 +19,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 		if dienstreise.Strecke == 0 {
 			continue
 		} else if dienstreise.Strecke < 0 {
-			return 0, ErrStreckeNegativ
+			return 0, structs.ErrStreckeNegativ
 		}
 
 		medium, err := database.DienstreisenFind(dienstreise.IDDienstreise)
@@ -51,34 +29,34 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 
 		// muss explizit behandelt werden, da je nach Medium der CO2 Faktor anders bestimmt wird
 		switch medium.IDDienstreisen {
-		case DienstreiseIDBahn: // Bahn
+		case structs.IDDienstreiseBahn: // Bahn
 			co2Faktor = medium.CO2Faktor[0].Wert
-		case DienstreiseIDAuto: // Auto
+		case structs.IDDienstreiseAuto: // Auto
 			for _, faktor := range medium.CO2Faktor {
 				if faktor.Tankart == dienstreise.Tankart {
 					co2Faktor = faktor.Wert
 				}
 			}
 			if co2Faktor == -1 {
-				return 0, ErrTankartUnbekannt
+				return 0, structs.ErrTankartUnbekannt
 			}
-		case DienstreiseIDFlugzeug: // Flugzeug
+		case structs.IDDienstreiseFlugzeug: // Flugzeug
 			for _, faktor := range medium.CO2Faktor {
 				if faktor.Streckentyp == dienstreise.Streckentyp {
 					co2Faktor = faktor.Wert
 				}
 			}
 			if co2Faktor == -1 {
-				return 0, ErrStreckentypUnbekannt
+				return 0, structs.ErrStreckentypUnbekannt
 			}
 		default:
-			return 0, ErrBerechnungUnbekannt
+			return 0, structs.ErrBerechnungUnbekannt
 		}
 
-		if medium.Einheit == "g/Pkm" {
+		if medium.Einheit == structs.EinheitgPkm {
 			emission += float64(co2Faktor * dienstreise.Strecke * 2) //nolint:gomnd
 		} else {
-			return 0, fmt.Errorf(ErrStrEinheitUnbekannt, "BerechneDienstreisen", medium.Einheit)
+			return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechneDienstreisen", medium.Einheit)
 		}
 	}
 
@@ -103,11 +81,11 @@ func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero in
 		if weg.Strecke == 0 {
 			continue
 		} else if weg.Strecke < 0 {
-			return 0, ErrStreckeNegativ
+			return 0, structs.ErrStreckeNegativ
 		}
 
 		if weg.Personenanzahl < 1 {
-			return 0, ErrPersonenzahlZuKlein
+			return 0, structs.ErrPersonenzahlZuKlein
 		}
 
 		medium, err := database.PendelwegFind(weg.IDPendelweg)
@@ -115,10 +93,10 @@ func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero in
 			return 0, err
 		}
 
-		if medium.Einheit == "g/Pkm" {
+		if medium.Einheit == structs.EinheitgPkm {
 			emissionen += float64(arbeitstage*2*weg.Strecke*medium.CO2Faktor) / float64(weg.Personenanzahl)
 		} else {
-			return 0, fmt.Errorf(ErrStrEinheitUnbekannt, "BerechnePendelweg", medium.Einheit)
+			return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechnePendelweg", medium.Einheit)
 		}
 	}
 
@@ -136,7 +114,7 @@ func BerechneITGeraete(itGeraeteDaten []structs.ITGeraeteAnzahl) (float64, error
 		if itGeraet.Anzahl == 0 {
 			continue
 		} else if itGeraet.Anzahl < 0 {
-			return 0, ErrAnzahlNegativ
+			return 0, structs.ErrAnzahlNegativ
 		}
 
 		kategorie, err := database.ITGeraeteFind(itGeraet.IDITGeraete)
@@ -144,14 +122,14 @@ func BerechneITGeraete(itGeraeteDaten []structs.ITGeraeteAnzahl) (float64, error
 			return 0, err
 		}
 
-		if kategorie.Einheit == "g/Stueck" {
+		if kategorie.Einheit == structs.EinheitgStueck {
 			if kategorie.IDITGerate == 8 || kategorie.IDITGerate == 10 { // Druckerpatronen und Toner
 				emissionen += float64(itGeraet.Anzahl * kategorie.CO2FaktorGesamt)
 			} else { // alle anderen IT Geräte
 				emissionen += float64(itGeraet.Anzahl * kategorie.CO2FaktorJahr)
 			}
 		} else {
-			return 0, fmt.Errorf(ErrStrEinheitUnbekannt, "BerechneITGeraete", kategorie.Einheit)
+			return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechneITGeraete", kategorie.Einheit)
 		}
 	}
 
