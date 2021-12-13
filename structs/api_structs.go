@@ -116,6 +116,8 @@ type AbmeldungReq struct {
 	Email string `json:"email"`
 }
 
+//Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
+
 type Response struct {
 	Status string      `json:"status"`
 	Data   interface{} `json:"data"`  //Typisch nil, wenn Error oder nichts zu reporten
