@@ -55,7 +55,7 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Datenerarbeitung
+	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostAddFaktor")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
@@ -72,7 +72,7 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//Response
+	// Response
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,
 		Data:   nil,
@@ -101,7 +101,7 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//Datenerarbeitung
+	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostAddFaktor")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
@@ -118,7 +118,7 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//Response
+	// Response
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,
 		Data:   nil,
@@ -147,7 +147,7 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//Datenerarbeitung
+	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostAddFaktor")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
@@ -164,7 +164,7 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//Response
+	// Response
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,
 		Data:   nil,
@@ -193,7 +193,7 @@ func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//Datenerarbeitung
+	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostAddFaktor")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
@@ -210,7 +210,7 @@ func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//Response
+	// Response
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,
 		Data:   nil,
