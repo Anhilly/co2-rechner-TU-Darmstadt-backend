@@ -8,17 +8,24 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
+
+type Session struct {
+	Sessiontoken string
+	GenTime      time.Time
+}
 
 var (
 	falschesPasswortError = errors.New("Die Kombination aus Passwort und Email stimmt nicht überein")
 	nichtExistenteEmail   = errors.New("Es existiert kein Konto mit dieser Email")
 
 	// AuthMap Speichert Authentication Daten für Benutzer
-	// key:= email -> {sessiontoken, TTL}
-	AuthMap = make(map[string]string)
+	// key:= email -> {Sessiontoken, TTL}
+	AuthMap = make(map[string]Session)
 )
 
 func RouteAuthentication() chi.Router {
@@ -32,22 +39,43 @@ func RouteAuthentication() chi.Router {
 }
 
 /**
-Generiert einen Cookie Token welcher den Nutzer authentifiziert
+Generiert einen Cookie Token, welcher den Nutzer authentifiziert und speichert ihn in Map
 */
-func generiereCookieToken(anmeldeReq structs.AuthReq) string {
+func generiereSessionToken(email string) string {
 	sessionToken := uuid.NewString()
-	//TODO speichere in Map const?
+	AuthMap[email] = Session{
+		Sessiontoken: sessionToken,
+		GenTime:      time.Now(),
+	}
 	return sessionToken
 }
 
 /**
-TODO
+Überprüft ob die email einen gültigen Sessiontoken registriert hat, falls ja nil
+*/
+func checkValidSessionToken(email string) error {
+	//TTL ist 2 Stunden
+	if (AuthMap[email] == Session{}) {
+		return structs.ErrNutzerHatKeinenSessiontoken
+	}
+	entry := AuthMap[email]
+	genTimePlusTTL := entry.GenTime.Add(time.Hour * time.Duration(2))
+	if genTimePlusTTL.Before(time.Now()) {
+		return structs.ErrAbgelaufenerSessiontoken
+	}
+	return nil
+}
+
+/**
 Löscht den Cookie Token welcher den Nutzer mit email authentifiziert
 */
-func loescheCookieToken(email string) error {
-	//Placeholder für linter
-	email = email
-	return nil
+func loescheSessionToken(email string) error {
+	err := checkValidSessionToken(email)
+	if err != nil {
+		AuthMap[email] = Session{}
+		return nil
+	}
+	return err
 }
 
 /**
@@ -59,7 +87,7 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 	anmeldeRes := structs.Response{}
 	json.Unmarshal(s, &anmeldeReq)
 
-	nutzerdaten, err := database.NutzerdatenFind(anmeldeReq.Email)
+	nutzerdaten, err := database.NutzerdatenFind(anmeldeReq.Username)
 
 	if err != nil {
 		anmeldeRes.Status = structs.ResponseError
@@ -92,9 +120,12 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		anmeldeRes.Error = nil
 
 		// Generiere Cookie Token
-		token := generiereCookieToken(anmeldeReq)
+		token := generiereSessionToken(anmeldeReq.Username)
 
-		anmeldeRes.Data = structs.AuthRes{Sessiontoken: token}
+		anmeldeRes.Data = structs.AuthRes{
+			Sessiontoken: token,
+			Message:      "Nutzer authentifiziert",
+		}
 
 		response, _ := json.Marshal(anmeldeRes)
 		res.WriteHeader(http.StatusOK) // 200
@@ -118,6 +149,7 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 Die Funktion liefert einen HTTP Response zurück, welcher den neuen Nutzer authentifiziert, oder eine Fehlermeldung liefert
 */
 func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
+	//TODO DB save and restore im Fehlerfall
 	//TODO Error handling für ReadAll und Umarshal
 	s, err := ioutil.ReadAll(req.Body)
 	registrierungReq := structs.AuthReq{}
@@ -132,7 +164,7 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		registrierungRes.Error = nil
 
 		// Generiere Cookie Token
-		token := generiereCookieToken(registrierungReq)
+		token := generiereSessionToken(registrierungReq.Username)
 
 		registrierungRes.Data = structs.AuthRes{
 			Message:      "Der neue Nutzeraccount wurde erstellt.",
@@ -164,9 +196,8 @@ func DeleteAbmeldung(res http.ResponseWriter, req *http.Request) {
 	abmeldungReq := structs.AbmeldungReq{}
 	abmeldungRes := structs.Response{}
 	json.Unmarshal(s, &abmeldungReq)
-
-	//TODO: Lösche Session Token hier
-	err := loescheCookieToken(abmeldungReq.Email)
+	println(abmeldungReq.Username, " test ", AuthMap[abmeldungReq.Username].Sessiontoken)
+	err := loescheSessionToken(abmeldungReq.Username)
 
 	if err == nil {
 		// Session Token gelöscht
