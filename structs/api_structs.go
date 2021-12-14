@@ -108,20 +108,20 @@ type InsertGebaeude struct {
 }
 
 type AuthReq struct {
-	Email    string `json:"username"`
+	Username string `json:"username"`
 	Passwort string `json:"password"`
 }
 
 type AbmeldungReq struct {
-	Email string `json:"email"`
+	Username string `json:"username"`
 }
 
-//Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
+// Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
 
 type Response struct {
 	Status string      `json:"status"`
-	Data   interface{} `json:"data"`  //Typisch nil, wenn Error oder nichts zu reporten
-	Error  interface{} `json:"error"` //Typisch nil, wenn kein Error
+	Data   interface{} `json:"data"`  // Typisch nil, wenn Error oder nichts zu reporten
+	Error  interface{} `json:"error"` // Typisch nil, wenn kein Error
 }
 
 type AbmeldeRes struct {
