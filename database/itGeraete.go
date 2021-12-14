@@ -6,19 +6,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-const (
-	itGeraeteCol = "itGeraete"
-)
-
 /**
 Die Funktion liefert einen ITGeraete struct mit idITGeraete gleich dem Parameter.
 */
 func ITGeraeteFind(idITGeraete int32) (structs.ITGeraete, error) {
 	var data structs.ITGeraete
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(itGeraeteCol)
+	collection := client.Database(dbName).Collection(structs.ITGeraeteCol)
 
 	cursor, err := collection.Find(ctx, bson.D{{"idITGeraete", idITGeraete}}) //nolint:govet
 	if err != nil {

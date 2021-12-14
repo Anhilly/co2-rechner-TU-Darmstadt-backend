@@ -78,3 +78,48 @@ type DienstreiseElement struct {
 	Strecke       int32  `json:"strecke"`
 	Tankart       string `json:"tankart"`
 }
+
+// Structs für Request JSONs zum Hinzufuegen und Aendern von Daten der Datenbank
+type AddCO2Faktor struct {
+	IDEnergieversorgung int32 `json:"idEnergieversorgung"`
+	Jahr                int32 `json:"jahr"`
+	Wert                int32 `json:"wert"`
+}
+
+type AddZaehlerdaten struct {
+	PKEnergie           int32   `json:"pkEnergie"`
+	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
+	Jahr                int32   `json:"jahr"`
+	Wert                float64 `json:"wert"`
+}
+
+type InsertZaehler struct {
+	PKEnergie           int32   `json:"pkEnergie"`
+	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
+	Bezeichnung         string  `json:"bezeichnung"`
+	Einheit             string  `json:"einheit"`
+	GebaeudeRef         []int32 `json:"gebaeudeRef"`
+}
+
+type InsertGebaeude struct {
+	Nr          int32           `json:"nr"`
+	Bezeichnung string          `json:"bezeichnung"`
+	Flaeche     GebaeudeFlaeche `json:"flaeche"`
+}
+
+type Response struct {
+	Status string      `json:"status"`
+	Data   interface{} `json:"data"`
+	Error  interface{} `json:"error"`
+}
+
+type Error struct {
+	Code    int32  `json:"code"`
+	Message string `json:"message"`
+}
+
+type Request struct {
+	Data         interface{} `json:"data"`
+	Sessiontoken string      `json:"sessiontoken"`
+	Email        string      `json:"email"`
+}

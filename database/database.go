@@ -2,16 +2,14 @@ package database
 
 import (
 	"context"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
-	"time"
 )
 
 var client *mongo.Client
-
-const timeoutDuration time.Duration = 5 * time.Second
 
 /**
 Die Funktion stellt eine Verbindung mit der Datenbank her mittels der Konstanten aus db_config.go.
@@ -19,7 +17,7 @@ Die Referenz zur Datenbank wird in der Variable client gespeichert
 */
 func ConnectDatabase() error {
 	var err error
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	client, err = mongo.NewClient(
@@ -47,7 +45,7 @@ func ConnectDatabase() error {
 Die Funktion schließt die Verbindung mit der Datenbank.
 */
 func DisconnectDatabase() error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	err := client.Disconnect(ctx)
