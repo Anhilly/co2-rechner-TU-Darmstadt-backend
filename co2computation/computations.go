@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
+	"math"
 )
 
 /**
@@ -11,7 +12,7 @@ Die Funktion berechnet die Gesamtemissionen für den übergebenen Slice an Diens
 Ergebniseinheit: g
 */
 func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float64, error) {
-	var emission float64
+	var emissionen float64
 
 	for _, dienstreise := range dienstreisenDaten {
 		var co2Faktor int32 = -1 // zur Überprüfung, ob der CO2Faktor umgesetzt wurde
@@ -54,13 +55,13 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 		}
 
 		if medium.Einheit == structs.EinheitgPkm {
-			emission += float64(co2Faktor * dienstreise.Strecke * 2) //nolint:gomnd
+			emissionen += float64(co2Faktor * dienstreise.Strecke * 2) //nolint:gomnd
 		} else {
 			return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechneDienstreisen", medium.Einheit)
 		}
 	}
 
-	return emission, nil
+	return math.Round(emissionen*100) / 100, nil
 }
 
 /**
