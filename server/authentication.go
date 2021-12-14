@@ -103,6 +103,36 @@ func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code 
 }
 
 /**
+readRequest liest den request JSON struct vom http.Request und behandelt errors
+ @param res der response writer sendet nur error, falls entstanden error != nil
+ @param req der request vom HTTP Paket
+ @param request das JSON format der Anfrage. Z.B. AuthReq für Anmelden/Registrieren
+*/
+/*
+func readRequest(res http.ResponseWriter, req *http.Request, request interface{}) (error, interface{}) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return err, nil
+	}
+	err = json.Unmarshal(s, &request)
+
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return err, nil
+	}
+	return nil, request
+}*/
+
+/**
 Die Funktion liefert einen Response welcher bei valider Benutzereingabe den Nutzer authentisiert, sonst Fehler
 */
 func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
@@ -171,41 +201,43 @@ Die Funktion liefert einen HTTP Response zurück, welcher den neuen Nutzer authe
 */
 func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	//TODO DB save and restore im Fehlerfall
-	//TODO Error handling für ReadAll und Umarshal
 	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+
 	registrierungReq := structs.AuthReq{}
-	registrierungRes := structs.Response{}
+
 	err = json.Unmarshal(s, &registrierungReq)
+
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
 
 	err = database.NutzerdatenInsert(registrierungReq)
 	if err == nil {
-		// Neuen Nutzer erstellt
-
-		registrierungRes.Status = structs.ResponseSuccess
-		registrierungRes.Error = nil
-
 		// Generiere Cookie Token
 		token := generiereSessionToken(registrierungReq.Username)
-
-		registrierungRes.Data = structs.AuthRes{
-			Message:      "Der neue Nutzeraccount wurde erstellt.",
+		sendResponse(res, true, structs.AuthRes{
+			Message:      "Der neue Nutzeraccount wurde erstellt",
 			Sessiontoken: token,
-		}
-
-		response, _ := json.Marshal(registrierungRes)
-		res.WriteHeader(http.StatusCreated) // 201 account created
-		res.Write(response)
+		}, http.StatusCreated)
 	} else {
 		// Konnte keinen neuen Nutzer erstellen
-		registrierungRes.Status = structs.ResponseError
-		registrierungRes.Data = nil
-		registrierungRes.Error = structs.Error{
-			Code:    409,
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusConflict,
 			Message: err.Error(),
-		}
-		response, _ := json.Marshal(registrierungRes)
-		res.WriteHeader(http.StatusConflict) // 409 Conflict
-		res.Write(response)
+		}, http.StatusConflict)
 	}
 }
 
@@ -213,31 +245,39 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 Die Funktion liefert einen HTTP Response zurück, welcher den Nutzer abmeldet, sonst Fehler
 */
 func DeleteAbmeldung(res http.ResponseWriter, req *http.Request) {
-	s, _ := ioutil.ReadAll(req.Body)
-	abmeldungReq := structs.AbmeldungReq{}
-	abmeldungRes := structs.Response{}
-	json.Unmarshal(s, &abmeldungReq)
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
 
-	err := loescheSessionToken(abmeldungReq.Username)
+	abmeldungReq := structs.AbmeldungReq{}
+	err = json.Unmarshal(s, &abmeldungReq)
+
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+
+	err = loescheSessionToken(abmeldungReq.Username)
 
 	if err == nil {
 		// Session Token gelöscht
-		abmeldungRes.Status = structs.ResponseSuccess
-		abmeldungRes.Data = structs.AbmeldeRes{Message: "Der Session Token wurde gelöscht"}
-		abmeldungRes.Error = nil
-
-		response, _ := json.Marshal(abmeldungRes)
-		res.WriteHeader(http.StatusOK) // 200 Enacted and return message
-		res.Write(response)
+		sendResponse(res, true, structs.AbmeldeRes{
+			Message: "Der Session Token wurde gelöscht"}, http.StatusOK)
 	} else {
 		// Konnte nicht löschen
-		abmeldungRes.Status = structs.ResponseError
-		abmeldungRes.Error = structs.Error{
-			Code:    409,
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusConflict,
 			Message: err.Error(),
-		}
-		response, _ := json.Marshal(abmeldungRes)
-		res.WriteHeader(http.StatusConflict) // 409 Conflict
-		res.Write(response)
+		}, http.StatusConflict)
 	}
 }
