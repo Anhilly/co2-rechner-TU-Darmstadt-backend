@@ -17,9 +17,6 @@ var ( // Fehler von Add und Insert Funktionen
 
 	// Fehler durch Nutzereingabe
 	ErrIDEnergieversorgungNichtVorhanden = errors.New("Die angegebene IDEnergieversorgung ist nicht vorhanden")
-
-	//Nutzer will Account mit bestehender Email registrieren
-	ErrInsertExistingAccount = errors.New("Account mit dieser Email existiert bereits")
 )
 
 var ( // Fehler, die bei Berechnungen auftreten
@@ -61,4 +58,15 @@ var ( // Fehler, die bei Berechnungen auftreten
 
 	// Fehler durch fehlende Implementierung einer Berechnung
 	ErrBerechnungUnbekannt = errors.New("BerechneDienstreisen: Keine Berechnung fuer angegeben ID vorhanden")
+)
+
+var ( // Fehler die bei der Authentifizierung auftreten
+	// Nutzer will Account mit bestehender Email registrieren
+	ErrInsertExistingAccount = errors.New("Account mit dieser Email existiert bereits")
+
+	// Fehler das für Nutzer kein Sessiontoken registriert ist
+	ErrNutzerHatKeinenSessiontoken = errors.New("Email hat keinen Sessiontoken registriert")
+
+	// Abgelaufener Sessiontoken
+	ErrAbgelaufenerSessiontoken = errors.New("Der Sessiontoken ist abgelaufen")
 )
