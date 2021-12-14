@@ -76,35 +76,73 @@ func loescheSessionToken(email string) error {
 }
 
 /**
+sendResponse sendet Response zurück, bei Marshal Fehler sende 500 Code Error
+ @param res Writer der den Response sendet
+ @param data true falls normales Response Packet, false bei Error
+ @param payload ist interface welches den data bzw. error struct enthält
+ @param code ist der HTTP Header Code
+*/
+func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code int32) {
+	responseBuilder := structs.Response{}
+	if data {
+		responseBuilder.Status = structs.ResponseSuccess
+		responseBuilder.Error = nil
+		responseBuilder.Data = payload
+	} else {
+		responseBuilder.Status = structs.ResponseError
+		responseBuilder.Data = nil
+		responseBuilder.Error = payload
+	}
+	response, err := json.Marshal(responseBuilder)
+	if err == nil {
+		res.WriteHeader(int(code))
+	} else {
+		res.WriteHeader(http.StatusInternalServerError)
+	}
+	res.Write(response)
+}
+
+/**
 Die Funktion liefert einen Response welcher bei valider Benutzereingabe den Nutzer authentisiert, sonst Fehler
 */
 func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
-	s, _ := ioutil.ReadAll(req.Body)
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
 	anmeldeReq := structs.AuthReq{}
-	anmeldeRes := structs.Response{}
-	json.Unmarshal(s, &anmeldeReq)
+	err = json.Unmarshal(s, &anmeldeReq)
+
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
 
 	nutzerdaten, err := database.NutzerdatenFind(anmeldeReq.Username)
 
+	if err == io.EOF {
+		// Es existiert kein Account mit dieser Email
+		// Sende genauere Fehlermeldung zurück, statt EOF
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusUnauthorized,
+			Message: structs.ErrNichtExistenteEmail.Error(),
+		}, http.StatusUnauthorized)
+		return
+	}
 	if err != nil {
-		anmeldeRes.Status = structs.ResponseError
-		anmeldeRes.Data = nil
-		tmpError := structs.Error{}
-
-		if err == io.EOF {
-			// Es existiert kein Account mit dieser Email
-			// Sende genauere Fehlermeldung zurück, statt EOF
-			tmpError.Message = structs.ErrNichtExistenteEmail.Error()
-		} else {
-			tmpError.Message = err.Error()
-		}
-		//Schreibe Errorcode aus HTML Header in JSON
-		tmpError.Code = 401
-		anmeldeRes.Error = tmpError
-
-		response, _ := json.Marshal(anmeldeRes)
-		res.WriteHeader(http.StatusUnauthorized) // 401 Unauthorisierter Nutzer
-		res.Write(response)
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusUnauthorized,
+			Message: err.Error(),
+		}, http.StatusUnauthorized)
 		return
 	}
 
@@ -112,33 +150,19 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 	evaluation := bcrypt.CompareHashAndPassword([]byte(nutzerdaten.Passwort), []byte(anmeldeReq.Passwort))
 
 	if evaluation == nil {
-		//Korrektes Passwort authentifiziere den Nutzer
-		anmeldeRes.Status = structs.ResponseSuccess
-		anmeldeRes.Error = nil
-
+		// Korrektes Passwort authentifiziere den Nutzer
 		// Generiere Cookie Token
 		token := generiereSessionToken(anmeldeReq.Username)
-
-		anmeldeRes.Data = structs.AuthRes{
-			Sessiontoken: token,
+		sendResponse(res, true, structs.AuthRes{
 			Message:      "Nutzer authentifiziert",
-		}
-
-		response, _ := json.Marshal(anmeldeRes)
-		res.WriteHeader(http.StatusOK) // 200
-		res.Write(response)
+			Sessiontoken: token,
+		}, http.StatusOK)
 	} else {
 		// Falsches Passwort
-		anmeldeRes.Status = structs.ResponseError
-		anmeldeRes.Data = nil
-		anmeldeRes.Error = structs.Error{
-			Code:    401,
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusUnauthorized,
 			Message: structs.ErrFalschesPasswortError.Error(),
-		}
-
-		response, _ := json.Marshal(anmeldeRes)
-		res.WriteHeader(http.StatusUnauthorized) // 401
-		res.Write(response)
+		}, http.StatusUnauthorized)
 	}
 }
 
@@ -193,7 +217,7 @@ func DeleteAbmeldung(res http.ResponseWriter, req *http.Request) {
 	abmeldungReq := structs.AbmeldungReq{}
 	abmeldungRes := structs.Response{}
 	json.Unmarshal(s, &abmeldungReq)
-	println(abmeldungReq.Username, " test ", AuthMap[abmeldungReq.Username].Sessiontoken)
+
 	err := loescheSessionToken(abmeldungReq.Username)
 
 	if err == nil {
