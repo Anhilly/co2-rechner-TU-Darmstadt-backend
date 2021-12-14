@@ -315,6 +315,7 @@ func TestZaehlerInsert(t *testing.T) {
 		err := database.ZaehlerInsert(data)
 		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Funktion wirft ErrIDEnergieversorgungNichtVorhanden
 	})
+}
 
 func TestNutzerdatenInsert(t *testing.T) {
 	is := is.NewRelaxed(t)
@@ -322,8 +323,8 @@ func TestNutzerdatenInsert(t *testing.T) {
 	// Normalfall
 	t.Run("NutzerdatenInsert: {email = 'testingEmailPlsDontUse' password='verysecurepassword'} (nicht vorhanden)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
-		testData := structs.AnmeldungReq{
-			Email:    "testingEmailPlsDontUse",
+		testData := structs.AuthReq{
+			Username: "testingEmailPlsDontUse",
 			Passwort: "verysecurepassword",
 		}
 		err := database.NutzerdatenInsert(testData)
@@ -333,11 +334,11 @@ func TestNutzerdatenInsert(t *testing.T) {
 	//Errorfall
 	t.Run("NutzerdatenInsert: {email = 'anton@tobi.com' password='verysecurepassword'} (vorhanden)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
-		testData := structs.AnmeldungReq{
-			Email:    "anton@tobi.com",
+		testData := structs.AuthReq{
+			Username: "anton@tobi.com",
 			Passwort: "verysecurepassword",
 		}
 		err := database.NutzerdatenInsert(testData)
-		is.Equal(err, database.ErrInsertExistingAccount) //Dateneintrag existiert bereits
+		is.Equal(err, structs.ErrInsertExistingAccount) //Dateneintrag existiert bereits
 	})
 }
