@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
@@ -20,9 +19,6 @@ type Session struct {
 }
 
 var (
-	falschesPasswortError = errors.New("Die Kombination aus Passwort und Email stimmt nicht überein")
-	nichtExistenteEmail   = errors.New("Es existiert kein Konto mit dieser Email")
-
 	// AuthMap Speichert Authentication Daten für Benutzer
 	// key:= email -> {Sessiontoken, TTL}
 	AuthMap = make(map[string]Session)
@@ -55,11 +51,12 @@ func generiereSessionToken(email string) string {
 */
 func checkValidSessionToken(email string) error {
 	//TTL ist 2 Stunden
+	ttl := 2
 	if (AuthMap[email] == Session{}) {
 		return structs.ErrNutzerHatKeinenSessiontoken
 	}
 	entry := AuthMap[email]
-	genTimePlusTTL := entry.GenTime.Add(time.Hour * time.Duration(2))
+	genTimePlusTTL := entry.GenTime.Add(time.Hour * time.Duration(ttl))
 	if genTimePlusTTL.Before(time.Now()) {
 		return structs.ErrAbgelaufenerSessiontoken
 	}
@@ -71,7 +68,7 @@ Löscht den Cookie Token welcher den Nutzer mit email authentifiziert
 */
 func loescheSessionToken(email string) error {
 	err := checkValidSessionToken(email)
-	if err != nil {
+	if err == nil || err == structs.ErrAbgelaufenerSessiontoken {
 		AuthMap[email] = Session{}
 		return nil
 	}
@@ -97,7 +94,7 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		if err == io.EOF {
 			// Es existiert kein Account mit dieser Email
 			// Sende genauere Fehlermeldung zurück, statt EOF
-			tmpError.Message = nichtExistenteEmail.Error()
+			tmpError.Message = structs.ErrNichtExistenteEmail.Error()
 		} else {
 			tmpError.Message = err.Error()
 		}
@@ -136,7 +133,7 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		anmeldeRes.Data = nil
 		anmeldeRes.Error = structs.Error{
 			Code:    401,
-			Message: falschesPasswortError.Error(),
+			Message: structs.ErrFalschesPasswortError.Error(),
 		}
 
 		response, _ := json.Marshal(anmeldeRes)

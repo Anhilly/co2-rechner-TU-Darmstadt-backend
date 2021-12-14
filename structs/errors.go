@@ -69,4 +69,10 @@ var ( // Fehler die bei der Authentifizierung auftreten
 
 	// Abgelaufener Sessiontoken
 	ErrAbgelaufenerSessiontoken = errors.New("Der Sessiontoken ist abgelaufen")
+
+	// Falsches Passwort beim Anmelden
+	ErrFalschesPasswortError = errors.New("Die Kombination aus Passwort und Email stimmt nicht überein")
+
+	// Falsche Email beim Anmelden
+	ErrNichtExistenteEmail = errors.New("Es existiert kein Konto mit dieser Email")
 )
