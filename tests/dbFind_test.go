@@ -4,6 +4,8 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"io"
 	"testing"
 	"time"
@@ -24,6 +26,20 @@ func TestFind(t *testing.T) {
 	t.Run("TestDienstreisenFind", TestDienstreisenFind)
 	t.Run("TestGebaeudeFind", TestGebaeudeFind)
 	t.Run("TestZaehlerFind", TestZaehlerFind)
+}
+
+func TestTester(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	err := database.ConnectDatabase()
+	is.NoErr(err)
+	defer func() {
+		err := database.DisconnectDatabase()
+		is.NoErr(err)
+	}()
+
+	t.Run("TestUmfrageFind", TestUmfrageFind)
+	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -551,5 +567,92 @@ func TestZaehlerFind(t *testing.T) {
 
 		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Funktion wirft ErrIDEnergieversorgungNichtVorhanden
 		is.Equal(data, structs.Zaehler{})                           // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestUmfrageFind(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	t.Run("UmfrageFind: ID = 61b23e9855aa64762baf76d7", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var id primitive.ObjectID
+		err := id.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+
+		var idMitarbeiterumfrage primitive.ObjectID
+		err = idMitarbeiterumfrage.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		is.NoErr(err)
+
+		data, err := database.UmfrageFind(id)
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			structs.Umfrage{
+				ID:                id,
+				Mitarbeiteranzahl: 1,
+				Jahr:              2020,
+				Gebaeude: []structs.UmfrageGebaeude{
+					{GebaeudeNr: 1101, Nutzflaeche: 100},
+				},
+				ITGeraete: []structs.UmfrageITGeraete{
+					{IDITGeraete: 5, Anzahl: 10},
+				},
+				Revision:              1,
+				MitarbeiterUmfrageRef: []primitive.ObjectID{idMitarbeiterumfrage},
+			}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	t.Run("ITGeraeteFind: ID aus aktuellem Zeitstempel nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		id := primitive.NewObjectID()
+
+		data, err := database.UmfrageFind(id)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Umfrage{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestMitarbeiterUmfrageFind(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	t.Run("MitarbeiterUmfrageFind: ID = 61b34f9324756df01eee5ff4", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var id primitive.ObjectID
+		err := id.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		is.NoErr(err)
+
+		data, err := database.MitarbeiterUmfrageFind(id)
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			structs.MitarbeiterUmfrage{
+				ID: id,
+				Pendelweg: []structs.UmfragePendelweg{
+					{IDPendelweg: 1, Strecke: 123, PersonenAnzahl: 1},
+				},
+				TageImBuero: 7,
+				Dienstreise: []structs.UmfrageDienstreise{
+					{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321},
+				},
+				ITGeraete: []structs.UmfrageITGeraete{
+					{IDITGeraete: 3, Anzahl: 45},
+				},
+				Revision: 1,
+			}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	t.Run("MitarbeiterUmfrageFind: ID aus aktuellem Zeitstempel nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		id := primitive.NewObjectID()
+
+		data, err := database.MitarbeiterUmfrageFind(id)
+
+		is.Equal(err, mongo.ErrNoDocuments)          // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.MitarbeiterUmfrage{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }

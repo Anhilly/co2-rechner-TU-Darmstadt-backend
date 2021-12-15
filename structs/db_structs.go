@@ -143,28 +143,29 @@ type Umfrage struct {
 	ID                    primitive.ObjectID   `json:"_id" bson:"_id"`
 	Mitarbeiteranzahl     int32                `json:"mitarbeiteranzahl" bson:"mitarbeiteranzahl"`
 	Jahr                  int32                `json:"jahr" bson:"jahr"`
-	Gebaeude              []GebaeudeUmfrage    `json:"gebaeude" bson:"gebaeude"`
-	ITGeraete             []ITGeraeteUmfrage   `json:"itGeraete" bson:"ITGeraete"`
+	Gebaeude              []UmfrageGebaeude    `json:"gebaeude" bson:"gebaeude"`
+	ITGeraete             []UmfrageITGeraete   `json:"itGeraete" bson:"itGeraete"`
 	Revision              int32                `json:"revision" bson:"revision"`
 	MitarbeiterUmfrageRef []primitive.ObjectID `json:"mitarbeiterUmfrageRef" bson:"mitarbeiterUmfrageRef"`
 }
 
-type GebaeudeUmfrage struct {
+type UmfrageGebaeude struct {
 	GebaeudeNr  int32 `json:"gebaeudeNr" bson:"gebaeudeNr"` // -> Nr in Gebaeude
 	Nutzflaeche int32 `json:"nutzflaeche" bson:"nutzflaeche"`
 }
 
-type ITGeraeteUmfrage struct {
+type UmfrageITGeraete struct {
 	IDITGeraete int32 `json:"idITGeraete" bson:"idITGeraete"` // -> IDITGeraete in ITGereate
 	Anzahl      int32 `json:"anzahl" bson:"anzahl"`
 }
 
 // Collection mitarbeiterUmfrage
 type MitarbeiterUmfrage struct {
+	ID          primitive.ObjectID   `json:"_id" bson:"_id"`
 	Pendelweg   []UmfragePendelweg   `json:"pendelweg" bson:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero" bson:"tageImBuero"`
 	Dienstreise []UmfrageDienstreise `json:"dienstreise" bson:"dienstreise"`
-	ITGeraete   []ITGeraeteUmfrage   `json:"itGereate" bson:"itGeraete"`
+	ITGeraete   []UmfrageITGeraete   `json:"itGereate" bson:"itGeraete"`
 	Revision    int32                `json:"revision" bson:"revision"`
 }
 

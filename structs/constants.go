@@ -3,14 +3,16 @@ package structs
 import "time"
 
 const ( // Konstanten fuer Collection Namen
-	KaeltezaehlerCol     = "kaeltezaehler"
-	StromzaehlerCol      = "stromzaehler"
-	WaermezaehlerCol     = "waermezaehler"
-	DienstreisenCol      = "dienstreisen"
-	EnergieversorgungCol = "energieversorgung"
-	ITGeraeteCol         = "itGeraete"
-	PendelwegCol         = "pendelweg"
-	GebaeudeCol          = "gebaeude"
+	KaeltezaehlerCol      = "kaeltezaehler"
+	StromzaehlerCol       = "stromzaehler"
+	WaermezaehlerCol      = "waermezaehler"
+	DienstreisenCol       = "dienstreisen"
+	EnergieversorgungCol  = "energieversorgung"
+	ITGeraeteCol          = "itGeraete"
+	PendelwegCol          = "pendelweg"
+	GebaeudeCol           = "gebaeude"
+	UmfrageCol            = "umfrage"
+	MitarbeiterUmfrageCol = "mitarbeiterUmfrage"
 )
 
 const TimeoutDuration time.Duration = 5 * time.Second // Timeout Zeit fuer Datenbank-Kontext
