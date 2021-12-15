@@ -116,7 +116,7 @@ func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code 
 	} else {
 		res.WriteHeader(http.StatusInternalServerError)
 	}
-	res.Write(response)
+	_, _ = res.Write(response)
 }
 
 /**
