@@ -21,6 +21,7 @@ func TestComputationsSubfunctions(t *testing.T) {
 	t.Run("TestcheckValidSessionToken", TestcheckValidSessionToken)
 	t.Run("TestloescheSessionToken", TestloescheSessionToken)
 	t.Run("TestgeneriereSessionToken", TestgeneriereSessionToken)
+	t.Run("TestAuthenticate", TestAuthenticate)
 }
 
 func TestcheckValidSessionToken(t *testing.T) { //nolint:funlen
@@ -121,5 +122,54 @@ func TestgeneriereSessionToken(t *testing.T) { //nolint:funlen
 		generiereSessionToken(email)
 		token := generiereSessionToken(email) //Überschreibe alten Token
 		is.Equal(token, AuthMap[email].Sessiontoken)
+	})
+}
+
+func TestAuthenticate(t *testing.T) { //nolint:funlen
+	is := is.NewRelaxed(t)
+
+	//Normalfall
+	t.Run("Authenticate: email='anton@tobi.com'", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var email = "anton@tobi.com"
+		token := generiereSessionToken(email)
+		err := Authenticate(email, token)
+
+		is.NoErr(err) // Im Normalfall wird kein Fehler geworfen
+	})
+
+	//Errorfall
+	t.Run("Authenticate: email='test123' token='keinToken' (kein Token)", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var email = "test123"
+		var token = "keinToken"
+		err := Authenticate(email, token)
+		is.Equal(err, structs.ErrNutzerHatKeinenSessiontoken)
+	})
+
+	t.Run("Authenticate: email='anton@tobi.com' token='test' (abgelaufener Token)", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var email = "anton@tobi.com"
+		var token = "test"
+		AuthMap[email] = Session{
+			Sessiontoken: token,
+			GenTime:      time.Date(2020, 12, 20, 11, 12, 12, 54, time.UTC),
+		}
+		err := Authenticate(email, token)
+		is.Equal(err, structs.ErrAbgelaufenerSessiontoken)
+	})
+
+	t.Run("Authenticate: email='anton@tobi.com token='falscherToken' (falscher Token)", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var email = "anton@tobi.com"
+		var token = "falscherToken"
+
+		generiereSessionToken(email)
+		err := Authenticate(email, token)
+		is.Equal(err, structs.ErrFalscherSessiontoken)
 	})
 }
