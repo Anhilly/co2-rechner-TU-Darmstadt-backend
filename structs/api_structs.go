@@ -1,5 +1,7 @@
 package structs
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 /*
 In dieser Daten sind Request und Response JSON für die API als structs aufgelistet.
 */
@@ -105,6 +107,22 @@ type InsertGebaeude struct {
 	Nr          int32           `json:"nr"`
 	Bezeichnung string          `json:"bezeichnung"`
 	Flaeche     GebaeudeFlaeche `json:"flaeche"`
+}
+
+type InsertUmfrage struct {
+	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
+	Jahr              int32              `json:"jahr"`
+	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
+	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
+	NutzerEmail       string             `json:"nutzerEmail"`
+}
+
+type InsertMitarbeiterUmfrage struct {
+	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
+	TageImBuero int32                `json:"tageImBuero"`
+	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
+	ITGeraete   []UmfrageITGeraete   `json:"itGereate"`
+	IDUmfrage   primitive.ObjectID   `json:"idUmfrage"`
 }
 
 type Response struct {
