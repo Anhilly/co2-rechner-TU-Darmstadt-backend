@@ -77,6 +77,22 @@ func loescheSessionToken(email string) error {
 }
 
 /**
+Authentifiziert einen Nutzer mit email und returned nil bei Erfolg, sonst error
+*/
+func Authenticate(email string, token string) error {
+	err := checkValidSessionToken(email)
+	if err != nil {
+		//Kein valider Token registriert
+		return nil
+	}
+	if AuthMap[email].Sessiontoken != token {
+		//Falscher Token für Nutzer
+		return structs.ErrFalscherSessiontoken
+	}
+	return nil
+}
+
+/**
 sendResponse sendet Response zurück, bei Marshal Fehler sende 500 Code Error
  @param res Writer der den Response sendet
  @param data true falls normales Response Packet, false bei Error

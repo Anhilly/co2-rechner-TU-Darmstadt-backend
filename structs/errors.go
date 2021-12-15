@@ -75,4 +75,7 @@ var ( // Fehler die bei der Authentifizierung auftreten
 
 	// Falsche Email beim Anmelden
 	ErrNichtExistenteEmail = errors.New("Es existiert kein Konto mit dieser Email")
+
+	// Falscher Sessiontoken beim Authentifizieren
+	ErrFalscherSessiontoken = errors.New("Falscher Sessiontoken für diesen Benutzer")
 )
