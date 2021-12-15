@@ -31,19 +31,6 @@ func TestFind(t *testing.T) {
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 }
 
-func TestTester(t *testing.T) {
-	is := is.NewRelaxed(t)
-
-	err := database.ConnectDatabase()
-	is.NoErr(err)
-	defer func() {
-		err := database.DisconnectDatabase()
-		is.NoErr(err)
-	}()
-
-	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
-}
-
 func TestITGeraeteFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 

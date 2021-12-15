@@ -31,26 +31,6 @@ func TestInsert(t *testing.T) {
 	t.Run("TestGebaeudeInsert", TestGebaeudeInsert)
 	t.Run("TestZaehlerInsert", TestZaehlerInsert)
 	t.Run("TestUmfrageInsert)", TestUmfrageInsert)
-}
-
-func TestTester3(t *testing.T) {
-	is := is.NewRelaxed(t)
-
-	dir, err := database.CreateDump("TestAdd")
-	is.NoErr(err)
-
-	fmt.Println(dir)
-
-	err = database.ConnectDatabase()
-	is.NoErr(err)
-
-	defer func(dir string) {
-		err := database.DisconnectDatabase()
-		is.NoErr(err)
-		err = database.RestoreDump(dir)
-		is.NoErr(err)
-	}(dir)
-
 	t.Run("TestMitarbeiterUmfrageInsert", TestMitarbeiterUmfrageInsert)
 }
 
