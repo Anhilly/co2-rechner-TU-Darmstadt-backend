@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
@@ -200,7 +201,6 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 Die Funktion liefert einen HTTP Response zurück, welcher den neuen Nutzer authentifiziert, oder eine Fehlermeldung liefert
 */
 func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
-	//TODO DB save and restore im Fehlerfall
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		// Konnte Body der Request nicht lesen, daher Client error -> 400
@@ -223,6 +223,14 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		}, http.StatusBadRequest)
 		return
 	}
+	var path = "registrierung"
+	restorepath, err := database.CreateDump(path)
+	if err != nil {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}, http.StatusInternalServerError)
+	}
 
 	err = database.NutzerdatenInsert(registrierungReq)
 	if err == nil {
@@ -238,6 +246,11 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 			Code:    http.StatusConflict,
 			Message: err.Error(),
 		}, http.StatusConflict)
+		err = database.RestoreDump(restorepath)
+		if err != nil {
+			//Datenbank konnte nicht wiederhergestellt werden
+			log.Fatal(err)
+		}
 	}
 }
 
