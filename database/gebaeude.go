@@ -30,6 +30,9 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	return data, nil
 }
 
+/**
+Die Funktion fuegt ein Gebaeude in die Datenbank ein, falls die Nr noch nicht vorhanden ist.
+*/
 func GebaeudeInsert(data structs.InsertGebaeude) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -62,6 +65,9 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 	return nil
 }
 
+/**
+Die Funktion fuegt einem Gebaeude eine Zaehlereferenz hinzu, falls diese noch nicht vorhanden ist.
+*/
 func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	var referenzname string
 
