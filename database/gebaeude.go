@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 /**
@@ -100,4 +101,38 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	}
 
 	return nil
+}
+
+/**
+Funktion gibt alle Nummern von Gebaeuden in der Datenbank zurueck.
+*/
+func GebaeudeAlleNr() ([]int32, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{},
+		options.Find().SetProjection(bson.M{"_id": 0, "nr": 1}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []struct {
+		Nr int32 `bson:"nr"`
+	}
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		return nil, err
+	}
+
+	var gebaeudenummern []int32
+	for _, elem := range results {
+		gebaeudenummern = append(gebaeudenummern, elem.Nr)
+	}
+
+	return gebaeudenummern, nil
 }
