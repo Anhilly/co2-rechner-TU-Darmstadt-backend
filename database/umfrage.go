@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -57,7 +56,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 
 	id, ok := insertedDoc.InsertedID.(primitive.ObjectID)
 	if !ok {
-		return primitive.NilObjectID, errors.New("ObjectID Konvertierung fehlerhaft")
+		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
 	err = NutzerdatenAddUmfrageref(data.NutzerEmail, id)
