@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -28,4 +29,64 @@ func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 	}
 
 	return data, nil
+}
+
+/**
+Die Funktion fuegt eine Umfrage in die Datenbank ein und liefert die ObjectId der Umrgae zurueck.
+*/
+func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	insertedDoc, err := collection.InsertOne(
+		ctx,
+		structs.Umfrage{
+			ID:                    primitive.NewObjectID(),
+			Mitarbeiteranzahl:     data.Mitarbeiteranzahl,
+			Jahr:                  data.Jahr,
+			Gebaeude:              data.Gebaeude,
+			ITGeraete:             data.ITGeraete,
+			Revision:              1,
+			MitarbeiterUmfrageRef: []primitive.ObjectID{},
+		})
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	id, ok := insertedDoc.InsertedID.(primitive.ObjectID)
+	if !ok {
+		return primitive.NilObjectID, errors.New("ObjectID Konvertierung fehlerhaft")
+	}
+
+	err = NutzerdatenAddUmfrageref(data.NutzerEmail, id)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	return id, nil
+}
+
+/**
+Die Funktion fuegt eine Referenz an eine Umfrage an.
+*/
+func UmfrageAddMitarbeiterUmfrageRef(idUmfrage primitive.ObjectID, referenz primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	var updatedDoc structs.Umfrage
+	err := collection.FindOneAndUpdate(
+		ctx,
+		bson.D{{"_id", idUmfrage}},
+		bson.D{{"$addToSet",
+			bson.D{{"mitarbeiterUmfrageRef", referenz}}}},
+	).Decode(&updatedDoc)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

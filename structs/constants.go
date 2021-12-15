@@ -13,6 +13,7 @@ const ( // Konstanten fuer Collection Namen
 	GebaeudeCol           = "gebaeude"
 	UmfrageCol            = "umfrage"
 	MitarbeiterUmfrageCol = "mitarbeiterUmfrage"
+	NutzerdatenCol        = "nutzerdaten"
 )
 
 const TimeoutDuration time.Duration = 5 * time.Second // Timeout Zeit fuer Datenbank-Kontext

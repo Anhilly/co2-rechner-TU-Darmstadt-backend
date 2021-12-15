@@ -5,6 +5,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"io"
 	"testing"
@@ -32,6 +33,8 @@ func TestAdd(t *testing.T) {
 	t.Run("TestEnergieversorgungAddFaktor", TestEnergieversorgungAddFaktor)
 	t.Run("TestZaehlerAddZaehlerdaten", TestZaehlerAddZaehlerdaten)
 	t.Run("TestGebaeudeAddZaehlerref", TestGebaeudeAddZaehlerref)
+	t.Run("TestNutzerdatenAddUmfrageref", TestNutzerdatenAddUmfrageref)
+	t.Run("TestUmfrageAddMitarbeiterUmfrageRef", TestUmfrageAddMitarbeiterUmfrageRef)
 }
 
 func TestEnergieversorgungAddFaktor(t *testing.T) {
@@ -471,5 +474,90 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 
 		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
 		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Datenbank wirft ErrNoDocuments
+	})
+}
+
+func TestNutzerdatenAddUmfrageref(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("NutzerdatenAddUmfrageref: EMail = anton@tobi.com", func(t *testing.T) {
+		is.NewRelaxed(t)
+
+		email := "anton@tobi.com"
+		id := primitive.NewObjectID()
+
+		var idVorhanden primitive.ObjectID
+		err := idVorhanden.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+
+		err = database.NutzerdatenAddUmfrageref(email, id)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updateDoc, _ := database.NutzerdatenFind(email)
+		is.Equal(updateDoc, structs.Nutzerdaten{
+			Email:      "anton@tobi.com",
+			Passwort:   "test_pw",
+			Revision:   1,
+			UmfrageRef: []primitive.ObjectID{idVorhanden, id},
+		}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	// Errortests
+	t.Run("NutzerdatenAddUmfrageref: EMail = 0 nicht vorhanden", func(t *testing.T) {
+		is.NewRelaxed(t)
+
+		email := "0"
+		id := primitive.NewObjectID()
+
+		err := database.NutzerdatenAddUmfrageref(email, id)
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+	})
+}
+
+func TestUmfrageAddMitarbeiterUmfrageRef(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("UmfrageAddMitarbeiterUmfrageRef: ID = 61b23e9855aa64762baf76d7", func(t *testing.T) {
+		is.NewRelaxed(t)
+
+		var idUmfrage primitive.ObjectID
+		err := idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+		var idVorhanden primitive.ObjectID
+		err = idVorhanden.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		is.NoErr(err)
+
+		referenz := primitive.NewObjectID()
+
+		err = database.UmfrageAddMitarbeiterUmfrageRef(idUmfrage, referenz)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updateDoc, _ := database.UmfrageFind(idUmfrage)
+		is.Equal(updateDoc, structs.Umfrage{
+			ID:                idUmfrage,
+			Mitarbeiteranzahl: 1,
+			Jahr:              2020,
+			Gebaeude: []structs.UmfrageGebaeude{
+				{GebaeudeNr: 1101, Nutzflaeche: 100},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 5, Anzahl: 10},
+			},
+			Revision:              1,
+			MitarbeiterUmfrageRef: []primitive.ObjectID{idVorhanden, referenz},
+		}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	// Errortests
+	t.Run("UmfrageAddMitarbeiterUmfrageRef: ID nicht vorhanden", func(t *testing.T) {
+		is.NewRelaxed(t)
+
+		idUmfrage := primitive.NewObjectID()
+		referenz := primitive.NewObjectID()
+
+		err := database.UmfrageAddMitarbeiterUmfrageRef(idUmfrage, referenz)
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 	})
 }

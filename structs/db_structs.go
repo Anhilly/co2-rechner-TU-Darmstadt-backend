@@ -138,6 +138,14 @@ type Pendelweg struct {
 	Revision    int32  `json:"revision" bson:"revision"`
 }
 
+// Collection nutzerdaten
+type Nutzerdaten struct {
+	Email      string               `json:"email" bson:"email"` // (index)
+	Passwort   string               `json:"passwort" bson:"passwort"`
+	Revision   int32                `json:"revision" bson:"revision"`
+	UmfrageRef []primitive.ObjectID `json:"umfrageRef" bson:"umfrageRef"`
+}
+
 // Collection umfrage
 type Umfrage struct {
 	ID                    primitive.ObjectID   `json:"_id" bson:"_id"`

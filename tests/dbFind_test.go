@@ -26,6 +26,9 @@ func TestFind(t *testing.T) {
 	t.Run("TestDienstreisenFind", TestDienstreisenFind)
 	t.Run("TestGebaeudeFind", TestGebaeudeFind)
 	t.Run("TestZaehlerFind", TestZaehlerFind)
+	t.Run("TestTestUmfrageFind", TestUmfrageFind)
+	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
+	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 }
 
 func TestTester(t *testing.T) {
@@ -38,8 +41,7 @@ func TestTester(t *testing.T) {
 		is.NoErr(err)
 	}()
 
-	t.Run("TestUmfrageFind", TestUmfrageFind)
-	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
+	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -573,6 +575,7 @@ func TestZaehlerFind(t *testing.T) {
 func TestUmfrageFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
+	// Normalfall
 	t.Run("UmfrageFind: ID = 61b23e9855aa64762baf76d7", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -603,6 +606,7 @@ func TestUmfrageFind(t *testing.T) {
 			}) // Überprüfung des zurückgelieferten Elements
 	})
 
+	// Errortests
 	t.Run("ITGeraeteFind: ID aus aktuellem Zeitstempel nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -618,6 +622,7 @@ func TestUmfrageFind(t *testing.T) {
 func TestMitarbeiterUmfrageFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
+	// Normalfall
 	t.Run("MitarbeiterUmfrageFind: ID = 61b34f9324756df01eee5ff4", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -645,6 +650,7 @@ func TestMitarbeiterUmfrageFind(t *testing.T) {
 			}) // Überprüfung des zurückgelieferten Elements
 	})
 
+	// Errortests
 	t.Run("MitarbeiterUmfrageFind: ID aus aktuellem Zeitstempel nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -654,5 +660,42 @@ func TestMitarbeiterUmfrageFind(t *testing.T) {
 
 		is.Equal(err, mongo.ErrNoDocuments)          // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.MitarbeiterUmfrage{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestNutzerdatenFind(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("NutzerdatenFind: EMail = anton@tobi.com", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		email := "anton@tobi.com"
+		var idUmfrage primitive.ObjectID
+		err := idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+
+		data, err := database.NutzerdatenFind(email)
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			structs.Nutzerdaten{
+				Email:      "anton@tobi.com",
+				Passwort:   "test_pw",
+				Revision:   1,
+				UmfrageRef: []primitive.ObjectID{idUmfrage},
+			}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	// Errortests
+	t.Run("MitarbeiterUmfrageFind: EMail = 0 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		email := "0"
+
+		data, err := database.NutzerdatenFind(email)
+
+		is.Equal(err, mongo.ErrNoDocuments)   // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Nutzerdaten{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }

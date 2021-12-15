@@ -5,6 +5,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
 )
@@ -29,6 +30,28 @@ func TestInsert(t *testing.T) {
 
 	t.Run("TestGebaeudeInsert", TestGebaeudeInsert)
 	t.Run("TestZaehlerInsert", TestZaehlerInsert)
+	t.Run("TestUmfrageInsert)", TestUmfrageInsert)
+}
+
+func TestTester3(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	dir, err := database.CreateDump("TestAdd")
+	is.NoErr(err)
+
+	fmt.Println(dir)
+
+	err = database.ConnectDatabase()
+	is.NoErr(err)
+
+	defer func(dir string) {
+		err := database.DisconnectDatabase()
+		is.NoErr(err)
+		err = database.RestoreDump(dir)
+		is.NoErr(err)
+	}(dir)
+
+	t.Run("TestMitarbeiterUmfrageInsert", TestMitarbeiterUmfrageInsert)
 }
 
 func TestGebaeudeInsert(t *testing.T) {
@@ -314,5 +337,130 @@ func TestZaehlerInsert(t *testing.T) {
 
 		err := database.ZaehlerInsert(data)
 		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Funktion wirft ErrIDEnergieversorgungNichtVorhanden
+	})
+}
+
+func TestUmfrageInsert(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("UmfrageInsert: ID nach aktueller Zeitstempel", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.InsertUmfrage{
+			Mitarbeiteranzahl: 42,
+			Jahr:              3442,
+			Gebaeude: []structs.UmfrageGebaeude{
+				{GebaeudeNr: 1103, Nutzflaeche: 200},
+				{GebaeudeNr: 1105, Nutzflaeche: 200},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 6, Anzahl: 30},
+			},
+			NutzerEmail: "anton@tobi.com",
+		}
+
+		id, err := database.UmfrageInsert(data)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		insertedDoc, err := database.UmfrageFind(id)
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(insertedDoc, structs.Umfrage{
+			ID:                id,
+			Mitarbeiteranzahl: 42,
+			Jahr:              3442,
+			Gebaeude: []structs.UmfrageGebaeude{
+				{GebaeudeNr: 1103, Nutzflaeche: 200},
+				{GebaeudeNr: 1105, Nutzflaeche: 200},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 6, Anzahl: 30},
+			},
+			Revision:              1,
+			MitarbeiterUmfrageRef: []primitive.ObjectID{},
+		}) // Ueberpruefung des geaenderten Elementes
+	})
+
+	// Errortest
+	t.Run("UmfrageInsert: ungueltige NutzerEmail", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.InsertUmfrage{
+			Mitarbeiteranzahl: 42,
+			Jahr:              3442,
+			Gebaeude:          []structs.UmfrageGebaeude{},
+			ITGeraete:         []structs.UmfrageITGeraete{},
+			NutzerEmail:       "0",
+		}
+
+		id, err := database.UmfrageInsert(data)
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(id, primitive.NilObjectID) // im Fehlerfall wird NilObjectID zurueckgegeben
+	})
+}
+
+func TestMitarbeiterUmfrageInsert(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("MitarbeiterUmfrageInsert: ID nach aktueller Zeitstempel", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var idUmfrage primitive.ObjectID
+		err := idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+
+		data := structs.InsertMitarbeiterUmfrage{
+			Pendelweg: []structs.UmfragePendelweg{
+				{IDPendelweg: 2, Strecke: 20},
+			},
+			TageImBuero: 4,
+			Dienstreise: []structs.UmfrageDienstreise{
+				{IDDienstreise: 1, Strecke: 100},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 6, Anzahl: 30},
+			},
+			IDUmfrage: idUmfrage,
+		}
+
+		idMitarbeiterumfrage, err := database.MitarbeiterUmfrageInsert(data)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		insertedDoc, err := database.MitarbeiterUmfrageFind(idMitarbeiterumfrage)
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(insertedDoc, structs.MitarbeiterUmfrage{
+			ID: idMitarbeiterumfrage,
+			Pendelweg: []structs.UmfragePendelweg{
+				{IDPendelweg: 2, Strecke: 20},
+			},
+			TageImBuero: 4,
+			Dienstreise: []structs.UmfrageDienstreise{
+				{IDDienstreise: 1, Strecke: 100},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 6, Anzahl: 30},
+			},
+			Revision: 1,
+		}) // Ueberpruefung des geaenderten Elementes
+	})
+
+	// Errortest
+	t.Run("MitarbeiterUmfrageInsert: ungueltige UmfrageID", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.InsertMitarbeiterUmfrage{
+			Pendelweg: []structs.UmfragePendelweg{
+				{IDPendelweg: 2, Strecke: 20},
+			},
+			TageImBuero: 4,
+			Dienstreise: []structs.UmfrageDienstreise{},
+			ITGeraete:   []structs.UmfrageITGeraete{},
+			IDUmfrage:   primitive.NewObjectID(),
+		}
+
+		id, err := database.MitarbeiterUmfrageInsert(data)
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(id, primitive.NilObjectID) // im Fehlerfall wird NilObjectID zurueckgegeben
 	})
 }
