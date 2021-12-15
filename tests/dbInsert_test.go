@@ -30,7 +30,7 @@ func TestInsert(t *testing.T) {
 
 	t.Run("TestGebaeudeInsert", TestGebaeudeInsert)
 	t.Run("TestZaehlerInsert", TestZaehlerInsert)
-	t.Run("TestUmfrageInsert)", TestUmfrageInsert)
+	t.Run("TestUmfrageInsert", TestUmfrageInsert)
 	t.Run("TestMitarbeiterUmfrageInsert", TestMitarbeiterUmfrageInsert)
 }
 
@@ -359,6 +359,19 @@ func TestUmfrageInsert(t *testing.T) {
 			Revision:              1,
 			MitarbeiterUmfrageRef: []primitive.ObjectID{},
 		}) // Ueberpruefung des geaenderten Elementes
+
+		var idVorhanden primitive.ObjectID
+		err = idVorhanden.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+
+		updatedDoc, err := database.NutzerdatenFind(data.NutzerEmail)
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(updatedDoc, structs.Nutzerdaten{
+			Email:      "anton@tobi.com",
+			Passwort:   "test_pw",
+			Revision:   1,
+			UmfrageRef: []primitive.ObjectID{idVorhanden, id},
+		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
 	// Errortest
@@ -422,7 +435,27 @@ func TestMitarbeiterUmfrageInsert(t *testing.T) {
 				{IDITGeraete: 6, Anzahl: 30},
 			},
 			Revision: 1,
-		}) // Ueberpruefung des geaenderten Elementes
+		}) // Ueberpruefung des zurueckgelieferten Elementes
+
+		var idVorhanden primitive.ObjectID
+		err = idVorhanden.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		is.NoErr(err)
+
+		updatedDoc, err := database.UmfrageFind(idUmfrage)
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(updatedDoc, structs.Umfrage{
+			ID:                idUmfrage,
+			Mitarbeiteranzahl: 1,
+			Jahr:              2020,
+			Gebaeude: []structs.UmfrageGebaeude{
+				{GebaeudeNr: 1101, Nutzflaeche: 100},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 5, Anzahl: 10},
+			},
+			Revision:              1,
+			MitarbeiterUmfrageRef: []primitive.ObjectID{idVorhanden, idMitarbeiterumfrage},
+		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
 	// Errortest

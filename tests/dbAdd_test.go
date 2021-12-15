@@ -494,8 +494,9 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 		err = database.NutzerdatenAddUmfrageref(email, id)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updateDoc, _ := database.NutzerdatenFind(email)
-		is.Equal(updateDoc, structs.Nutzerdaten{
+		updatedDoc, err := database.NutzerdatenFind(email)
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(updatedDoc, structs.Nutzerdaten{
 			Email:      "anton@tobi.com",
 			Passwort:   "test_pw",
 			Revision:   1,
@@ -534,8 +535,9 @@ func TestUmfrageAddMitarbeiterUmfrageRef(t *testing.T) {
 		err = database.UmfrageAddMitarbeiterUmfrageRef(idUmfrage, referenz)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updateDoc, _ := database.UmfrageFind(idUmfrage)
-		is.Equal(updateDoc, structs.Umfrage{
+		updatedDoc, err := database.UmfrageFind(idUmfrage)
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(updatedDoc, structs.Umfrage{
 			ID:                idUmfrage,
 			Mitarbeiteranzahl: 1,
 			Jahr:              2020,
