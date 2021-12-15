@@ -83,7 +83,7 @@ func Authenticate(email string, token string) error {
 	err := checkValidSessionToken(email)
 	if err != nil {
 		//Kein valider Token registriert
-		return nil
+		return err
 	}
 	if AuthMap[email].Sessiontoken != token {
 		//Falscher Token für Nutzer
