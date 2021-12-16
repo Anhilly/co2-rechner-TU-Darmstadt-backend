@@ -28,6 +28,7 @@ func TestFind(t *testing.T) {
 	t.Run("TestTestUmfrageFind", TestUmfrageFind)
 	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
+	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -683,5 +684,18 @@ func TestNutzerdatenFind(t *testing.T) {
 
 		is.Equal(err, mongo.ErrNoDocuments)   // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Nutzerdaten{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestGebaeudeAlleNr(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("GebaeudeAlleNr: liefert Slice zurueck", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeudenummer, err := database.GebaeudeAlleNr()
+		is.NoErr(err)                           // kein Error seitens der Datenbank
+		is.Equal(len(gebaeudenummer) > 0, true) // Slice ist nicht leer
 	})
 }
