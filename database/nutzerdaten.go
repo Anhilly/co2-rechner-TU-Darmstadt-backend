@@ -52,7 +52,7 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 	// Kein Eintrag vorhanden
 	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
 	if err != nil {
-		return err //Bcrypt hashing error
+		return err // Bcrypt hashing error
 	}
 
 	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{

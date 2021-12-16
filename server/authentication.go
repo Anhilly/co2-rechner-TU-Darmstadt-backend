@@ -83,11 +83,11 @@ Authentifiziert einen Nutzer mit email und returned nil bei Erfolg, sonst error
 func Authenticate(email string, token string) error {
 	err := checkValidSessionToken(email)
 	if err != nil {
-		//Kein valider Token registriert
+		// Kein valider Token registriert
 		return err
 	}
 	if authMap[email].Sessiontoken != token {
-		//Falscher Token fuer Nutzer
+		// Falscher Token fuer Nutzer
 		return structs.ErrFalscherSessiontoken
 	}
 	return nil
@@ -220,14 +220,7 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	}
 
 	err = database.NutzerdatenInsert(registrierungReq)
-	if err == nil {
-		// Generiere Cookie Token
-		token := generiereSessionToken(registrierungReq.Username)
-		sendResponse(res, true, structs.AuthRes{
-			Message:      "Der neue Nutzeraccount wurde erstellt",
-			Sessiontoken: token,
-		}, http.StatusCreated)
-	} else {
+	if err != nil {
 		// Konnte keinen neuen Nutzer erstellen
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusConflict,
@@ -238,7 +231,15 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 			// Datenbank konnte nicht wiederhergestellt werden
 			log.Fatal(err)
 		}
+		return
 	}
+
+	// Generiere Cookie Token
+	token := generiereSessionToken(registrierungReq.Username)
+	sendResponse(res, true, structs.AuthRes{
+		Message:      "Der neue Nutzeraccount wurde erstellt",
+		Sessiontoken: token,
+	}, http.StatusCreated)
 }
 
 /**
