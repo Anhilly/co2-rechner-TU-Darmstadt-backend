@@ -270,15 +270,15 @@ func DeleteAbmeldung(res http.ResponseWriter, req *http.Request) {
 
 	err = loescheSessionToken(abmeldungReq.Username)
 
-	if err == nil {
-		// session Token geloescht
-		sendResponse(res, true, structs.AbmeldeRes{
-			Message: "Der session Token wurde gelöscht"}, http.StatusOK)
-	} else {
+	if err != nil {
 		// Konnte nicht loeschen
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusConflict,
 			Message: err.Error(),
 		}, http.StatusConflict)
+		return
 	}
+	// session Token geloescht
+	sendResponse(res, true, structs.AbmeldeRes{
+		Message: "Der session Token wurde gelöscht"}, http.StatusOK)
 }
