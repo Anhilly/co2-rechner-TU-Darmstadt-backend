@@ -1,3 +1,4 @@
+
 package database
 
 import (
@@ -51,3 +52,38 @@ func NutzerdatenAddUmfrageref(email string, id primitive.ObjectID) error {
 
 	return nil
 }
+
+/**
+Fuegt einen Datenbankeintrag in Form des Nutzerdaten structs ein, dabei wird das Passwort gehashed
+*/
+func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+    collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+	// Pruefe ob bereits ein Eintrag mit dieser Email existiert
+	_, err := NutzerdatenFind(anmeldedaten.Username)
+
+	if err == nil {
+		// Eintrag mit dieser Email existiert bereits
+		return structs.ErrInsertExistingAccount
+	}
+	// Kein Eintrag vorhanden
+
+	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
+		return err // Bcrypt hashing error
+	if err != nil {
+	}
+	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
+
+		Email:    anmeldedaten.Username,
+		Passwort: string(passwordhash),
+		Revision: 1,
+	})
+	if err != nil {
+		return err // DB Error
+	}
+
+	return nil
+}
+

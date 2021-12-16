@@ -32,6 +32,7 @@ func StartServer() {
 
 	r.Mount("/umfrage", RouteUmfrage())
 	r.Mount("/db", RouteDB())
+	r.Mount("/auth", RouteAuthentication())
 
 	log.Println("Server Started")
 

@@ -125,19 +125,33 @@ type InsertMitarbeiterUmfrage struct {
 	IDUmfrage   primitive.ObjectID   `json:"idUmfrage"`
 }
 
+type AuthReq struct {
+	Username string `json:"username"`
+	Passwort string `json:"password"`
+}
+
+type AbmeldungReq struct {
+	Username string `json:"username"`
+}
+
+// Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
+
 type Response struct {
 	Status string      `json:"status"`
-	Data   interface{} `json:"data"`
-	Error  interface{} `json:"error"`
+	Data   interface{} `json:"data"`  // Typisch nil, wenn Error oder nichts zu reporten
+	Error  interface{} `json:"error"` // Typisch nil, wenn kein Error
+}
+
+type AbmeldeRes struct {
+	Message string `json:"message"`
+}
+
+type AuthRes struct {
+	Message      string `json:"message"`
+	Sessiontoken string `json:"sessiontoken"`
 }
 
 type Error struct {
 	Code    int32  `json:"code"`
 	Message string `json:"message"`
-}
-
-type Request struct {
-	Data         interface{} `json:"data"`
-	Sessiontoken string      `json:"sessiontoken"`
-	Email        string      `json:"email"`
 }

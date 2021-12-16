@@ -7,6 +7,7 @@ import (
 	"github.com/matryer/is"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 	"testing"
 )
 
@@ -32,6 +33,7 @@ func TestInsert(t *testing.T) {
 	t.Run("TestZaehlerInsert", TestZaehlerInsert)
 	t.Run("TestUmfrageInsert", TestUmfrageInsert)
 	t.Run("TestMitarbeiterUmfrageInsert", TestMitarbeiterUmfrageInsert)
+	t.Run("TestNutzerdatenInsert", TestNutzerdatenInsert)
 }
 
 func TestGebaeudeInsert(t *testing.T) {
@@ -475,5 +477,38 @@ func TestMitarbeiterUmfrageInsert(t *testing.T) {
 		id, err := database.MitarbeiterUmfrageInsert(data)
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(id, primitive.NilObjectID) // im Fehlerfall wird NilObjectID zurueckgegeben
+	})
+}
+
+func TestNutzerdatenInsert(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("NutzerdatenInsert: {email = 'testingEmailPlsDontUse' password='verysecurepassword'} (nicht vorhanden)", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+		var email = "testingEmailPlsDontUse"
+		testData := structs.AuthReq{
+			Username: email,
+			Passwort: "verysecurepassword",
+		}
+		err := database.NutzerdatenInsert(testData)
+		is.NoErr(err) // Kein Fehler wird geworfen
+
+		daten, err := database.NutzerdatenFind(email)
+		is.NoErr(err) // Kein Fehler seitens der Datenbank
+		// Eintrag wurde korrekt hinzugefuegt
+		is.Equal(daten.Email, email)
+		is.NoErr(bcrypt.CompareHashAndPassword([]byte(daten.Passwort), []byte(testData.Passwort)))
+	})
+
+	// Errorfall
+	t.Run("NutzerdatenInsert: {email = 'anton@tobi.com' password='verysecurepassword'} (vorhanden)", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+		testData := structs.AuthReq{
+			Username: "anton@tobi.com",
+			Passwort: "verysecurepassword",
+		}
+		err := database.NutzerdatenInsert(testData)
+		is.Equal(err, structs.ErrInsertExistingAccount) // Dateneintrag existiert bereits
 	})
 }
