@@ -31,7 +31,7 @@ func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 }
 
 /**
-Die Funktion fuegt eine Umfrage in die Datenbank ein und liefert die ObjectId der Umrgae zurueck.
+Die Funktion fuegt eine Umfrage in die Datenbank ein und liefert die ObjectId der Umfrage zurueck.
 */
 func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)

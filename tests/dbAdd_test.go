@@ -481,7 +481,7 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("NutzerdatenAddUmfrageref: EMail = anton@tobi.com", func(t *testing.T) {
+	t.Run("NutzerdatenAddUmfrageref: Email = anton@tobi.com", func(t *testing.T) {
 		is.NewRelaxed(t)
 
 		email := "anton@tobi.com"
@@ -505,7 +505,7 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 	})
 
 	// Errortests
-	t.Run("NutzerdatenAddUmfrageref: EMail = 0 nicht vorhanden", func(t *testing.T) {
+	t.Run("NutzerdatenAddUmfrageref: Email = 0 nicht vorhanden", func(t *testing.T) {
 		is.NewRelaxed(t)
 
 		email := "0"

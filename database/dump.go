@@ -21,13 +21,6 @@ func CreateDump(directoryName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	/*
-		cmd = exec.Command("docker", "cp", "mongodb:/testDump", "testDump")
-
-		err = cmd.Run()
-		if err != nil {
-			return "", err
-		}*/
 
 	return dirTimestamp, nil
 }

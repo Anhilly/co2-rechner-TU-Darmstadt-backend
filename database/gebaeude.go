@@ -88,7 +88,7 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
-	var updatedDoc bson.M
+	var updatedDoc structs.Gebaeude
 	err := collection.FindOneAndUpdate(
 		ctx,
 		bson.D{{"nr", nr}},
