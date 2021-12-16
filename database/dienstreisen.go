@@ -10,19 +10,16 @@ import (
 Die Funktion liefert einen Dienstreisen struct mit idDienstreisen gleich dem Parameter.
 */
 func DienstreisenFind(idDienstreisen int32) (structs.Dienstreisen, error) {
-	var data structs.Dienstreisen
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(structs.DienstreisenCol)
 
-	cursor, err := collection.Find(ctx, bson.D{{"idDienstreisen", idDienstreisen}}) //nolint:govet
-	if err != nil {
-		return structs.Dienstreisen{}, err
-	}
-
-	cursor.Next(ctx)
-	err = cursor.Decode(&data)
+	var data structs.Dienstreisen
+	err := collection.FindOne(
+		ctx,
+		bson.D{{"idDienstreisen", idDienstreisen}},
+	).Decode(&data)
 	if err != nil {
 		return structs.Dienstreisen{}, err
 	}

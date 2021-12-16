@@ -10,19 +10,16 @@ import (
 Die Funktion liefert einen Energieversorgung struct mit idEnergieversorgung gleich dem Parameter.
 */
 func EnergieversorgungFind(idEnergieversorgung int32) (structs.Energieversorgung, error) {
-	var data structs.Energieversorgung
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(structs.EnergieversorgungCol)
 
-	cursor, err := collection.Find(ctx, bson.D{{"idEnergieversorgung", idEnergieversorgung}}) //nolint:govet
-	if err != nil {
-		return structs.Energieversorgung{}, err
-	}
-
-	cursor.Next(ctx)
-	err = cursor.Decode(&data)
+	var data structs.Energieversorgung
+	err := collection.FindOne(
+		ctx,
+		bson.D{{"idEnergieversorgung", idEnergieversorgung}},
+	).Decode(&data)
 	if err != nil {
 		return structs.Energieversorgung{}, err
 	}

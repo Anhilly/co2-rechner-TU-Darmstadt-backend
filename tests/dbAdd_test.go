@@ -7,7 +7,6 @@ import (
 	"github.com/matryer/is"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"io"
 	"testing"
 	"time"
 )
@@ -75,7 +74,7 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 		}
 
 		err := database.EnergieversorgungAddFaktor(data)
-		is.Equal(err, io.EOF) // Datenbank wirft EOF-Error
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 	})
 
 	t.Run("EnergieversorgungAddFaktor: Jahr schon vorhanden", func(t *testing.T) {
@@ -262,7 +261,7 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		}
 
 		err := database.ZaehlerAddZaehlerdaten(data)
-		is.Equal(err, io.EOF) // Datenbank wirft EOF-Error
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 	})
 
 	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, Jahr schon vorhanden", func(t *testing.T) {
@@ -290,7 +289,7 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		}
 
 		err := database.ZaehlerAddZaehlerdaten(data)
-		is.Equal(err, io.EOF) // Datenbank wirft EOF-Error
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 	})
 
 	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, Jahr schon vorhanden", func(t *testing.T) {
@@ -318,7 +317,7 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		}
 
 		err := database.ZaehlerAddZaehlerdaten(data)
-		is.Equal(err, io.EOF) // Datenbank wirft EOF-Error
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 	})
 
 	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, Jahr schon vorhanden", func(t *testing.T) {

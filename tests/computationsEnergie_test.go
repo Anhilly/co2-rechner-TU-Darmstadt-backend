@@ -5,7 +5,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
-	"io"
+	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
 )
 
@@ -173,8 +173,8 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)     // Datenbank wirft EOF
-		is.Equal(emissionen, 0.0) // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(emissionen, 0.0)           // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
 	t.Run("BerechneEnergieverbrauch: Jahr = 0 nicht vorhanden", func(t *testing.T) {
@@ -201,8 +201,8 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)     // Datenbank wirft EOF
-		is.Equal(emissionen, 0.0) // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(emissionen, 0.0)           // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
 	t.Run("BerechneEnergieverbrauch: negativer Flaechenanteil eingegeben", func(t *testing.T) {
