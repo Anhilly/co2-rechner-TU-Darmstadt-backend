@@ -1,4 +1,3 @@
-
 package database
 
 import (
@@ -6,6 +5,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 )
 
 /**
@@ -60,7 +60,7 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-    collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
 	// Pruefe ob bereits ein Eintrag mit dieser Email existiert
 	_, err := NutzerdatenFind(anmeldedaten.Username)
 
@@ -71,11 +71,10 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 	// Kein Eintrag vorhanden
 
 	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
-		return err // Bcrypt hashing error
 	if err != nil {
+		return err // Bcrypt hashing error
 	}
 	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
-
 		Email:    anmeldedaten.Username,
 		Passwort: string(passwordhash),
 		Revision: 1,
@@ -86,4 +85,3 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 
 	return nil
 }
-
