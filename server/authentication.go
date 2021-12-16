@@ -6,6 +6,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"io/ioutil"
@@ -14,15 +15,15 @@ import (
 	"time"
 )
 
-type Session struct {
+type session struct {
 	Sessiontoken string
 	GenTime      time.Time
 }
 
 var (
-	// AuthMap Speichert Authentication Daten für Benutzer
+	// authMap Speichert Authentication Daten fuer Benutzer
 	// key:= email -> {Sessiontoken, TTL}
-	AuthMap = make(map[string]Session)
+	authMap = make(map[string]session)
 )
 
 func RouteAuthentication() chi.Router {
@@ -40,7 +41,7 @@ Generiert einen Cookie Token, welcher den Nutzer authentifiziert und speichert i
 */
 func generiereSessionToken(email string) string {
 	sessionToken := uuid.NewString()
-	AuthMap[email] = Session{
+	authMap[email] = session{
 		Sessiontoken: sessionToken,
 		GenTime:      time.Now(),
 	}
@@ -48,15 +49,15 @@ func generiereSessionToken(email string) string {
 }
 
 /**
-Überprüft ob die email einen gültigen Sessiontoken registriert hat, falls ja nil
+Ueberprueft ob die email einen gueltigen Sessiontoken registriert hat, falls ja nil
 */
 func checkValidSessionToken(email string) error {
-	//TTL ist 2 Stunden
+	// TTL ist 2 Stunden
 	ttl := 2
-	if (AuthMap[email] == Session{}) {
+	if (authMap[email] == session{}) {
 		return structs.ErrNutzerHatKeinenSessiontoken
 	}
-	entry := AuthMap[email]
+	entry := authMap[email]
 	genTimePlusTTL := entry.GenTime.Add(time.Hour * time.Duration(ttl))
 	if genTimePlusTTL.Before(time.Now()) {
 		return structs.ErrAbgelaufenerSessiontoken
@@ -65,12 +66,12 @@ func checkValidSessionToken(email string) error {
 }
 
 /**
-Löscht den Cookie Token welcher den Nutzer mit email authentifiziert
+Loescht den Cookie Token welcher den Nutzer mit email authentifiziert
 */
 func loescheSessionToken(email string) error {
 	err := checkValidSessionToken(email)
-	if err == nil || err == structs.ErrAbgelaufenerSessiontoken {
-		AuthMap[email] = Session{}
+	if err == nil || errors.Is(err, structs.ErrAbgelaufenerSessiontoken) {
+		authMap[email] = session{}
 		return nil
 	}
 	return err
@@ -85,18 +86,18 @@ func Authenticate(email string, token string) error {
 		//Kein valider Token registriert
 		return err
 	}
-	if AuthMap[email].Sessiontoken != token {
-		//Falscher Token für Nutzer
+	if authMap[email].Sessiontoken != token {
+		//Falscher Token fuer Nutzer
 		return structs.ErrFalscherSessiontoken
 	}
 	return nil
 }
 
 /**
-sendResponse sendet Response zurück, bei Marshal Fehler sende 500 Code Error
+sendResponse sendet Response zurueck, bei Marshal Fehler sende 500 Code Error
  @param res Writer der den Response sendet
  @param data true falls normales Response Packet, false bei Error
- @param payload ist interface welches den data bzw. error struct enthält
+ @param payload ist interface welches den data bzw. error struct enthaelt
  @param code ist der HTTP Header Code
 */
 func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code int32) {
@@ -118,36 +119,6 @@ func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code 
 	}
 	_, _ = res.Write(response)
 }
-
-/**
-readRequest liest den request JSON struct vom http.Request und behandelt errors
- @param res der response writer sendet nur error, falls entstanden error != nil
- @param req der request vom HTTP Paket
- @param request das JSON format der Anfrage. Z.B. AuthReq für Anmelden/Registrieren
-*/
-/*
-func readRequest(res http.ResponseWriter, req *http.Request, request interface{}) (error, interface{}) {
-	s, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
-		sendResponse(res, false, structs.Error{
-			Code:    http.StatusBadRequest,
-			Message: err.Error(),
-		}, http.StatusBadRequest)
-		return err, nil
-	}
-	err = json.Unmarshal(s, &request)
-
-	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
-		sendResponse(res, false, structs.Error{
-			Code:    http.StatusBadRequest,
-			Message: err.Error(),
-		}, http.StatusBadRequest)
-		return err, nil
-	}
-	return nil, request
-}*/
 
 /**
 Die Funktion liefert einen Response welcher bei valider Benutzereingabe den Nutzer authentisiert, sonst Fehler
@@ -176,16 +147,15 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 
 	nutzerdaten, err := database.NutzerdatenFind(anmeldeReq.Username)
 
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		// Es existiert kein Account mit dieser Email
-		// Sende genauere Fehlermeldung zurück, statt EOF
+		// Sende genauere Fehlermeldung zurueck, statt EOF
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusUnauthorized,
 			Message: structs.ErrNichtExistenteEmail.Error(),
 		}, http.StatusUnauthorized)
 		return
-	}
-	if err != nil {
+	} else if err != nil {
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusUnauthorized,
 			Message: err.Error(),
@@ -194,27 +164,28 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Vergleiche Passwort mit gespeichertem Hash
-	evaluation := bcrypt.CompareHashAndPassword([]byte(nutzerdaten.Passwort), []byte(anmeldeReq.Passwort))
+	evaluationError := bcrypt.CompareHashAndPassword([]byte(nutzerdaten.Passwort), []byte(anmeldeReq.Passwort))
 
-	if evaluation == nil {
-		// Korrektes Passwort authentifiziere den Nutzer
-		// Generiere Cookie Token
-		token := generiereSessionToken(anmeldeReq.Username)
-		sendResponse(res, true, structs.AuthRes{
-			Message:      "Nutzer authentifiziert",
-			Sessiontoken: token,
-		}, http.StatusOK)
-	} else {
+	if evaluationError != nil {
 		// Falsches Passwort
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusUnauthorized,
 			Message: structs.ErrFalschesPasswortError.Error(),
 		}, http.StatusUnauthorized)
+		return
 	}
+
+	// Korrektes Passwort authentifiziere den Nutzer
+	// Generiere Cookie Token
+	token := generiereSessionToken(anmeldeReq.Username)
+	sendResponse(res, true, structs.AuthRes{
+		Message:      "Nutzer authentifiziert",
+		Sessiontoken: token,
+	}, http.StatusOK)
 }
 
 /**
-Die Funktion liefert einen HTTP Response zurück, welcher den neuen Nutzer authentifiziert, oder eine Fehlermeldung liefert
+Die Funktion liefert einen HTTP Response zurueck, welcher den neuen Nutzer authentifiziert, oder eine Fehlermeldung liefert
 */
 func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
@@ -264,14 +235,14 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		}, http.StatusConflict)
 		err = database.RestoreDump(restorepath)
 		if err != nil {
-			//Datenbank konnte nicht wiederhergestellt werden
+			// Datenbank konnte nicht wiederhergestellt werden
 			log.Fatal(err)
 		}
 	}
 }
 
 /**
-Die Funktion liefert einen HTTP Response zurück, welcher den Nutzer abmeldet, sonst Fehler
+Die Funktion liefert einen HTTP Response zurueck, welcher den Nutzer abmeldet, sonst Fehler
 */
 func DeleteAbmeldung(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
@@ -299,11 +270,11 @@ func DeleteAbmeldung(res http.ResponseWriter, req *http.Request) {
 	err = loescheSessionToken(abmeldungReq.Username)
 
 	if err == nil {
-		// Session Token gelöscht
+		// session Token geloescht
 		sendResponse(res, true, structs.AbmeldeRes{
-			Message: "Der Session Token wurde gelöscht"}, http.StatusOK)
+			Message: "Der session Token wurde gelöscht"}, http.StatusOK)
 	} else {
-		// Konnte nicht löschen
+		// Konnte nicht loeschen
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusConflict,
 			Message: err.Error(),

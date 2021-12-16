@@ -43,22 +43,26 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
 	//Prüfe ob bereits ein Eintrag mit dieser Email existiert
 	_, err := NutzerdatenFind(anmeldedaten.Username)
-	if err != nil {
-		//Kein Eintrag vorhanden
-		passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
-		if err != nil {
-			return err //Bcrypt hashing error
-		}
-		_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
-			Email:    anmeldedaten.Username,
-			Passwort: string(passwordhash),
-			Revision: 1,
-		})
-		if err != nil {
-			return err //DB Error
-		}
-		return nil
+
+	if err == nil {
+		//Eintrag mit dieser Email existiert bereits
+		return structs.ErrInsertExistingAccount
 	}
-	//Eintrag mit dieser Email existiert bereits
-	return structs.ErrInsertExistingAccount
+
+	//Kein Eintrag vorhanden
+	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
+	if err != nil {
+		return err //Bcrypt hashing error
+	}
+
+	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
+		Email:    anmeldedaten.Username,
+		Passwort: string(passwordhash),
+		Revision: 1,
+	})
+	if err != nil {
+		return err //DB Error
+	}
+
+	return nil
 }

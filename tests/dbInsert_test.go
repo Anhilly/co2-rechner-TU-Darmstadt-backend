@@ -6,6 +6,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 	"testing"
 )
 
@@ -29,6 +30,7 @@ func TestInsert(t *testing.T) {
 
 	t.Run("TestGebaeudeInsert", TestGebaeudeInsert)
 	t.Run("TestZaehlerInsert", TestZaehlerInsert)
+	t.Run("TestNutzerdatenInsert", TestNutzerdatenInsert)
 }
 
 func TestGebaeudeInsert(t *testing.T) {
@@ -323,15 +325,22 @@ func TestNutzerdatenInsert(t *testing.T) {
 	// Normalfall
 	t.Run("NutzerdatenInsert: {email = 'testingEmailPlsDontUse' password='verysecurepassword'} (nicht vorhanden)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
+		var email = "testingEmailPlsDontUse"
 		testData := structs.AuthReq{
-			Username: "testingEmailPlsDontUse",
+			Username: email,
 			Passwort: "verysecurepassword",
 		}
 		err := database.NutzerdatenInsert(testData)
-		is.NoErr(err) //Kein Fehler wird geworfen
+		is.NoErr(err) // Kein Fehler wird geworfen
+
+		daten, err := database.NutzerdatenFind(email)
+		is.NoErr(err) // Kein Fehler seitens der Datenbank
+		// Eintrag wurde korrekt hinzugefuegt
+		is.Equal(daten.Email, email)
+		is.NoErr(bcrypt.CompareHashAndPassword([]byte(daten.Passwort), []byte(testData.Passwort)))
 	})
 
-	//Errorfall
+	// Errorfall
 	t.Run("NutzerdatenInsert: {email = 'anton@tobi.com' password='verysecurepassword'} (vorhanden)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 		testData := structs.AuthReq{
@@ -339,6 +348,6 @@ func TestNutzerdatenInsert(t *testing.T) {
 			Passwort: "verysecurepassword",
 		}
 		err := database.NutzerdatenInsert(testData)
-		is.Equal(err, structs.ErrInsertExistingAccount) //Dateneintrag existiert bereits
+		is.Equal(err, structs.ErrInsertExistingAccount) // Dateneintrag existiert bereits
 	})
 }
