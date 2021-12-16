@@ -7,8 +7,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -147,9 +147,9 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 
 	nutzerdaten, err := database.NutzerdatenFind(anmeldeReq.Username)
 
-	if errors.Is(err, io.EOF) {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		// Es existiert kein Account mit dieser Email
-		// Sende genauere Fehlermeldung zurueck, statt EOF
+		// Sende genauere Fehlermeldung zurueck, statt ErrNoDocuments
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusUnauthorized,
 			Message: structs.ErrNichtExistenteEmail.Error(),
