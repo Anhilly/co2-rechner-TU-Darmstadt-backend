@@ -102,7 +102,7 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Datenverarbeitung
-	ordner, err := database.CreateDump("PostAddFaktor")
+	ordner, err := database.CreateDump("PostAddZaehlerdaten")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -148,7 +148,7 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Datenverarbeitung
-	ordner, err := database.CreateDump("PostAddFaktor")
+	ordner, err := database.CreateDump("PostInsertZaehler")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -194,7 +194,7 @@ func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Datenverarbeitung
-	ordner, err := database.CreateDump("PostAddFaktor")
+	ordner, err := database.CreateDump("PostInsertGebaeude")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

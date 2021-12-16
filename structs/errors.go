@@ -17,6 +17,9 @@ var ( // Fehler von Add und Insert Funktionen
 
 	// Fehler durch Nutzereingabe
 	ErrIDEnergieversorgungNichtVorhanden = errors.New("Die angegebene IDEnergieversorgung ist nicht vorhanden")
+
+	// Fehler bei Erstellung der ObjectID
+	ErrObjectIDNichtKonvertierbar = errors.New("ObjectID Konvertierung fehlerhaft")
 )
 
 var ( // Fehler, die bei Berechnungen auftreten

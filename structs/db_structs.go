@@ -1,6 +1,9 @@
 package structs
 
-import "time"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+)
 
 /*
 Im dieser Datei sind die Dokumententype zur Emissionsberechnung als structs aufgeführt.
@@ -133,4 +136,56 @@ type Pendelweg struct {
 	CO2Faktor   int32  `json:"CO2Faktor" bson:"CO2Faktor"`
 	Einheit     string `json:"einheit" bson:"einheit"`
 	Revision    int32  `json:"revision" bson:"revision"`
+}
+
+// Collection nutzerdaten
+type Nutzerdaten struct {
+	Email      string               `json:"email" bson:"email"` // (index)
+	Passwort   string               `json:"passwort" bson:"passwort"`
+	Revision   int32                `json:"revision" bson:"revision"`
+	UmfrageRef []primitive.ObjectID `json:"umfrageRef" bson:"umfrageRef"`
+}
+
+// Collection umfrage
+type Umfrage struct {
+	ID                    primitive.ObjectID   `json:"_id" bson:"_id"`
+	Mitarbeiteranzahl     int32                `json:"mitarbeiteranzahl" bson:"mitarbeiteranzahl"`
+	Jahr                  int32                `json:"jahr" bson:"jahr"`
+	Gebaeude              []UmfrageGebaeude    `json:"gebaeude" bson:"gebaeude"`
+	ITGeraete             []UmfrageITGeraete   `json:"itGeraete" bson:"itGeraete"`
+	Revision              int32                `json:"revision" bson:"revision"`
+	MitarbeiterUmfrageRef []primitive.ObjectID `json:"mitarbeiterUmfrageRef" bson:"mitarbeiterUmfrageRef"`
+}
+
+type UmfrageGebaeude struct {
+	GebaeudeNr  int32 `json:"gebaeudeNr" bson:"gebaeudeNr"` // -> Nr in Gebaeude
+	Nutzflaeche int32 `json:"nutzflaeche" bson:"nutzflaeche"`
+}
+
+type UmfrageITGeraete struct {
+	IDITGeraete int32 `json:"idITGeraete" bson:"idITGeraete"` // -> IDITGeraete in ITGereate
+	Anzahl      int32 `json:"anzahl" bson:"anzahl"`
+}
+
+// Collection mitarbeiterUmfrage
+type MitarbeiterUmfrage struct {
+	ID          primitive.ObjectID   `json:"_id" bson:"_id"`
+	Pendelweg   []UmfragePendelweg   `json:"pendelweg" bson:"pendelweg"`
+	TageImBuero int32                `json:"tageImBuero" bson:"tageImBuero"`
+	Dienstreise []UmfrageDienstreise `json:"dienstreise" bson:"dienstreise"`
+	ITGeraete   []UmfrageITGeraete   `json:"itGereate" bson:"itGeraete"`
+	Revision    int32                `json:"revision" bson:"revision"`
+}
+
+type UmfragePendelweg struct {
+	IDPendelweg    int32 `json:"idPendelweg" bson:"idPendelweg"` // -> IDPendelweg in Pendelweg
+	Strecke        int32 `json:"strecke" bson:"strecke"`
+	PersonenAnzahl int32 `json:"personenanzahl" bson:"personenanzahl"`
+}
+
+type UmfrageDienstreise struct {
+	IDDienstreise int32  `json:"idDienstreise" bson:"idDienstreise"` // -> IDDienstreisen in Dienstreisen
+	Streckentyp   string `json:"streckentyp" bson:"streckentyp"`
+	Strecke       int32  `json:"strecke" bson:"strecke"`
+	Tankart       string `json:"tankart" bson:"tankart"`
 }

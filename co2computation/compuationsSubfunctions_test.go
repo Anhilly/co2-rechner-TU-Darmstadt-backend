@@ -6,7 +6,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
-	"io"
+	"go.mongodb.org/mongo-driver/mongo"
 	"math"
 	"testing"
 	"time"
@@ -77,8 +77,8 @@ func TestGetEnergieCO2Faktor(t *testing.T) { //nolint:funlen
 
 		co2Faktor, err := getEnergieCO2Faktor(idEnergieversorgung, jahr)
 
-		is.Equal(err, io.EOF)         // Datenbank wirft EOF
-		is.Equal(co2Faktor, int32(0)) // Fehlerfall liefert 0.0
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(co2Faktor, int32(0))       // Fehlerfall liefert 0.0
 	})
 
 	t.Run("getEnergieversorgung: Jahr = 0 nicht vorhanden", func(t *testing.T) {
@@ -264,9 +264,9 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
-		is.Equal(err, io.EOF)    // Datenbank wirft EOF
-		is.Equal(verbrauch, 0.0) // Fehlerfall liefert 0.0
-		is.Equal(ngf, 0.0)       // Fehlerfall liefert 0.0
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(verbrauch, 0.0)            // Fehlerfall liefert 0.0
+		is.Equal(ngf, 0.0)                  // Fehlerfall liefert 0.0
 	})
 }
 
@@ -450,7 +450,7 @@ func TestGebaeudeNormalfall(t *testing.T) { //nolint:funlen
 
 		emissionen, err := gebaeudeNormalfall(co2Faktor, gebaeude, idEnergieversorgung, jahr, flaechenanteil)
 
-		is.Equal(err, io.EOF)     // Datenbank wirft EOF
-		is.Equal(emissionen, 0.0) // Fehlerfall liefert 0.0
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(emissionen, 0.0)           // Fehlerfall liefert 0.0
 	})
 }

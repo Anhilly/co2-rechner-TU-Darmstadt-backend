@@ -4,25 +4,23 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 /**
 Die Funktion liefert einen Gebaeude struct mit nr gleich dem Parameter.
 */
 func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
-	var data structs.Gebaeude
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
 
-	cursor, err := collection.Find(ctx, bson.D{{"nr", nr}}) //nolint:govet
-	if err != nil {
-		return structs.Gebaeude{}, err
-	}
-
-	cursor.Next(ctx)
-	err = cursor.Decode(&data)
+	var data structs.Gebaeude
+	err := collection.FindOne(
+		ctx,
+		bson.D{{"nr", nr}},
+	).Decode(&data)
 	if err != nil {
 		return structs.Gebaeude{}, err
 	}
@@ -30,6 +28,9 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	return data, nil
 }
 
+/**
+Die Funktion fuegt ein Gebaeude in die Datenbank ein, falls die Nr noch nicht vorhanden ist.
+*/
 func GebaeudeInsert(data structs.InsertGebaeude) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -62,6 +63,9 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 	return nil
 }
 
+/**
+Die Funktion fuegt einem Gebaeude eine Zaehlereferenz hinzu, falls diese noch nicht vorhanden ist.
+*/
 func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	var referenzname string
 
@@ -81,7 +85,7 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
-	var updatedDoc bson.M
+	var updatedDoc structs.Gebaeude
 	err := collection.FindOneAndUpdate(
 		ctx,
 		bson.D{{"nr", nr}},
@@ -94,4 +98,38 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	}
 
 	return nil
+}
+
+/**
+Funktion gibt alle Nummern von Gebaeuden in der Datenbank zurueck.
+*/
+func GebaeudeAlleNr() ([]int32, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{},
+		options.Find().SetProjection(bson.M{"_id": 0, "nr": 1}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []struct {
+		Nr int32 `bson:"nr"`
+	}
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		return nil, err
+	}
+
+	var gebaeudenummern []int32
+	for _, elem := range results {
+		gebaeudenummern = append(gebaeudenummern, elem.Nr)
+	}
+
+	return gebaeudenummern, nil
 }

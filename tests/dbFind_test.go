@@ -4,7 +4,8 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
-	"io"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
 	"time"
 )
@@ -24,6 +25,10 @@ func TestFind(t *testing.T) {
 	t.Run("TestDienstreisenFind", TestDienstreisenFind)
 	t.Run("TestGebaeudeFind", TestGebaeudeFind)
 	t.Run("TestZaehlerFind", TestZaehlerFind)
+	t.Run("TestTestUmfrageFind", TestUmfrageFind)
+	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
+	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
+	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -51,7 +56,7 @@ func TestITGeraeteFind(t *testing.T) {
 
 		data, err := database.ITGeraeteFind(0)
 
-		is.Equal(err, io.EOF)               // Datenbank wirft EOF-Error
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.ITGeraete{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
@@ -80,7 +85,7 @@ func TestDienstreisenFind(t *testing.T) {
 
 		data, err := database.DienstreisenFind(0)
 
-		is.Equal(err, io.EOF)                  // Datenbank wirft EOF-Error
+		is.Equal(err, mongo.ErrNoDocuments)    // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Dienstreisen{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
@@ -108,7 +113,7 @@ func TestEnergieversorgungFind(t *testing.T) {
 
 		data, err := database.EnergieversorgungFind(0)
 
-		is.Equal(err, io.EOF)                       // Datenbank wirft EOF-Error
+		is.Equal(err, mongo.ErrNoDocuments)         // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Energieversorgung{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 }
@@ -148,8 +153,8 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(0)
 
-		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Gebaeude{})  // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Gebaeude soll nicht beachtet werden, Justitzzentrum
@@ -158,8 +163,8 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(1437)
 
-		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Gebaeude{})  // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Gebaeude soll nicht beachtet werden, Landgericht Gebaeude A
@@ -168,8 +173,8 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(1475)
 
-		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Gebaeude{})  // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Gebaeude soll nicht beachtet werden, Landgericht Gebaeude B
@@ -178,8 +183,8 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(1476)
 
-		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Gebaeude{})  // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Gebaeude soll nicht beachtet werden, Regierungspraesidium
@@ -188,8 +193,8 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(1477)
 
-		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Gebaeude{})  // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Gebaeude soll nicht beachtet werden, Staatsbauamt
@@ -198,8 +203,8 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(1479)
 
-		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Gebaeude{})  // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Gebaeude soll nicht beachtet werden, Landesmuseum
@@ -208,8 +213,8 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(1480)
 
-		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Gebaeude{})  // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Gebaeude soll nicht beachtet werden, Staatsarchiv
@@ -218,8 +223,8 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(1481)
 
-		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Gebaeude{})  // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Gebaeude soll nicht beachtet werden, Frauenhofer Institut (LBF)
@@ -228,8 +233,8 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(1213)
 
-		is.Equal(err, io.EOF)              // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Gebaeude{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Gebaeude{})  // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 }
@@ -357,8 +362,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	t.Run("ZaehlerFind: Waermezaehler, ID = 0 nicht vorhanden", func(t *testing.T) {
@@ -369,8 +374,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, 1473 Waerme Hauptzaehler Justitzzentrum
@@ -382,8 +387,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, 1475 Waerme Hauptzaehler Landgericht Gebaeude A
@@ -395,8 +400,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, 1476 Waerme Hauptzaehler Landgericht Gebaeude B
@@ -408,8 +413,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, 1477 Waerme Hauptzaehler Regierungspraesidium
@@ -421,8 +426,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, 1479 Waerme Hauptzaehler Staatsbauamt
@@ -434,8 +439,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, 1480 Waerme Hauptzaehler Landesmuseum
@@ -447,8 +452,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, 1481 Waerme Hauptzaehler Staatsarchiv
@@ -460,8 +465,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, 1213a Altbau Frauenhofer Institut (LBF) Waerme
@@ -473,8 +478,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, 1213b Frauenhofer Institut (LBF) Neubau Waerme
@@ -486,8 +491,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, Geb_Rechenwerk_Neues_RP_Entega_ENERGIE
@@ -499,8 +504,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// Zaehler soll nicht beachtet werden, Geb_Rechenwerk_Neues_RP_Steag_ENERGIE
@@ -512,8 +517,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	t.Run("ZaehlerFind: Stromzaehler, ID = 0 nicht vorhanden", func(t *testing.T) {
@@ -524,8 +529,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	// dieser Zaehler wurde rausgenommen, weil die Einheit kW ist
@@ -537,8 +542,8 @@ func TestZaehlerFind(t *testing.T) {
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
 
-		is.Equal(err, io.EOF)             // Datenbank wirft EOF-Error
-		is.Equal(data, structs.Zaehler{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
 	t.Run("ZaehlerFind: IDEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
@@ -551,5 +556,146 @@ func TestZaehlerFind(t *testing.T) {
 
 		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Funktion wirft ErrIDEnergieversorgungNichtVorhanden
 		is.Equal(data, structs.Zaehler{})                           // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestUmfrageFind(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("UmfrageFind: ID = 61b23e9855aa64762baf76d7", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var id primitive.ObjectID
+		err := id.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+
+		var idMitarbeiterumfrage primitive.ObjectID
+		err = idMitarbeiterumfrage.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		is.NoErr(err)
+
+		data, err := database.UmfrageFind(id)
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			structs.Umfrage{
+				ID:                id,
+				Mitarbeiteranzahl: 1,
+				Jahr:              2020,
+				Gebaeude: []structs.UmfrageGebaeude{
+					{GebaeudeNr: 1101, Nutzflaeche: 100},
+				},
+				ITGeraete: []structs.UmfrageITGeraete{
+					{IDITGeraete: 5, Anzahl: 10},
+				},
+				Revision:              1,
+				MitarbeiterUmfrageRef: []primitive.ObjectID{idMitarbeiterumfrage},
+			}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	// Errortests
+	t.Run("ITGeraeteFind: ID aus aktuellem Zeitstempel nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		id := primitive.NewObjectID()
+
+		data, err := database.UmfrageFind(id)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Umfrage{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestMitarbeiterUmfrageFind(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("MitarbeiterUmfrageFind: ID = 61b34f9324756df01eee5ff4", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var id primitive.ObjectID
+		err := id.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		is.NoErr(err)
+
+		data, err := database.MitarbeiterUmfrageFind(id)
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			structs.MitarbeiterUmfrage{
+				ID: id,
+				Pendelweg: []structs.UmfragePendelweg{
+					{IDPendelweg: 1, Strecke: 123, PersonenAnzahl: 1},
+				},
+				TageImBuero: 7,
+				Dienstreise: []structs.UmfrageDienstreise{
+					{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321},
+				},
+				ITGeraete: []structs.UmfrageITGeraete{
+					{IDITGeraete: 3, Anzahl: 45},
+				},
+				Revision: 1,
+			}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	// Errortests
+	t.Run("MitarbeiterUmfrageFind: ID aus aktuellem Zeitstempel nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		id := primitive.NewObjectID()
+
+		data, err := database.MitarbeiterUmfrageFind(id)
+
+		is.Equal(err, mongo.ErrNoDocuments)          // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.MitarbeiterUmfrage{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestNutzerdatenFind(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("NutzerdatenFind: EMail = anton@tobi.com", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		email := "anton@tobi.com"
+		var idUmfrage primitive.ObjectID
+		err := idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+
+		data, err := database.NutzerdatenFind(email)
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			structs.Nutzerdaten{
+				Email:      "anton@tobi.com",
+				Passwort:   "test_pw",
+				Revision:   1,
+				UmfrageRef: []primitive.ObjectID{idUmfrage},
+			}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	// Errortests
+	t.Run("MitarbeiterUmfrageFind: EMail = 0 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		email := "0"
+
+		data, err := database.NutzerdatenFind(email)
+
+		is.Equal(err, mongo.ErrNoDocuments)   // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Nutzerdaten{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestGebaeudeAlleNr(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("GebaeudeAlleNr: liefert Slice zurueck", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeudenummer, err := database.GebaeudeAlleNr()
+		is.NoErr(err)                           // kein Error seitens der Datenbank
+		is.Equal(len(gebaeudenummer) > 0, true) // Slice ist nicht leer
 	})
 }

@@ -11,7 +11,6 @@ import (
 Die Funktion liefert einen Zaehler struct fuer den Zaehler mit pkEnergie und uebergebenen Energieform.
 */
 func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) {
-	var data structs.Zaehler
 	var collectionname string
 	var zaehlertyp string
 
@@ -34,13 +33,11 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 
 	collection := client.Database(dbName).Collection(collectionname)
 
-	cursor, err := collection.Find(ctx, bson.D{{"pkEnergie", pkEnergie}}) //nolint:govet
-	if err != nil {
-		return structs.Zaehler{}, err
-	}
-
-	cursor.Next(ctx)
-	err = cursor.Decode(&data)
+	var data structs.Zaehler
+	err := collection.FindOne(
+		ctx,
+		bson.D{{"pkEnergie", pkEnergie}},
+	).Decode(&data)
 	if err != nil {
 		return structs.Zaehler{}, err
 	}

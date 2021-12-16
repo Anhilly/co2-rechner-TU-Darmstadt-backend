@@ -5,7 +5,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
-	"io"
+	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
 )
 
@@ -121,8 +121,8 @@ func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
-		is.Equal(err, io.EOF)     // Datenbank wirft EOF
-		is.Equal(emissionen, 0.0) // Fehlerfall liefert 0.0
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(emissionen, 0.0)           // Fehlerfall liefert 0.0
 	})
 
 	t.Run("BerechneITGeraete: negative Anzahl eingegeben", func(t *testing.T) {
@@ -209,6 +209,20 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 		is.Equal(emissionen, 3680.0) // erwartetes Ergebnis: 3680.0
 	})
 
+	t.Run("BerechnePendelweg: Rundung auf 2 Nachkommastellen", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		pendelwegDaten := []structs.PendelwegElement{
+			{IDPendelweg: 1, Strecke: 10, Personenanzahl: 3},
+		}
+		var tageImBuero int32 = 1
+
+		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+
+		is.NoErr(err)                 // Normalfall wirft keine Errors
+		is.Equal(emissionen, 1226.67) // erwartetes Ergebnis: 1226.67
+	})
+
 	t.Run("BerechnePendelweg: komplexe Berechnung", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -238,8 +252,8 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
 
-		is.Equal(err, io.EOF)     // Datenbank wirft EOF Error
-		is.Equal(emissionen, 0.0) // Fehlerfall liefert 0.0
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(emissionen, 0.0)           // Fehlerfall liefert 0.0
 	})
 
 	t.Run("BerechnePendelweg: Personenanzahl < 1 eingegeben", func(t *testing.T) {
@@ -422,8 +436,8 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.Equal(err, io.EOF)     // Datenbank wirft EOF Error
-		is.Equal(emissionen, 0.0) // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(emissionen, 0.0)           // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
 	t.Run("BerechneDienstreisen: unbekannte Tankart", func(t *testing.T) {

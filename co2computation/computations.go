@@ -61,7 +61,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 		}
 	}
 
-	return math.Round(emissionen*100) / 100, nil
+	return emissionen, nil
 }
 
 /**
@@ -101,7 +101,7 @@ func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero in
 		}
 	}
 
-	return emissionen, nil
+	return math.Round(emissionen*100) / 100, nil
 }
 
 /**
