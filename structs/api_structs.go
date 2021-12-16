@@ -6,49 +6,24 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 In dieser Daten sind Request und Response JSON für die API als structs aufgelistet.
 */
 
-type UmfrageRes struct {
-	KaelteEmissionen       float64 `json:"kaelteEmissionen"`
-	WaermeEmissionen       float64 `json:"waermeEmissionen"`
-	StromEmissionen        float64 `json:"stromEmissionen"`
-	ITGeraeteEmissionen    float64 `json:"itGeraeteEmissionen"`
-	DienstreisenEmissionen float64 `json:"dienstreisenEmissionen"`
-	PendelwegeEmissionen   float64 `json:"pendelwegeEmissionen"`
+// For testing:
+type UmfrageMitarbeiterReq struct {
+	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
+	TageImBuero int32                `json:"tageImBuero"`
+	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
+	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
 }
 
-// For testing:
 type UmfrageMitarbeiterRes struct {
 	PendelwegeEmissionen   float64 `json:"pendelwegeEmissionen"`
 	DienstreisenEmissionen float64 `json:"dienstreisenEmissionen"`
 	ITGeraeteEmissionen    float64 `json:"itGeraeteEmissionen"`
 }
 
-/* For testing:
-//ein temporärer JSON für eine monolithische Umfrage
-type UmfrageReq struct {
-	// Hauptverantwortlicher
-	Gebaeude          []GebaeudeFlaeche `json:"gebaeude"`
-	AnzahlMitarbeiter int32             `json:"anzahlMitarbeiter"`
-
-	// geteilt Über Mitarbeiter und Hauptverantwortlicher
-	ITGeraete []ITGeraeteAnzahl `json:"itGeraete"`
-
-	// Mitarbeiter
-	Pendelweg   []PendelwegElement   `json:"pendelweg"`
-	TageImBuero int32                `json:"tageImBuero"`
-	Dienstreise []DienstreiseElement `json:"dienstreise"`
-}
-*/
-type UmfrageMitarbeiterReq struct {
-	Pendelweg   []PendelwegElement   `json:"pendelweg"`
-	TageImBuero int32                `json:"tageImBuero"`
-	Dienstreise []DienstreiseElement `json:"dienstreise"`
-	ITGeraete   []ITGeraeteAnzahl    `json:"itGeraete"`
-}
-
 type UmfrageHauptverantwortlicherReq struct {
-	Gebaeude          []GebaeudeFlaecheAPI `json:"gebaeude"`
-	AnzahlMitarbeiter int32                `json:"anzahlMitarbeiter"`
-	ITGeraete         []ITGeraeteAnzahl    `json:"itGeraete"`
+	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
+	AnzahlMitarbeiter int32              `json:"anzahlMitarbeiter"`
+	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
 }
 
 type UmfrageHauptverantwortlicherRes struct {
@@ -56,29 +31,6 @@ type UmfrageHauptverantwortlicherRes struct {
 	WaermeEmissionen    float64 `json:"waermeEmissionen"`
 	StromEmissionen     float64 `json:"stromEmissionen"`
 	ITGeraeteEmissionen float64 `json:"itGeraeteEmissionen"`
-}
-
-type GebaeudeFlaecheAPI struct {
-	GebaeudeNr     int32 `json:"gebaeudeNr"`
-	Flaechenanteil int32 `json:"flaechenanteil"`
-}
-
-type ITGeraeteAnzahl struct {
-	IDITGeraete int32 `json:"idITGeraete"`
-	Anzahl      int32 `json:"anzahl"`
-}
-
-type PendelwegElement struct {
-	Strecke        int32 `json:"strecke"`
-	IDPendelweg    int32 `json:"idPendelweg"`
-	Personenanzahl int32 `json:"personenanzahl"`
-}
-
-type DienstreiseElement struct {
-	IDDienstreise int32  `json:"idDienstreise"`
-	Streckentyp   string `json:"streckentyp"`
-	Strecke       int32  `json:"strecke"`
-	Tankart       string `json:"tankart"`
 }
 
 // Structs für Request JSONs zum Hinzufuegen und Aendern von Daten der Datenbank
@@ -125,7 +77,8 @@ type InsertMitarbeiterUmfrage struct {
 	IDUmfrage   primitive.ObjectID   `json:"idUmfrage"`
 }
 
-type AuthReq struct {
+// Requests zur Authentifizierung und Abmeldung
+type AuthReq struct { // wird fuer Anmeldung und Registrierung verwendet
 	Username string `json:"username"`
 	Passwort string `json:"password"`
 }
@@ -135,7 +88,6 @@ type AbmeldungReq struct {
 }
 
 // Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
-
 type Response struct {
 	Status string      `json:"status"`
 	Data   interface{} `json:"data"`  // Typisch nil, wenn Error oder nichts zu reporten

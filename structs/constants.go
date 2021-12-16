@@ -47,7 +47,7 @@ const ( // fuer Zaehertypen
 	ZaehlertypStrom  = "Strom"
 )
 
-const ( //Status responses
+const ( // Status responses
 	ResponseSuccess = "success"
 	ResponseError   = "error"
 )

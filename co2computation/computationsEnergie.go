@@ -12,7 +12,7 @@ Die Funktion berechnet für die gegeben Gebaeude, Flaechenanteile und Jahr die e
 übergebenen ID fuer die entsprechende Energie (Waerme = 1, Strom = 2, Kaelte = 3).
 Ergebniseinheit: g
 */
-func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI, jahr int32, idEnergieversorgung int32) (float64, error) {
+func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.UmfrageGebaeude, jahr int32, idEnergieversorgung int32) (float64, error) {
 	var gesamtemissionen float64
 
 	co2Faktor, err := getEnergieCO2Faktor(idEnergieversorgung, jahr)
@@ -29,7 +29,7 @@ func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI,
 
 		switch gebaeude.Spezialfall {
 		case 1: // Normalfall
-			emissionen, err := gebaeudeNormalfall(co2Faktor, gebaeude, idEnergieversorgung, jahr, gebaeudeFlaeche.Flaechenanteil)
+			emissionen, err := gebaeudeNormalfall(co2Faktor, gebaeude, idEnergieversorgung, jahr, gebaeudeFlaeche.Nutzflaeche)
 			if err != nil {
 				return 0, err
 			}

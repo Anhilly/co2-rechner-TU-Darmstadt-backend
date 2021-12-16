@@ -31,7 +31,7 @@ func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 	t.Run("BerechneITGeraete: Slice = nil", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var itGeraeteDaten []structs.ITGeraeteAnzahl = nil
+		var itGeraeteDaten []structs.UmfrageITGeraete = nil
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
@@ -42,7 +42,7 @@ func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 	t.Run("BerechneITGeraete: leere Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []structs.ITGeraeteAnzahl{}
+		itGeraeteDaten := []structs.UmfrageITGeraete{}
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
@@ -53,7 +53,7 @@ func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 	t.Run("BerechneITGeraete: einelementige Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []structs.ITGeraeteAnzahl{{IDITGeraete: 1, Anzahl: 1}}
+		itGeraeteDaten := []structs.UmfrageITGeraete{{IDITGeraete: 1, Anzahl: 1}}
 
 		emissionen, err := co2computation.BerechneITGeraete(itGeraeteDaten)
 
@@ -64,7 +64,7 @@ func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 	t.Run("BerechneITGeraete: komplexe Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []structs.ITGeraeteAnzahl{
+		itGeraeteDaten := []structs.UmfrageITGeraete{
 			{IDITGeraete: 1, Anzahl: 5},
 			{IDITGeraete: 4, Anzahl: 10},
 			{IDITGeraete: 6, Anzahl: 4},
@@ -82,7 +82,7 @@ func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 	t.Run("BerechneITGeraete: Anzahl 0 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []structs.ITGeraeteAnzahl{
+		itGeraeteDaten := []structs.UmfrageITGeraete{
 			{IDITGeraete: 1, Anzahl: 0},
 			{IDITGeraete: 4, Anzahl: 0},
 			{IDITGeraete: 6, Anzahl: 0},
@@ -100,7 +100,7 @@ func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 	t.Run("BerechneITGeraete: Toner", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []structs.ITGeraeteAnzahl{
+		itGeraeteDaten := []structs.UmfrageITGeraete{
 			{IDITGeraete: 8, Anzahl: 1},
 			{IDITGeraete: 10, Anzahl: 1},
 		}
@@ -115,7 +115,7 @@ func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 	t.Run("BerechneITGeraete: ID = 100 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []structs.ITGeraeteAnzahl{
+		itGeraeteDaten := []structs.UmfrageITGeraete{
 			{IDITGeraete: 100, Anzahl: 5},
 		}
 
@@ -128,7 +128,7 @@ func TestBerechneITGeraete(t *testing.T) { //nolint:funlen
 	t.Run("BerechneITGeraete: negative Anzahl eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		itGeraeteDaten := []structs.ITGeraeteAnzahl{
+		itGeraeteDaten := []structs.UmfrageITGeraete{
 			{IDITGeraete: 1, Anzahl: -5},
 		}
 
@@ -148,7 +148,7 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	t.Run("BerechnePendelweg: Slice = nil", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pendelwegDaten []structs.PendelwegElement = nil
+		var pendelwegDaten []structs.UmfragePendelweg = nil
 		var tageImBuero int32 = 1
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
@@ -160,7 +160,7 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	t.Run("BerechnePendelweg: leerer Slice", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []structs.PendelwegElement{}
+		pendelwegDaten := []structs.UmfragePendelweg{}
 		var tageImBuero int32 = 1
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
@@ -172,7 +172,7 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	t.Run("BerechnePendelweg: tageImBuero = 0 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []structs.PendelwegElement{
+		pendelwegDaten := []structs.UmfragePendelweg{
 			{IDPendelweg: 1, Strecke: 1, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 0
@@ -186,7 +186,7 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	t.Run("BerechnePendelweg: leerer Slice, tageImBuero = 0 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []structs.PendelwegElement{}
+		pendelwegDaten := []structs.UmfragePendelweg{}
 		var tageImBuero int32 = 0
 
 		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
@@ -198,7 +198,7 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	t.Run("BerechnePendelweg: einfache Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []structs.PendelwegElement{
+		pendelwegDaten := []structs.UmfragePendelweg{
 			{IDPendelweg: 1, Strecke: 10, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 1
@@ -212,7 +212,7 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	t.Run("BerechnePendelweg: Rundung auf 2 Nachkommastellen", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []structs.PendelwegElement{
+		pendelwegDaten := []structs.UmfragePendelweg{
 			{IDPendelweg: 1, Strecke: 10, Personenanzahl: 3},
 		}
 		var tageImBuero int32 = 1
@@ -226,7 +226,7 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	t.Run("BerechnePendelweg: komplexe Berechnung", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []structs.PendelwegElement{
+		pendelwegDaten := []structs.UmfragePendelweg{
 			{IDPendelweg: 1, Strecke: 10, Personenanzahl: 1},
 			{IDPendelweg: 4, Strecke: 15, Personenanzahl: 1},
 			{IDPendelweg: 10, Strecke: 90, Personenanzahl: 1},
@@ -245,7 +245,7 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	t.Run("BerechnePendelweg: ID = 100 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []structs.PendelwegElement{
+		pendelwegDaten := []structs.UmfragePendelweg{
 			{IDPendelweg: 100, Strecke: 1, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 1
@@ -259,7 +259,7 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	t.Run("BerechnePendelweg: Personenanzahl < 1 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []structs.PendelwegElement{
+		pendelwegDaten := []structs.UmfragePendelweg{
 			{IDPendelweg: 1, Strecke: 1, Personenanzahl: 0},
 		}
 		var tageImBuero int32 = 1
@@ -273,7 +273,7 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 	t.Run("BerechnePendelweg: negative Strecke eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		pendelwegDaten := []structs.PendelwegElement{
+		pendelwegDaten := []structs.UmfragePendelweg{
 			{IDPendelweg: 1, Strecke: -100, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 1
@@ -294,7 +294,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: Slice = nil", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var dienstreisenDaten []structs.DienstreiseElement = nil
+		var dienstreisenDaten []structs.UmfrageDienstreise = nil
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
@@ -305,7 +305,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: leerer Slice", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{}
+		dienstreisenDaten := []structs.UmfrageDienstreise{}
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
@@ -316,7 +316,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: einfache Eingabe Bahn", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 1, Strecke: 100},
 		}
 
@@ -329,7 +329,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: Bahn; Felder Tankart, Streckentyp egal", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 1, Strecke: 10, Streckentyp: "unbekannt", Tankart: "unbekannt"},
 		}
 
@@ -342,7 +342,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: einfache Eingabe Auto", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 2, Strecke: 100, Tankart: "Diesel"},
 		}
 
@@ -355,7 +355,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: Auto; Feld Streckentyp egal", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 2, Strecke: 10, Tankart: "Benzin", Streckentyp: "unbekannt"},
 		}
 
@@ -368,7 +368,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: einfache Eingabe Flugzeug", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 3, Strecke: 100, Streckentyp: "Kurzstrecke"},
 		}
 
@@ -381,7 +381,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: Flugzeug; Feld Tankart egal", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 3, Strecke: 10, Streckentyp: "Langstrecke", Tankart: "unbekannt"},
 		}
 
@@ -394,7 +394,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: komplexe Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 2, Strecke: 1200, Tankart: "Diesel"},
 			{IDDienstreise: 1, Strecke: 150},
 			{IDDienstreise: 3, Strecke: 750, Streckentyp: "Langstrecke"},
@@ -412,7 +412,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: Strecke = 0 eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 1, Strecke: 0},
 			{IDDienstreise: 2, Strecke: 0, Tankart: "Benzin"},
 			{IDDienstreise: 2, Strecke: 0, Tankart: "Diesel"},
@@ -430,7 +430,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: ID = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 0, Strecke: 100},
 		}
 
@@ -443,7 +443,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: unbekannte Tankart", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 2, Strecke: 100, Tankart: "nicht definiert"},
 		}
 
@@ -456,7 +456,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: unbekannter Streckentyp", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 3, Strecke: 100, Streckentyp: "nicht definiert"},
 		}
 
@@ -469,7 +469,7 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	t.Run("BerechneDienstreisen: negative Strecke eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dienstreisenDaten := []structs.DienstreiseElement{
+		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 1, Strecke: -100},
 		}
 

@@ -11,7 +11,7 @@ import (
 Die Funktion berechnet die Gesamtemissionen für den übergebenen Slice an Dienstreisen.
 Ergebniseinheit: g
 */
-func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float64, error) {
+func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float64, error) {
 	var emissionen float64
 
 	for _, dienstreise := range dienstreisenDaten {
@@ -68,7 +68,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.DienstreiseElement) (float
 Die Funktion berechnet die Gesamtemissionen auf Basis der gegebenen Pendelwege und der Tage im Büro.
 Ergebniseinheit: g
 */
-func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero int32) (float64, error) {
+func BerechnePendelweg(pendelwegDaten []structs.UmfragePendelweg, tageImBuero int32) (float64, error) {
 	var emissionen float64
 	const arbeitstage2020 = 230 // Arbeitstage in 2020, konstant(?)
 
@@ -108,7 +108,7 @@ func BerechnePendelweg(pendelwegDaten []structs.PendelwegElement, tageImBuero in
 Die Funktion berechnet Emissionen pro Jahr für den Slice an IT-Geräten.
 Ergebniseinheit: g
 */
-func BerechneITGeraete(itGeraeteDaten []structs.ITGeraeteAnzahl) (float64, error) {
+func BerechneITGeraete(itGeraeteDaten []structs.UmfrageITGeraete) (float64, error) {
 	var emissionen float64
 
 	for _, itGeraet := range itGeraeteDaten {

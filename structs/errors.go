@@ -27,7 +27,7 @@ var ( // Fehler, die bei Berechnungen auftreten
 	ErrJahrNichtVorhanden = errors.New("getEnergieCO2Faktor: Kein CO2 Faktor für angegebenes Jahr vorhanden")
 
 	// Fehler durch Nutzereingabe
-	ErrFlaecheNegativ = errors.New("gebaeudeNormalfall: Flaechenanteil ist negativ")
+	ErrFlaecheNegativ = errors.New("gebaeudeNormalfall: Nutzflaeche ist negativ")
 
 	// Fehler durch fehlende Behandlung eines Gebaeudespezialfalls im Code
 	ErrGebaeudeSpezialfall = errors.New("BerechneEnergieverbrauch: Spezialfall fuer Gebaeude nicht abgedeckt")

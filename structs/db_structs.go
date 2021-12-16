@@ -51,45 +51,6 @@ type Zaehlerwerte struct {
 	Zeitstempel time.Time `json:"zeitstempel" bson:"zeitstempel"`
 }
 
-/*
-// collection kaeltezaehler
-type Kaeltezaehler struct {
-	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
-	ExtSystemID  string         `json:"extSystemID" bson:"extSystemID"`
-	Bezeichnung  string         `json:"bezeichnung" bson:"bezeichnung"`
-	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
-	Einheit      string         `json:"einheit" bson:"einheit"`
-	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
-	Revision     int32          `json:"revision" bson:"revision"`
-
-	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
-}
-
-// collection stromzaehler
-type Stromzaehler struct {
-	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
-	Bezeichnung  string         `json:"bezeichnung" bson:"bezeichnung"`
-	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
-	Einheit      string         `json:"einheit" bson:"einheit"`
-	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
-	Revision     int32          `json:"revision" bson:"revision"`
-
-	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
-}
-
-// collection kaeltezaehler
-type Waermezaehler struct {
-	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
-	ExtSystemID  string         `json:"extSystemID" bson:"extSystemID"`
-	Bezeichnung  string         `json:"bezeichnung" bson:"bezeichnung"`
-	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
-	Einheit      string         `json:"einheit" bson:"einheit"`
-	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
-	Revision     int32          `json:"revision" bson:"revision"`
-
-	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
-} */
-
 // Collection energieversorgung
 type Energieversorgung struct {
 	IDEnergieversorgung int32        `json:"idEnergieversorgung" bson:"idEnergieversorgung"` // (index)
@@ -180,7 +141,7 @@ type MitarbeiterUmfrage struct {
 type UmfragePendelweg struct {
 	IDPendelweg    int32 `json:"idPendelweg" bson:"idPendelweg"` // -> IDPendelweg in Pendelweg
 	Strecke        int32 `json:"strecke" bson:"strecke"`
-	PersonenAnzahl int32 `json:"personenanzahl" bson:"personenanzahl"`
+	Personenanzahl int32 `json:"personenanzahl" bson:"personenanzahl"`
 }
 
 type UmfrageDienstreise struct {

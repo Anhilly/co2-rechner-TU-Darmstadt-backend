@@ -624,7 +624,7 @@ func TestMitarbeiterUmfrageFind(t *testing.T) {
 			structs.MitarbeiterUmfrage{
 				ID: id,
 				Pendelweg: []structs.UmfragePendelweg{
-					{IDPendelweg: 1, Strecke: 123, PersonenAnzahl: 1},
+					{IDPendelweg: 1, Strecke: 123, Personenanzahl: 1},
 				},
 				TageImBuero: 7,
 				Dienstreise: []structs.UmfrageDienstreise{

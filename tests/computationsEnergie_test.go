@@ -29,7 +29,7 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 	t.Run("BerechneEnergieverbrauch: Slice = nil", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var gebaeudeFlaecheDaten []structs.GebaeudeFlaecheAPI = nil
+		var gebaeudeFlaecheDaten []structs.UmfrageGebaeude = nil
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
 
@@ -42,7 +42,7 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 	t.Run("BerechneEnergieverbrauch: leerer Slice", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{}
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
 
@@ -55,8 +55,8 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Einzelzaehler ", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
-			{GebaeudeNr: 1101, Flaechenanteil: 1000},
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
+			{GebaeudeNr: 1101, Nutzflaeche: 1000},
 		}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
@@ -70,8 +70,8 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Gebaeude mehrere Zaehler ", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
-			{GebaeudeNr: 1108, Flaechenanteil: 1000}, // Zaehler 2250, 2251, 2252, 2085
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
+			{GebaeudeNr: 1108, Nutzflaeche: 1000}, // Zaehler 2250, 2251, 2252, 2085
 		}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
@@ -85,8 +85,8 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Gruppenzaehler ", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{ // Zaehler: 3807, weiteres Gebaeude: 3016
-			{GebaeudeNr: 3102, Flaechenanteil: 1000},
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{ // Zaehler: 3807, weiteres Gebaeude: 3016
+			{GebaeudeNr: 3102, Nutzflaeche: 1000},
 		}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 3
@@ -101,8 +101,8 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Gebaeude 1321 hat nur noch ein Zaehler ", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
-			{GebaeudeNr: 1321, Flaechenanteil: 1000},
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
+			{GebaeudeNr: 1321, Nutzflaeche: 1000},
 		}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 2
@@ -116,10 +116,10 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 	t.Run("BerechneEnergieverbrauch: komplexe Eingabe", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
-			{GebaeudeNr: 1101, Flaechenanteil: 1000},
-			{GebaeudeNr: 1108, Flaechenanteil: 1000},
-			{GebaeudeNr: 1103, Flaechenanteil: 1000},
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
+			{GebaeudeNr: 1101, Nutzflaeche: 1000},
+			{GebaeudeNr: 1108, Nutzflaeche: 1000},
+			{GebaeudeNr: 1103, Nutzflaeche: 1000},
 		}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
@@ -133,8 +133,8 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 	t.Run("BerechneEnergieverbrauch: Gebaeude ohne Zaehler", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
-			{GebaeudeNr: 1101, Flaechenanteil: 100},
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
+			{GebaeudeNr: 1101, Nutzflaeche: 100},
 		}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 3
@@ -145,14 +145,14 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Zaehler = kein berechenbarer Verbrauch)
 	})
 
-	t.Run("BerechneEnergieverbrauch: Flaechenanteil = 0", func(t *testing.T) {
+	t.Run("BerechneEnergieverbrauch: Nutzflaeche = 0", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
-			{GebaeudeNr: 1101, Flaechenanteil: 0},
-			{GebaeudeNr: 1160, Flaechenanteil: 0},
-			{GebaeudeNr: 1217, Flaechenanteil: 0},
-			{GebaeudeNr: 3206, Flaechenanteil: 0},
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
+			{GebaeudeNr: 1101, Nutzflaeche: 0},
+			{GebaeudeNr: 1160, Nutzflaeche: 0},
+			{GebaeudeNr: 1217, Nutzflaeche: 0},
+			{GebaeudeNr: 3206, Nutzflaeche: 0},
 		}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
@@ -160,14 +160,14 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)             // Normalfall wirft keine Errors
-		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Flaechenanteil = keine Emissionen)
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Nutzflaeche = keine Emissionen)
 	})
 
 	// Errortests
 	t.Run("BerechneEnergieverbrauch: idEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{}
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 0
 
@@ -180,7 +180,7 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 	t.Run("BerechneEnergieverbrauch: Jahr = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{}
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{}
 		var jahr int32 = 0
 		var idEnergieversorgung int32 = 1
 
@@ -193,8 +193,8 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 	t.Run("BerechneEnergieverbrauch: Gebaeude Nr = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
-			{GebaeudeNr: 0, Flaechenanteil: 10},
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
+			{GebaeudeNr: 0, Nutzflaeche: 10},
 		}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
@@ -205,11 +205,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		is.Equal(emissionen, 0.0)           // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
-	t.Run("BerechneEnergieverbrauch: negativer Flaechenanteil eingegeben", func(t *testing.T) {
+	t.Run("BerechneEnergieverbrauch: negativer Nutzflaeche eingegeben", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeudeFlaecheDaten := []structs.GebaeudeFlaecheAPI{
-			{GebaeudeNr: 1101, Flaechenanteil: -10},
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
+			{GebaeudeNr: 1101, Nutzflaeche: -10},
 		}
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
