@@ -19,14 +19,14 @@ func NutzerdatenFind(emailNutzer string) (structs.Nutzerdaten, error) {
 
 	cursor, err := collection.Find(ctx, bson.D{{"email", emailNutzer}}) //nolint:govet
 	if err != nil {
-		//Problem mit Datenbankanbindung
+		// Problem mit Datenbankanbindung
 		return structs.Nutzerdaten{}, err
 	}
 
 	cursor.Next(ctx)
 	err = cursor.Decode(&data)
 	if err != nil {
-		//Kein Dateneintrag gefunden
+		// Kein Dateneintrag gefunden
 		return structs.Nutzerdaten{}, err
 	}
 
@@ -34,22 +34,22 @@ func NutzerdatenFind(emailNutzer string) (structs.Nutzerdaten, error) {
 }
 
 /**
-Fügt einen Datenbankeintrag in Form des Nutzerdaten structs ein, dabei wird das Passwort gehashed
+Fuegt einen Datenbankeintrag in Form des Nutzerdaten structs ein, dabei wird das Passwort gehashed
 */
 func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
-	//Prüfe ob bereits ein Eintrag mit dieser Email existiert
+	// Pruefe ob bereits ein Eintrag mit dieser Email existiert
 	_, err := NutzerdatenFind(anmeldedaten.Username)
 
 	if err == nil {
-		//Eintrag mit dieser Email existiert bereits
+		// Eintrag mit dieser Email existiert bereits
 		return structs.ErrInsertExistingAccount
 	}
 
-	//Kein Eintrag vorhanden
+	// Kein Eintrag vorhanden
 	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
 	if err != nil {
 		return err //Bcrypt hashing error
@@ -61,7 +61,7 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 		Revision: 1,
 	})
 	if err != nil {
-		return err //DB Error
+		return err // DB Error
 	}
 
 	return nil
