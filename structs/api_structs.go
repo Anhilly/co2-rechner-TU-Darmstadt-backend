@@ -20,19 +20,6 @@ type UmfrageMitarbeiterRes struct {
 	ITGeraeteEmissionen    float64 `json:"itGeraeteEmissionen"`
 }
 
-type UmfrageHauptverantwortlicherReq struct {
-	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
-	AnzahlMitarbeiter int32              `json:"anzahlMitarbeiter"`
-	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
-}
-
-type UmfrageHauptverantwortlicherRes struct {
-	KaelteEmissionen    float64 `json:"kaelteEmissionen"`
-	WaermeEmissionen    float64 `json:"waermeEmissionen"`
-	StromEmissionen     float64 `json:"stromEmissionen"`
-	ITGeraeteEmissionen float64 `json:"itGeraeteEmissionen"`
-}
-
 // Struct zum Abfragen aller Gebaeudedaten
 type AllGebaeudeRes struct {
 	Gebaeude []int32 `json:"gebaeude"`
