@@ -59,6 +59,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
+	// TODO needs to be commented out if not used with user authentification to work properly
 	err = NutzerdatenAddUmfrageref(data.NutzerEmail, id)
 	if err != nil {
 		return primitive.NilObjectID, err

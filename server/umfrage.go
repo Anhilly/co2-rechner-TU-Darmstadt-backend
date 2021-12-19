@@ -6,6 +6,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
 	"net/http"
 )
@@ -14,8 +15,8 @@ func RouteUmfrage() chi.Router {
 	r := chi.NewRouter()
 
 	// Posts
-	r.Post("/mitarbeiter", PostMitarbeiter)
-	r.Post("/hauptverantwortlicher", PostHauptverantwortlicher)
+	//r.Post("/mitarbeiter", PostMitarbeiter)
+	r.Post("/insertUmfrage", PostInsertUmfrage)
 
 	// Get
 	r.Get("/gebaeude", GetAllGebaeude)
@@ -35,31 +36,42 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 }
 
 //Temporaere Funktion zum testen des Frontends
-func PostMitarbeiter(res http.ResponseWriter, req *http.Request) {
+//func PostMitarbeiter(res http.ResponseWriter, req *http.Request) {
+//	s, _ := ioutil.ReadAll(req.Body)
+//	umfrageReq := structs.UmfrageMitarbeiterReq{}
+//	umfrageRes := structs.UmfrageMitarbeiterRes{}
+//	json.Unmarshal(s, &umfrageReq)
+//	umfrageRes.DienstreisenEmissionen, _ = co2computation.BerechneDienstreisen(umfrageReq.Dienstreise)
+//	umfrageRes.PendelwegeEmissionen, _ = co2computation.BerechnePendelweg(umfrageReq.Pendelweg, umfrageReq.TageImBuero)
+//	umfrageRes.ITGeraeteEmissionen, _ = co2computation.BerechneITGeraete(umfrageReq.ITGeraete)
+//
+//	response, _ := json.Marshal(umfrageRes)
+//
+//	res.WriteHeader(http.StatusOK)
+//	res.Write(response)
+//}
+
+func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
-	umfrageReq := structs.UmfrageMitarbeiterReq{}
-	umfrageRes := structs.UmfrageMitarbeiterRes{}
+	umfrageReq := structs.InsertUmfrage{}
+	umfrageRes := structs.InsertUmfrageRes{}
 	json.Unmarshal(s, &umfrageReq)
-	umfrageRes.DienstreisenEmissionen, _ = co2computation.BerechneDienstreisen(umfrageReq.Dienstreise)
-	umfrageRes.PendelwegeEmissionen, _ = co2computation.BerechnePendelweg(umfrageReq.Pendelweg, umfrageReq.TageImBuero)
-	umfrageRes.ITGeraeteEmissionen, _ = co2computation.BerechneITGeraete(umfrageReq.ITGeraete)
 
-	response, _ := json.Marshal(umfrageRes)
+	var umfrageID primitive.ObjectID
 
-	res.WriteHeader(http.StatusOK)
-	res.Write(response)
-}
+	// TODO check if umfrage is valid before inserting
+	umfrageID, _ = database.UmfrageInsert(umfrageReq)
 
-//Temporaere Funktion zum testen des Frontends
-func PostHauptverantwortlicher(res http.ResponseWriter, req *http.Request) {
-	s, _ := ioutil.ReadAll(req.Body)
-	umfrageReq := structs.UmfrageHauptverantwortlicherReq{}
-	umfrageRes := structs.UmfrageHauptverantwortlicherRes{}
-	json.Unmarshal(s, &umfrageReq)
-	// TODO Jahr soll nicht hardcoded sein, sondern als parameter mitübergeben werden.
-	umfrageRes.WaermeEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 1)
-	umfrageRes.StromEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 2)
-	umfrageRes.KaelteEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, 2020, 3)
+	// return empty umfrage string if umfrageID is invalid
+	if umfrageID == primitive.NilObjectID {
+		umfrageRes.UmfrageID = ""
+	} else {
+		umfrageRes.UmfrageID = umfrageID.Hex()
+	}
+
+	umfrageRes.WaermeEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, umfrageReq.Jahr, 1)
+	umfrageRes.StromEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, umfrageReq.Jahr, 2)
+	umfrageRes.KaelteEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, umfrageReq.Jahr, 3)
 	umfrageRes.ITGeraeteEmissionen, _ = co2computation.BerechneITGeraete(umfrageReq.ITGeraete)
 
 	response, _ := json.Marshal(umfrageRes)
