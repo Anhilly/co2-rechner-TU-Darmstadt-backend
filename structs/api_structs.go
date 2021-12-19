@@ -38,6 +38,11 @@ type AllGebaeudeRes struct {
 	Gebaeude []int32 `json:"gebaeude"`
 }
 
+// Struct zum Abfragen ob Umfrage existiert
+type UmfrageID struct {
+	UmfrageID string `json:"umfrageID"`
+}
+
 // Structs für Request JSONs zum Hinzufuegen und Aendern von Daten der Datenbank
 type AddCO2Faktor struct {
 	IDEnergieversorgung int32 `json:"idEnergieversorgung"`
@@ -74,11 +79,19 @@ type InsertUmfrage struct {
 	NutzerEmail       string             `json:"nutzerEmail"`
 }
 
+type InsertUmfrageRes struct {
+	UmfrageID           string  `json:"umfrageID"`
+	KaelteEmissionen    float64 `json:"kaelteEmissionen"`
+	WaermeEmissionen    float64 `json:"waermeEmissionen"`
+	StromEmissionen     float64 `json:"stromEmissionen"`
+	ITGeraeteEmissionen float64 `json:"itGeraeteEmissionen"`
+}
+
 type InsertMitarbeiterUmfrage struct {
 	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`
 	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
-	ITGeraete   []UmfrageITGeraete   `json:"itGereate"`
+	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
 	IDUmfrage   primitive.ObjectID   `json:"idUmfrage"`
 }
 

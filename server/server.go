@@ -31,6 +31,7 @@ func StartServer() {
 	}))
 
 	r.Mount("/umfrage", RouteUmfrage())
+	r.Mount("/mitarbeiterUmfrage", RouteMitarbeiterUmfrage())
 	r.Mount("/db", RouteDB())
 	r.Mount("/auth", RouteAuthentication())
 
