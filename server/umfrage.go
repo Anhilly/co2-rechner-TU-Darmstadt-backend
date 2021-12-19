@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/co2computation"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
 	"io/ioutil"
@@ -12,10 +13,25 @@ import (
 func RouteUmfrage() chi.Router {
 	r := chi.NewRouter()
 
+	// Posts
 	r.Post("/mitarbeiter", PostMitarbeiter)
 	r.Post("/hauptverantwortlicher", PostHauptverantwortlicher)
 
+	// Get
+	r.Get("/gebaeude", GetAllGebaeude)
+
 	return r
+}
+
+// returns all gebaeude as []int32
+func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
+	gebaeudeRes := structs.AllGebaeudeRes{}
+
+	gebaeudeRes.Gebaeude, _ = database.GebaeudeAlleNr()
+	response, _ := json.Marshal(gebaeudeRes)
+
+	res.WriteHeader(http.StatusOK)
+	res.Write(response)
 }
 
 //Temporaere Funktion zum testen des Frontends

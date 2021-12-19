@@ -33,6 +33,11 @@ type UmfrageHauptverantwortlicherRes struct {
 	ITGeraeteEmissionen float64 `json:"itGeraeteEmissionen"`
 }
 
+// Struct zum Abfragen aller Gebaeudedaten
+type AllGebaeudeRes struct {
+	Gebaeude []int32 `json:"gebaeude"`
+}
+
 // Structs für Request JSONs zum Hinzufuegen und Aendern von Daten der Datenbank
 type AddCO2Faktor struct {
 	IDEnergieversorgung int32 `json:"idEnergieversorgung"`
