@@ -26,7 +26,7 @@ func errorResponse(res http.ResponseWriter, err error, statuscode int) {
 		Status: structs.ResponseError,
 		Data:   nil,
 		Error: structs.Error{
-			Code:    http.StatusBadRequest,
+			Code:    int32(statuscode),
 			Message: err.Error(),
 		},
 	})
