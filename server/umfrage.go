@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/co2computation"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
@@ -54,7 +53,7 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
 	umfrageReq := structs.InsertUmfrage{}
-	umfrageRes := structs.InsertUmfrageRes{}
+	umfrageRes := structs.UmfrageID{}
 	json.Unmarshal(s, &umfrageReq)
 
 	var umfrageID primitive.ObjectID
@@ -68,11 +67,6 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	} else {
 		umfrageRes.UmfrageID = umfrageID.Hex()
 	}
-
-	umfrageRes.WaermeEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, umfrageReq.Jahr, 1)
-	umfrageRes.StromEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, umfrageReq.Jahr, 2)
-	umfrageRes.KaelteEmissionen, _ = co2computation.BerechneEnergieverbrauch(umfrageReq.Gebaeude, umfrageReq.Jahr, 3)
-	umfrageRes.ITGeraeteEmissionen, _ = co2computation.BerechneITGeraete(umfrageReq.ITGeraete)
 
 	response, _ := json.Marshal(umfrageRes)
 
