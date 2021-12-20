@@ -14,14 +14,14 @@ func RouteMitarbeiterUmfrage() chi.Router {
 	r := chi.NewRouter()
 
 	// POST
-	r.Post("/exists", PostMitarbeiterUmfrageExists)
+	r.Post("/exists", PostUmfrageExists)
 	r.Post("/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
 
 	return r
 }
 
 // returns true if the given ID exists
-func PostMitarbeiterUmfrageExists(res http.ResponseWriter, req *http.Request) {
+func PostUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
 	umfrageExistsReq := structs.UmfrageID{}
 	umfrageExistsRes := structs.UmfrageID{}
