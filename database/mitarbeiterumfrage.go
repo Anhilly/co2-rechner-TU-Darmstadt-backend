@@ -15,7 +15,7 @@ func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, 
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
 
 	var data structs.MitarbeiterUmfrage
 	err := collection.FindOne(
@@ -23,7 +23,7 @@ func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, 
 		bson.D{{"_id", id}},
 	).Decode(&data)
 	if err != nil {
-		return structs.MitarbeiterUmfrage{ID: primitive.NilObjectID}, err
+		return structs.MitarbeiterUmfrage{}, err
 	}
 
 	return data, nil

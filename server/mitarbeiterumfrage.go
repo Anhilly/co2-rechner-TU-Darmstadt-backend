@@ -30,8 +30,8 @@ func PostMitarbeiterUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	requestedUmfrageID, _ = primitive.ObjectIDFromHex(umfrageExistsReq.UmfrageID)
 
-	var foundUmfrage structs.MitarbeiterUmfrage
-	foundUmfrage, _ = database.MitarbeiterUmfrageFind(requestedUmfrageID)
+	var foundUmfrage structs.Umfrage
+	foundUmfrage, _ = database.UmfrageFind(requestedUmfrageID)
 
 	// return empty string if id is nil
 	if foundUmfrage.ID == primitive.NilObjectID {
