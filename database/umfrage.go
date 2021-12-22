@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -37,6 +38,12 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
+	//Pruefe ob Nutzer authentifiziert ist
+	err := server.Authenticate(data.Hauptverantwortlicher.Username, data.Hauptverantwortlicher.Sessiontoken)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
 	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	insertedDoc, err := collection.InsertOne(
@@ -60,7 +67,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 	}
 
 	// TODO needs to be commented out if not used with user authentification to work properly
-	err = NutzerdatenAddUmfrageref(data.NutzerEmail, id)
+	err = NutzerdatenAddUmfrageref(data.Hauptverantwortlicher.Username, id)
 	if err != nil {
 		return primitive.NilObjectID, err
 	}
