@@ -59,11 +59,17 @@ type InsertGebaeude struct {
 }
 
 type InsertUmfrage struct {
-	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
-	Jahr              int32              `json:"jahr"`
-	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
-	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
-	NutzerEmail       string             `json:"nutzerEmail"`
+	Mitarbeiteranzahl     int32              `json:"mitarbeiteranzahl"`
+	Jahr                  int32              `json:"jahr"`
+	Gebaeude              []UmfrageGebaeude  `json:"gebaeude"`
+	ITGeraete             []UmfrageITGeraete `json:"itGeraete"`
+	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
+}
+
+// Nutzer Authentifikation Token
+type AuthToken struct {
+	Username     string `json:"username"`
+	Sessiontoken string `json:"sessiontoken"`
 }
 
 type InsertUmfrageRes struct {
