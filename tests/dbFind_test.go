@@ -29,6 +29,7 @@ func TestFind(t *testing.T) {
 	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
+	t.Run("TestMitarbeiterUmfrageFindMany", TestMitarbeiterUmfrageFindMany)
 }
 
 func TestTester(t *testing.T) {
@@ -696,34 +697,55 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 			}}) // Überprüfung des zurückgelieferten Elements
 	})
 
-	/*t.Run("MitarbeiterUmfrageFindMany: mehrere IDs", func(t *testing.T) {
+	t.Run("MitarbeiterUmfrageFindMany: mehrere IDs", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var id primitive.ObjectID
-		err := id.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		dir, err := database.CreateDump("MitarbeiterUmfrageFindMany")
 		is.NoErr(err)
 
-		ids := []primitive.ObjectID{id}
+		var id primitive.ObjectID
+		err = id.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		is.NoErr(err)
+
+		var idUmfrage primitive.ObjectID
+		err = idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+
+		id2, err := database.MitarbeiterUmfrageInsert(structs.InsertMitarbeiterUmfrage{IDUmfrage: idUmfrage})
+		is.NoErr(err)
+
+		ids := []primitive.ObjectID{id, id2}
 
 		data, err := database.MitarbeiterUmfrageFindMany(ids)
 
 		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(data,
-			[]structs.MitarbeiterUmfrage{{
-				ID: id,
-				Pendelweg: []structs.UmfragePendelweg{
-					{IDPendelweg: 1, Strecke: 123, Personenanzahl: 1},
-				},
-				TageImBuero: 7,
-				Dienstreise: []structs.UmfrageDienstreise{
-					{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321},
-				},
-				ITGeraete: []structs.UmfrageITGeraete{
-					{IDITGeraete: 3, Anzahl: 45},
-				},
-				Revision: 1,
-			}}) // Überprüfung des zurückgelieferten Elements
-	})*/
+		is.Equal(data, []structs.MitarbeiterUmfrage{{
+			ID: id,
+			Pendelweg: []structs.UmfragePendelweg{
+				{IDPendelweg: 1, Strecke: 123, Personenanzahl: 1},
+			},
+			TageImBuero: 7,
+			Dienstreise: []structs.UmfrageDienstreise{
+				{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 3, Anzahl: 45},
+			},
+			Revision: 1,
+		},
+			{
+				ID:          id2,
+				Pendelweg:   nil,
+				TageImBuero: 0,
+				Dienstreise: nil,
+				ITGeraete:   nil,
+				Revision:    1,
+			},
+		}) // Überprüfung des zurückgelieferten Elements
+
+		err = database.RestoreDump(dir)
+		is.NoErr(err)
+	})
 
 	// Errortests
 	t.Run("MitarbeiterUmfrageFind: zu wenige Dokumente", func(t *testing.T) {
