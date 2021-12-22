@@ -29,6 +29,34 @@ func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, 
 	return data, nil
 }
 
+func MitarbeiterUmfrageFindMany(ids []primitive.ObjectID) ([]structs.MitarbeiterUmfrage, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{{"_id",
+			bson.D{{"$in", ids}}}},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var data []structs.MitarbeiterUmfrage
+	err = cursor.All(ctx, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ids) != len(data) {
+		return nil, structs.ErrDokumenteNichtGefunden
+	}
+
+	return data, nil
+}
+
 /**
 Die Funktion fügt eine neue Mitarbeiterumfrage in die Datenbank ein und liefert die ObjectId mit.
 */
