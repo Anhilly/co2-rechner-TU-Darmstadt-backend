@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/co2computation"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
@@ -54,18 +55,84 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// hole Umfragen aus der Datenbank
 	umfrage, err := database.UmfrageFind(umfrageID)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
-	log.Println(umfrage)
+	mitarbeiterumfragen, err := database.MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	// Auswertung der Daten
+	var auswertung structs.AuswertungRes
+
+	// allgemeine Information der Umfrage
+	auswertung.ID = umfrage.ID
+	auswertung.Jahr = umfrage.Jahr
+	auswertung.Mitarbeiteranzahl = umfrage.Mitarbeiteranzahl
+
+	// Energie	TODO: Wie damit umgehen, falls kein Energiefaktor für gegebenes Jahr
+	auswertung.EmissionenWaerme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	auswertung.EmissionenStrom, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungStrom)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	auswertung.EmissionenKaelte, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungKaelte)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	// andere Emissionen
+	emission, err := co2computation.BerechneITGeraete(umfrage.ITGeraete)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	auswertung.EmissionenITGeraete += emission
+
+	for _, mitarbeiterumfrage := range mitarbeiterumfragen {
+		// IT-Geraete
+		emission, err := co2computation.BerechneITGeraete(mitarbeiterumfrage.ITGeraete)
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
+		auswertung.EmissionenITGeraete += emission
+
+		// Dienstreisen
+		emission, err = co2computation.BerechneDienstreisen(mitarbeiterumfrage.Dienstreise)
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
+		auswertung.EmissionenDienstreisen += emission
+
+		// Pendelwege
+		emission, err = co2computation.BerechnePendelweg(mitarbeiterumfrage.Pendelweg, mitarbeiterumfrage.TageImBuero)
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
+		auswertung.EmissionenPendelwege += emission
+	}
 
 	// Response
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,
-		Data:   []int32{umfrage.Jahr, umfrage.Mitarbeiteranzahl, 200},
+		Data:   auswertung,
 		Error:  nil,
 	})
 	if err != nil {

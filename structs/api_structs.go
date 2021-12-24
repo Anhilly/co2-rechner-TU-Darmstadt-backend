@@ -87,6 +87,21 @@ type AuswertungReq struct {
 	UmfrageIDTemp primitive.ObjectID `json:"umfrageID"`
 }
 
+type AuswertungRes struct {
+	// Information von Umfrage
+	ID                primitive.ObjectID `json:"id"`
+	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
+	Jahr              int32              `json:"jahr"`
+
+	// Berechnete Werte fuer Auswertung
+	EmissionenWaerme       float64 `json:"emissionenWaerme"`
+	EmissionenStrom        float64 `json:"emissionenStrom"`
+	EmissionenKaelte       float64 `json:"emissionenKaelte"`
+	EmissionenITGeraete    float64 `json:"emissionenITGeraete"`
+	EmissionenDienstreisen float64 `json:"emissionenDienstreisen"`
+	EmissionenPendelwege   float64 `json:"emissionenPendelwege"`
+}
+
 // Requests zur Authentifizierung und Abmeldung
 type AuthReq struct { // wird fuer Anmeldung und Registrierung verwendet
 	Username string `json:"username"`
