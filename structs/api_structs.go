@@ -82,6 +82,11 @@ type InsertMitarbeiterUmfrage struct {
 	IDUmfrage   primitive.ObjectID   `json:"idUmfrage"`
 }
 
+// Request fuer Umfragenauswertung
+type AuswertungReq struct {
+	UmfrageIDTemp primitive.ObjectID `json:"umfrageID"`
+}
+
 // Requests zur Authentifizierung und Abmeldung
 type AuthReq struct { // wird fuer Anmeldung und Registrierung verwendet
 	Username string `json:"username"`
