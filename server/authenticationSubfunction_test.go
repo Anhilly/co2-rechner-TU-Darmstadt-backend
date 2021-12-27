@@ -32,7 +32,7 @@ func TestcheckValidSessionToken(t *testing.T) { //nolint:funlen
 		is := is.NewRelaxed(t)
 
 		var email = "test1"
-		generiereSessionToken(email)
+		GeneriereSessionToken(email)
 		err := checkValidSessionToken(email)
 		is.NoErr(err) // Normalfall wirft keine Errors
 	})
@@ -41,7 +41,7 @@ func TestcheckValidSessionToken(t *testing.T) { //nolint:funlen
 		is := is.NewRelaxed(t)
 
 		var email = "name@tu-darmstadt.de"
-		generiereSessionToken(email)
+		GeneriereSessionToken(email)
 		err := checkValidSessionToken(email)
 		is.NoErr(err) // Normalfall wirft keine Errors
 	})
@@ -76,7 +76,7 @@ func TestloescheSessionToken(t *testing.T) { //nolint:funlen
 		is := is.NewRelaxed(t)
 
 		var email = "name@stud.tu-darmstadt.de"
-		generiereSessionToken(email)
+		GeneriereSessionToken(email)
 		err := loescheSessionToken(email)
 		is.NoErr(err) // Nomalfall wirft keinen Fehler
 	})
@@ -107,20 +107,20 @@ func TestgeneriereSessionToken(t *testing.T) { //nolint:funlen
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("generiereSessionToken: email='felix@stud.tu-darmstadt.de'", func(t *testing.T) {
+	t.Run("GeneriereSessionToken: email='felix@stud.tu-darmstadt.de'", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var email = "felix@stud.tu-darmstadt.de"
-		token := generiereSessionToken(email)
+		token := GeneriereSessionToken(email)
 		is.Equal(token, authMap[email].Sessiontoken)
 	})
 
-	t.Run("generiereSessionToken: email='repeatedEntry'", func(t *testing.T) {
+	t.Run("GeneriereSessionToken: email='repeatedEntry'", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var email = "repeatedEntry"
-		generiereSessionToken(email)
-		token := generiereSessionToken(email) // Ueberschreibe alten Token
+		GeneriereSessionToken(email)
+		token := GeneriereSessionToken(email) // Ueberschreibe alten Token
 		is.Equal(token, authMap[email].Sessiontoken)
 	})
 }
@@ -133,7 +133,7 @@ func TestAuthenticate(t *testing.T) { //nolint:funlen
 		is := is.NewRelaxed(t)
 
 		var email = "anton@tobi.com"
-		token := generiereSessionToken(email)
+		token := GeneriereSessionToken(email)
 		err := Authenticate(email, token)
 
 		is.NoErr(err) // Im Normalfall wird kein Fehler geworfen
@@ -168,7 +168,7 @@ func TestAuthenticate(t *testing.T) { //nolint:funlen
 		var email = "anton@tobi.com"
 		var token = "falscherToken"
 
-		generiereSessionToken(email)
+		GeneriereSessionToken(email)
 		err := Authenticate(email, token)
 		is.Equal(err, structs.ErrFalscherSessiontoken)
 	})
