@@ -54,11 +54,27 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
 	umfrageReq := structs.InsertUmfrage{}
 	umfrageRes := structs.UmfrageID{}
-	json.Unmarshal(s, &umfrageReq)
+
+	err := json.Unmarshal(s, &umfrageReq)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
 
 	var umfrageID primitive.ObjectID
 
 	// TODO check if umfrage is valid before inserting
+	err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
+	if err != nil {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusUnauthorized,
+			Message: "Ungueltige Anmeldedaten",
+		}, http.StatusUnauthorized)
+	}
 	umfrageID, _ = database.UmfrageInsert(umfrageReq)
 
 	// return empty umfrage string if umfrageID is invalid
@@ -71,5 +87,5 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	response, _ := json.Marshal(umfrageRes)
 
 	res.WriteHeader(http.StatusOK)
-	res.Write(response)
+	_, _ = res.Write(response)
 }
