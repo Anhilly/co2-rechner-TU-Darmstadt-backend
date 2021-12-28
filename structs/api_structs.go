@@ -92,6 +92,10 @@ type AbmeldungReq struct {
 	Username string `json:"username"`
 }
 
+type PruefeSessionReq struct {
+	Username string `json:"username"`
+}
+
 // Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
 type Response struct {
 	Status string      `json:"status"`
