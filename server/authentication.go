@@ -32,6 +32,7 @@ func RouteAuthentication() chi.Router {
 	r.Post("/anmeldung", PostAnmeldung)
 	r.Post("/registrierung", PostRegistrierung)
 	r.Delete("/abmeldung", DeleteAbmeldung)
+	r.Post("/pruefeSession", PostPruefeSession)
 
 	return r
 }
@@ -118,6 +119,41 @@ func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code 
 		res.WriteHeader(http.StatusInternalServerError)
 	}
 	_, _ = res.Write(response)
+}
+
+func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+	sessionReq := structs.PruefeSessionReq{}
+	err = json.Unmarshal(s, &sessionReq)
+
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+	//Falls kein valider Session Token vorhanden.
+	if checkValidSessionToken(sessionReq.Username) != nil {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	} else {
+		//Falls ein valider Session Token vorhanden ist
+		sendResponse(res, true, nil, 200)
+		return
+	}
 }
 
 /**
