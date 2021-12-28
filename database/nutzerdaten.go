@@ -77,6 +77,7 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
 		Email:    anmeldedaten.Username,
 		Passwort: string(passwordhash),
+		Rolle:    structs.IDRolleNutzer,
 		Revision: 1,
 	})
 	if err != nil {

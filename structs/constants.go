@@ -26,6 +26,11 @@ const ( // nach IDs in der Datenbank
 	IDEnergieversorgungKaelte int32 = 3
 )
 
+const ( //nach IDs in der Datenbank
+	IDRolleNutzer int32 = 0
+	IDRolleAdmin  int32 = 1
+)
+
 const ( // nach IDs in der Datenbank
 	IDDienstreiseBahn     int32 = 1
 	IDDienstreiseAuto     int32 = 2
