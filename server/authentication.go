@@ -143,7 +143,7 @@ func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	//Falls kein valider Session Token vorhanden.
-	if checkValidSessionToken(sessionReq.Username) != nil {
+	if Authenticate(sessionReq.Username, sessionReq.Sessiontoken) != nil {
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusBadRequest,
 			Message: err.Error(),
