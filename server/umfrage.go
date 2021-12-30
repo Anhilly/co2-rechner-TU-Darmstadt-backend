@@ -20,6 +20,9 @@ func RouteUmfrage() chi.Router {
 	// Get
 	r.Get("/gebaeude", GetAllGebaeude)
 
+	// Delete
+	r.Delete("/deleteUmfrage", DeleteUmfrage)
+
 	return r
 }
 
@@ -72,4 +75,12 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 
 	res.WriteHeader(http.StatusOK)
 	res.Write(response)
+}
+
+/**
+Deletes an given Umfrage
+*/
+
+func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
+
 }
