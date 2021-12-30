@@ -66,6 +66,12 @@ type InsertUmfrage struct {
 	NutzerEmail       string             `json:"nutzerEmail"`
 }
 
+// Nutzer Authentifikation Token
+type AuthToken struct {
+	Username     string `json:"username"`
+	Sessiontoken string `json:"sessiontoken"`
+}
+
 type InsertUmfrageRes struct {
 	UmfrageID           string  `json:"umfrageID"`
 	KaelteEmissionen    float64 `json:"kaelteEmissionen"`
@@ -80,6 +86,11 @@ type InsertMitarbeiterUmfrage struct {
 	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
 	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
 	IDUmfrage   primitive.ObjectID   `json:"idUmfrage"`
+}
+
+type DeleteUmfrage struct {
+	UmfrageID             primitive.ObjectID `json:"umfrageID"`
+	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
 }
 
 // Requests zur Authentifizierung und Abmeldung
