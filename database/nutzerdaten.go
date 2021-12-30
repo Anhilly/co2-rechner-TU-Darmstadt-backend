@@ -75,9 +75,10 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 		return err // Bcrypt hashing error
 	}
 	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
-		Email:    anmeldedaten.Username,
-		Passwort: string(passwordhash),
-		Revision: 1,
+		Email:      anmeldedaten.Username,
+		Passwort:   string(passwordhash),
+		Revision:   1,
+		UmfrageRef: []primitive.ObjectID{},
 	})
 	if err != nil {
 		return err // DB Error
