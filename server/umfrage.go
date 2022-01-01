@@ -78,9 +78,39 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 }
 
 /**
-Deletes an given Umfrage
+Loescht eine uebermittelte Umfrage, gegeben durch die UmfrageID
 */
 
 func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
+	s, _ := ioutil.ReadAll(req.Body)
+	umfrageReq := structs.DeleteUmfrage{}
 
+	err := json.Unmarshal(s, &umfrageReq)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// Pruefe ob Nutzer authentifiziert ist, dann ob er die zu loeschende Umfrage besitzt
+	err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
+	if err != nil {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusUnauthorized,
+			Message: "Ungueltige Anmeldedaten",
+		}, http.StatusUnauthorized)
+	}
+
+	err = database.UmfrageDelete(umfrageReq.UmfrageID)
+	if err != nil {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusNotFound,
+			Message: "Datenbankeintrag nicht gefunden",
+		}, http.StatusNotFound)
+	}
+
+	sendResponse(res, true, nil, http.StatusOK)
 }
