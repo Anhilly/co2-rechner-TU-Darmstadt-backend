@@ -90,3 +90,56 @@ func UmfrageAddMitarbeiterUmfrageRef(idUmfrage primitive.ObjectID, referenz prim
 
 	return nil
 }
+
+/**
+Die Funktion loescht eine Umfrage mit der ObjectID und alle assoziierten Mitarbeiterumfragen aus der Datenbank,
+falls der Eintrag existiert, liefert Fehler oder nil zurueck
+*/
+func UmfrageDelete(umfrageID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	//Loesche assoziierte Mitarbeiterumfragen
+	eintrag, err := UmfrageFind(umfrageID)
+	if err != nil {
+		return err
+	}
+
+	for _, mitarbeiterumfrage := range eintrag.MitarbeiterUmfrageRef {
+		err = UmfrageDeleteMitarbeiterUmfrage(mitarbeiterumfrage)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Loesche Eintrag aus Umfragen
+	anzahl, err := collection.DeleteOne(
+		ctx,
+		bson.M{"_id": umfrageID})
+
+	if anzahl.DeletedCount == 0 {
+		return structs.ErrObjectIDNichtGefunden
+	}
+	return err
+}
+
+/**
+Die Funktion loescht eine Mitarbeiterumfrage mit der UmfrageID
+*/
+func UmfrageDeleteMitarbeiterUmfrage(umfrageID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
+
+	anzahl, err := collection.DeleteOne(
+		ctx,
+		bson.M{"_id": umfrageID})
+
+	if anzahl.DeletedCount == 0 {
+		return structs.ErrObjectIDNichtGefunden
+	}
+	return err
+}
