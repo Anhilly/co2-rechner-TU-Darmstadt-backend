@@ -75,6 +75,7 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.ID = umfrage.ID
 	auswertung.Jahr = umfrage.Jahr
 	auswertung.Mitarbeiteranzahl = umfrage.Mitarbeiteranzahl
+	auswertung.Umfragenanzahl = int32(len(mitarbeiterumfragen))
 
 	// Energie	TODO: Wie damit umgehen, falls kein Energiefaktor für gegebenes Jahr
 	auswertung.EmissionenWaerme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)

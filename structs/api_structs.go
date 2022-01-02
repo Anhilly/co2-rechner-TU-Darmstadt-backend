@@ -92,6 +92,7 @@ type AuswertungRes struct {
 	ID                primitive.ObjectID `json:"id"`
 	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
 	Jahr              int32              `json:"jahr"`
+	Umfragenanzahl    int32              `json:"umfragenanzahl"`
 
 	// Berechnete Werte fuer Auswertung
 	EmissionenWaerme       float64 `json:"emissionenWaerme"`
