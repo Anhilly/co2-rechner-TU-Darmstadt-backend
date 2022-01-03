@@ -41,6 +41,7 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 		Data:   gebaeudeRes,
 		Error:  nil,
 	})
+	
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -50,12 +51,27 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	_, _ = res.Write(response)
 }
 
-// GetAllUmfragen returns all Umfragen as []db_structs.Umfrage
+// GetAllUmfragen returns all Umfragen as structs.AlleUmfragen
 func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
 	umfragenRes := structs.AlleUmfragen{}
 
-	umfragenRes.Umfragen, _ = database.AlleUmfragen()
-	response, _ := json.Marshal(umfragenRes)
+	var err error
+	umfragenRes.Umfragen, err = database.AlleUmfragen()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   umfragenRes,
+		Error:  nil,
+	})
+
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
 	res.WriteHeader(http.StatusOK)
 	_, _ = res.Write(response)
