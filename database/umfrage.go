@@ -5,7 +5,43 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+/**
+Funktion gibt alle Umfragen in der Datenbank zurueck.
+*/
+func AlleUmfragen() ([]structs.Umfrage, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{},
+		options.Find().SetProjection(bson.M{"_id": 0, "nr": 1}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []struct {
+		umfrage structs.Umfrage
+	}
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		return nil, err
+	}
+
+	var umfragen []structs.Umfrage
+	for _, elem := range results {
+		umfragen = append(umfragen, elem.umfrage)
+	}
+
+	// TODO test
+	return umfragen, nil
+}
 
 /**
 Die Funktion liefert einen Umfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,

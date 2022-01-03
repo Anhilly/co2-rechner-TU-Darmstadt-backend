@@ -19,11 +19,12 @@ func RouteUmfrage() chi.Router {
 
 	// Get
 	r.Get("/gebaeude", GetAllGebaeude)
+	r.Get("/alleUmfragen", GetAllUmfragen)
 
 	return r
 }
 
-// returns all gebaeude as []int32
+// GetAllGebaeude returns all gebaeude as []int32
 func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	gebaeudeRes := structs.AllGebaeudeRes{}
 
@@ -31,7 +32,18 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	response, _ := json.Marshal(gebaeudeRes)
 
 	res.WriteHeader(http.StatusOK)
-	res.Write(response)
+	_, _ = res.Write(response)
+}
+
+// GetAllUmfragen returns all Umfragen as []db_structs.Umfrage
+func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
+	umfragenRes := structs.AlleUmfragen{}
+
+	umfragenRes.Umfragen, _ = database.AlleUmfragen()
+	response, _ := json.Marshal(umfragenRes)
+
+	res.WriteHeader(http.StatusOK)
+	_, _ = res.Write(response)
 }
 
 //Temporaere Funktion zum testen des Frontends

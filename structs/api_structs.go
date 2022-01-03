@@ -66,6 +66,10 @@ type InsertUmfrage struct {
 	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
 }
 
+type AlleUmfragen struct {
+	Umfragen []Umfrage `json:"umfragen"`
+}
+
 // Nutzer Authentifikation Token
 type AuthToken struct {
 	Username     string `json:"username"`
