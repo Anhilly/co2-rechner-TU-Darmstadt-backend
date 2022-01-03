@@ -25,7 +25,6 @@ func RouteUmfrage() chi.Router {
 	return r
 }
 
-// GetAllGebaeude returns all gebaeude as []int32
 func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	gebaeudeRes := structs.AllGebaeudeRes{}
 
@@ -35,13 +34,12 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
-
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,
 		Data:   gebaeudeRes,
 		Error:  nil,
 	})
-	
+
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -76,22 +74,6 @@ func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 	_, _ = res.Write(response)
 }
-
-//Temporaere Funktion zum testen des Frontends
-//func PostMitarbeiter(res http.ResponseWriter, req *http.Request) {
-//	s, _ := ioutil.ReadAll(req.Body)
-//	umfrageReq := structs.UmfrageMitarbeiterReq{}
-//	umfrageRes := structs.UmfrageMitarbeiterRes{}
-//	json.Unmarshal(s, &umfrageReq)
-//	umfrageRes.DienstreisenEmissionen, _ = co2computation.BerechneDienstreisen(umfrageReq.Dienstreise)
-//	umfrageRes.PendelwegeEmissionen, _ = co2computation.BerechnePendelweg(umfrageReq.Pendelweg, umfrageReq.TageImBuero)
-//	umfrageRes.ITGeraeteEmissionen, _ = co2computation.BerechneITGeraete(umfrageReq.ITGeraete)
-//
-//	response, _ := json.Marshal(umfrageRes)
-//
-//	res.WriteHeader(http.StatusOK)
-//	res.Write(response)
-//}
 
 // PostInsertUmfrage inserts the received Umfrage and returns the ID of the Umfrage-Entry
 func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
