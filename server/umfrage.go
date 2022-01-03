@@ -17,12 +17,84 @@ func RouteUmfrage() chi.Router {
 	// Posts
 	//r.Post("/mitarbeiter", PostMitarbeiter)
 	r.Post("/insertUmfrage", PostInsertUmfrage)
+	r.Post("/updateUmfrage", PostUpdateUmfrage)
 
 	// Get
 	r.Get("/gebaeude", GetAllGebaeude)
 	r.Get("/alleUmfragen", GetAllUmfragen)
 
 	return r
+}
+
+// PostUpdateUmfrage updates the given
+func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	umfrageReq := structs.UpdateUmfrageReq{}
+	umfrageRes := structs.UmfrageID{}
+
+	err = json.Unmarshal(s, &umfrageReq)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostUpdateUmfrage")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	// TODO check if umfrage is valid before updating
+
+	// TODO authentication does not work here? says email would not have a valid session token?
+	//err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
+	//if err != nil {
+	//	sendResponse(res, false, structs.Error{
+	//		Code:    http.StatusUnauthorized,
+	//		Message: "Ungueltige Anmeldedaten",
+	//	}, http.StatusUnauthorized)
+	//}
+
+	umfrageID, err := database.UmfrageUpdate(umfrageReq)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Fatalln(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	// return empty umfrage string if umfrageID is invalid
+	if umfrageID == primitive.NilObjectID {
+		umfrageRes.UmfrageID = ""
+	} else {
+		umfrageRes.UmfrageID = umfrageID.Hex()
+	}
+
+	// Response
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   umfrageRes,
+		Error:  nil,
+	})
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	_, _ = res.Write(response)
 }
 
 func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {

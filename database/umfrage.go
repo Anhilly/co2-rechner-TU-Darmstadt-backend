@@ -60,6 +60,41 @@ func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 /**
 Die Funktion fuegt eine Umfrage in die Datenbank ein und liefert die ObjectId der Umfrage zurueck.
 */
+func UmfrageUpdate(data structs.UpdateUmfrageReq) (primitive.ObjectID, error) {
+	// TODO test
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	var updatedDoc structs.Umfrage
+	var umfrageID, err = primitive.ObjectIDFromHex(data.UmfrageID)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	err = collection.FindOneAndUpdate(
+		ctx,
+		bson.D{{"_id", umfrageID}},
+		bson.D{{"$set",
+			bson.D{
+				{"mitarbeiteranzahl", data.Mitarbeiteranzahl},
+				{"jahr", data.Jahr},
+				{"gebaeude", data.Gebaeude},
+				{"itGeraete", data.ITGeraete},
+				// TODO also update "revision"-field?
+			},
+		}},
+	).Decode(&updatedDoc)
+
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	return updatedDoc.ID, nil
+}
+
+// UmfrageInsert Die Funktion fuegt eine Umfrage in die Datenbank ein und liefert die ObjectId der Umfrage zurueck.
 func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
