@@ -17,8 +17,51 @@ func RouteMitarbeiterUmfrage() chi.Router {
 	// POST
 	r.Post("/exists", PostUmfrageExists)
 	r.Post("/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
+	r.Post("/mitarbeiterUmfrageForUmfrage", PostMitarbeiterUmfrageForUmfrage)
 
 	return r
+}
+
+func PostMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	mitarbeiterUmfragenReq := structs.UmfrageID{}
+	mitarbeiterUmfragenRes := structs.AlleMitarbeiterUmfragenForUmfrage{}
+
+	err = json.Unmarshal(s, &mitarbeiterUmfragenReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	requestedUmfrageID, err := primitive.ObjectIDFromHex(mitarbeiterUmfragenReq.UmfrageID)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	mitarbeiterUmfragenRes.MitarbeiterUmfragen, err = database.MitarbeiterUmfrageFindForUmfrage(requestedUmfrageID)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   mitarbeiterUmfragenRes,
+		Error:  nil,
+	})
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	_, _ = res.Write(response)
 }
 
 // PostUmfrageExists returns true if the given ID exists

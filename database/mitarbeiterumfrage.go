@@ -8,6 +8,44 @@ import (
 )
 
 /**
+Die Funktion liefert einen Array aus Umfrage structs aus der Datenbank zurueck, die mit der gegebenen Umfrage(ID) assoziiert sind.
+*/
+func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.MitarbeiterUmfrage, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	// find umfrage for given id
+	umfrage, err := UmfrageFind(umfrageID)
+	if err != nil {
+		return nil, err
+	}
+
+	// get ref ids from umfrage
+	umfrageRefs := umfrage.MitarbeiterUmfrageRef
+
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
+
+	//query := bson.M{"_id": bson.M{"$in": umfrageRefs}}
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{{"_id", bson.M{"$in": umfrageRefs}}},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []structs.MitarbeiterUmfrage
+
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+/**
 Die Funktion liefert einen Umfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
 falls ein Document vorhanden ist.
 */

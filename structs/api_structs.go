@@ -70,6 +70,10 @@ type AlleUmfragen struct {
 	Umfragen []Umfrage `json:"umfragen"`
 }
 
+type AlleMitarbeiterUmfragenForUmfrage struct {
+	MitarbeiterUmfragen []MitarbeiterUmfrage `json:"mitarbeiterUmfragen"`
+}
+
 // Nutzer Authentifikation Token
 type AuthToken struct {
 	Username     string `json:"username"`
