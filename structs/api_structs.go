@@ -98,6 +98,16 @@ type UpdateUmfrageReq struct {
 	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
 }
 
+type UpdateMitarbeiterUmfrageReq struct {
+	UmfrageID             string               `json:"umfrageID"`
+	Pendelweg             []UmfragePendelweg   `json:"pendelweg"`
+	TageImBuero           int32                `json:"tageImBuero"`
+	Dienstreise           []UmfrageDienstreise `json:"dienstreise"`
+	ITGeraete             []UmfrageITGeraete   `json:"itGeraete"`
+	Revision              int32                `json:"revision"`
+	Hauptverantwortlicher AuthToken            `json:"hauptverantwortlicher"`
+}
+
 type InsertMitarbeiterUmfrage struct {
 	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`

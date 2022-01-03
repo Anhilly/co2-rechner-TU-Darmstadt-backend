@@ -7,6 +7,41 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// MitarbeiterUmfrageUpdate Updates a umfrage with value given in data and returns the ID of the updated Umfrage
+func MitarbeiterUmfrageUpdate(data structs.UpdateMitarbeiterUmfrageReq) (primitive.ObjectID, error) {
+	// TODO Tests
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
+
+	var updatedDoc structs.Umfrage
+	var umfrageID, err = primitive.ObjectIDFromHex(data.UmfrageID)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	err = collection.FindOneAndUpdate(
+		ctx,
+		bson.D{{"_id", umfrageID}},
+		bson.D{{"$set",
+			bson.D{
+				{"pendelweg", data.Pendelweg},
+				{"tageImBuero", data.TageImBuero},
+				{"dienstreise", data.Dienstreise},
+				{"itGeraete", data.ITGeraete},
+				// TODO also update "revision"-field?
+			},
+		}},
+	).Decode(&updatedDoc)
+
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	return updatedDoc.ID, nil
+}
+
 /**
 Die Funktion liefert einen Array aus Umfrage structs aus der Datenbank zurueck, die mit der gegebenen Umfrage(ID) assoziiert sind.
 */
@@ -24,8 +59,6 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 	umfrageRefs := umfrage.MitarbeiterUmfrageRef
 
 	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
-
-	//query := bson.M{"_id": bson.M{"$in": umfrageRefs}}
 
 	cursor, err := collection.Find(
 		ctx,

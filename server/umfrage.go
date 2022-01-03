@@ -26,7 +26,7 @@ func RouteUmfrage() chi.Router {
 	return r
 }
 
-// PostUpdateUmfrage updates the given
+// PostUpdateUmfrage updates an umfrage with received values
 func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {

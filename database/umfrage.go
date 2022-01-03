@@ -57,11 +57,9 @@ func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 	return data, nil
 }
 
-/**
-Die Funktion fuegt eine Umfrage in die Datenbank ein und liefert die ObjectId der Umfrage zurueck.
-*/
+// UmfrageUpdate Updates a umfrage with value given in data and returns the ID of the updated Umfrage
 func UmfrageUpdate(data structs.UpdateUmfrageReq) (primitive.ObjectID, error) {
-	// TODO test
+	// TODO Tests
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
