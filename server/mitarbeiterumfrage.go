@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -20,18 +21,34 @@ func RouteMitarbeiterUmfrage() chi.Router {
 	return r
 }
 
-// returns true if the given ID exists
+// PostUmfrageExists returns true if the given ID exists
 func PostUmfrageExists(res http.ResponseWriter, req *http.Request) {
-	s, _ := ioutil.ReadAll(req.Body)
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
 	umfrageExistsReq := structs.UmfrageID{}
 	umfrageExistsRes := structs.UmfrageID{}
-	json.Unmarshal(s, &umfrageExistsReq)
 
-	var requestedUmfrageID primitive.ObjectID
-	requestedUmfrageID, _ = primitive.ObjectIDFromHex(umfrageExistsReq.UmfrageID)
+	err = json.Unmarshal(s, &umfrageExistsReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
 
-	var foundUmfrage structs.Umfrage
-	foundUmfrage, _ = database.UmfrageFind(requestedUmfrageID)
+	requestedUmfrageID, err := primitive.ObjectIDFromHex(umfrageExistsReq.UmfrageID)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	foundUmfrage, err := database.UmfrageFind(requestedUmfrageID)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
 	// return empty string if id is nil
 	if foundUmfrage.ID == primitive.NilObjectID {
@@ -40,20 +57,52 @@ func PostUmfrageExists(res http.ResponseWriter, req *http.Request) {
 		umfrageExistsRes.UmfrageID = foundUmfrage.ID.Hex()
 	}
 
-	response, _ := json.Marshal(umfrageExistsRes)
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   umfrageExistsRes,
+		Error:  nil,
+	})
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
 	res.WriteHeader(http.StatusOK)
-	res.Write(response)
+	_, _ = res.Write(response)
 }
 
+// PostMitarbeiterUmfrageInsert inserts the received Umfrage and returns the ID of the inserted Umfrage-Entry.
 func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
-	s, _ := ioutil.ReadAll(req.Body)
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
 	umfrageExistsReq := structs.InsertMitarbeiterUmfrage{}
 	umfrageExistsRes := structs.UmfrageID{}
-	json.Unmarshal(s, &umfrageExistsReq)
 
-	var umfrageID primitive.ObjectID
-	umfrageID, _ = database.MitarbeiterUmfrageInsert(umfrageExistsReq)
+	err = json.Unmarshal(s, &umfrageExistsReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostMitarbeiterUmfrageInsert")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	umfrageID, err := database.MitarbeiterUmfrageInsert(umfrageExistsReq)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Fatalln(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
 	// return empty string if id is nil
 	if umfrageID == primitive.NilObjectID {
@@ -62,8 +111,17 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 		umfrageExistsRes.UmfrageID = umfrageID.Hex()
 	}
 
-	response, _ := json.Marshal(umfrageExistsRes)
+	// Response
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   umfrageExistsRes,
+		Error:  nil,
+	})
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
 	res.WriteHeader(http.StatusOK)
-	res.Write(response)
+	_, _ = res.Write(response)
 }
