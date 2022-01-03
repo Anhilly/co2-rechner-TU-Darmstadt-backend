@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -28,8 +29,22 @@ func RouteUmfrage() chi.Router {
 func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	gebaeudeRes := structs.AllGebaeudeRes{}
 
-	gebaeudeRes.Gebaeude, _ = database.GebaeudeAlleNr()
-	response, _ := json.Marshal(gebaeudeRes)
+	var err error
+	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNr()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   gebaeudeRes,
+		Error:  nil,
+	})
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
 	res.WriteHeader(http.StatusOK)
 	_, _ = res.Write(response)
@@ -62,12 +77,18 @@ func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
 //	res.Write(response)
 //}
 
+// PostInsertUmfrage inserts the received Umfrage and returns the ID of the Umfrage-Entry
 func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
-	s, _ := ioutil.ReadAll(req.Body)
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
 	umfrageReq := structs.InsertUmfrage{}
 	umfrageRes := structs.UmfrageID{}
 
-	err := json.Unmarshal(s, &umfrageReq)
+	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
 		// Konnte Body der Request nicht lesen, daher Client error -> 400
 		sendResponse(res, false, structs.Error{
@@ -77,7 +98,12 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var umfrageID primitive.ObjectID
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostAddFaktor")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
 	// TODO check if umfrage is valid before inserting
 	err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
@@ -87,7 +113,16 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 			Message: "Ungueltige Anmeldedaten",
 		}, http.StatusUnauthorized)
 	}
-	umfrageID, _ = database.UmfrageInsert(umfrageReq)
+
+	umfrageID, err := database.UmfrageInsert(umfrageReq)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Fatalln(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
 	// return empty umfrage string if umfrageID is invalid
 	if umfrageID == primitive.NilObjectID {
@@ -96,7 +131,16 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 		umfrageRes.UmfrageID = umfrageID.Hex()
 	}
 
-	response, _ := json.Marshal(umfrageRes)
+	// Response
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   umfrageRes,
+		Error:  nil,
+	})
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
 	res.WriteHeader(http.StatusOK)
 	_, _ = res.Write(response)
