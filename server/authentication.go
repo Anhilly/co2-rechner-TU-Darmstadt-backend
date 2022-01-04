@@ -190,7 +190,7 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		// Sende genauere Fehlermeldung zurueck, statt ErrNoDocuments
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusUnauthorized,
-			Message: structs.ErrNichtExistenteEmail.Error(),
+			Message: structs.ErrFalschesPasswortError.Error(),
 		}, http.StatusUnauthorized)
 		return
 	} else if err != nil {
