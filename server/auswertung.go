@@ -48,23 +48,34 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.Mitarbeiteranzahl = umfrage.Mitarbeiteranzahl
 	auswertung.Umfragenanzahl = int32(len(mitarbeiterumfragen))
 
-	// Energie	TODO: Wie damit umgehen, falls kein Energiefaktor für gegebenes Jahr
 	auswertung.EmissionenWaerme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)
 	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
+		if err == structs.ErrJahrNichtVorhanden {
+			auswertung.EmissionenWaerme = -1
+		} else {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
 	}
 
 	auswertung.EmissionenStrom, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungStrom)
 	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
+		if err == structs.ErrJahrNichtVorhanden {
+			auswertung.EmissionenWaerme = -1
+		} else {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
 	}
 
 	auswertung.EmissionenKaelte, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungKaelte)
 	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
+		if err == structs.ErrJahrNichtVorhanden {
+			auswertung.EmissionenWaerme = -1
+		} else {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// andere Emissionen
