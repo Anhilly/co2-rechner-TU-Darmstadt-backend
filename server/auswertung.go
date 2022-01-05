@@ -6,6 +6,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
@@ -50,7 +51,7 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 
 	auswertung.EmissionenWaerme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)
 	if err != nil {
-		if err == structs.ErrJahrNichtVorhanden {
+		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
 			auswertung.EmissionenWaerme = -1
 		} else {
 			errorResponse(res, err, http.StatusInternalServerError)
@@ -60,7 +61,7 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 
 	auswertung.EmissionenStrom, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungStrom)
 	if err != nil {
-		if err == structs.ErrJahrNichtVorhanden {
+		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
 			auswertung.EmissionenWaerme = -1
 		} else {
 			errorResponse(res, err, http.StatusInternalServerError)
@@ -70,7 +71,7 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 
 	auswertung.EmissionenKaelte, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungKaelte)
 	if err != nil {
-		if err == structs.ErrJahrNichtVorhanden {
+		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
 			auswertung.EmissionenWaerme = -1
 		} else {
 			errorResponse(res, err, http.StatusInternalServerError)
