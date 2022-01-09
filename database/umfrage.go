@@ -38,7 +38,6 @@ func AlleUmfragen() ([]structs.Umfrage, error) {
 Funktion gibt alle Umfragen in der Datenbank zurueck, die mit gegebenem User assoziiert sind.
 */
 func AlleUmfragenForUser(email string) ([]structs.Umfrage, error) {
-	// TODO API methods
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
