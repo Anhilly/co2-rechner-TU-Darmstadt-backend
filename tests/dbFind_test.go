@@ -29,6 +29,7 @@ func TestFind(t *testing.T) {
 	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
+	t.Run("TestMitarbeiterUmfageForUmfrage", TestMitarbeiterUmfageForUmfrage)
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -697,5 +698,60 @@ func TestGebaeudeAlleNr(t *testing.T) {
 		gebaeudenummer, err := database.GebaeudeAlleNr()
 		is.NoErr(err)                           // kein Error seitens der Datenbank
 		is.Equal(len(gebaeudenummer) > 0, true) // Slice ist nicht leer
+	})
+}
+
+func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("MitarbeiterUmfrageFindForUmfrage: liefert MitarbeiterUmfrageIDs zurück", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		umfrageID, err := primitive.ObjectIDFromHex("61b23e9855aa64762baf76d7")
+		is.NoErr(err)
+
+		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
+		is.NoErr(err)                                // kein Error seitens der Datenbank
+		is.Equal(len(mitarbeiterUmfragen) > 0, true) // Slice ist nicht leer
+
+		correctMitarbeiterUmfrageID, err := primitive.ObjectIDFromHex("61b34f9324756df01eee5ff4")
+		is.NoErr(err)
+
+		// TODO which db dump do we use for testing? are there even mitarbeiterUmfrageRefs? Eventually update this here
+		// after clarification
+		is.Equal(mitarbeiterUmfragen[0], structs.MitarbeiterUmfrage{
+			ID:          correctMitarbeiterUmfrageID,
+			Pendelweg:   nil,
+			TageImBuero: 2,
+			Dienstreise: nil,
+			ITGeraete:   nil,
+			Revision:    1})
+	})
+
+	// Normalfall
+	t.Run("MitarbeiterUmfrageFindForUmfrage: liefert keine MitarbeiterUmfrageRefs", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		// TODO which db dump do we use for testing? are there even mitarbeiterUmfrageRefs? Eventually update this here
+		umfrageID, err := primitive.ObjectIDFromHex("61bf450cfde746026b3326fa")
+		is.NoErr(err)
+
+		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
+		is.NoErr(err)                                 // kein Error seitens der Datenbank
+		is.Equal(len(mitarbeiterUmfragen) == 0, true) // Slice ist nicht leer
+	})
+
+	// Errorfaelle
+	t.Run("MitarbeiterUmfrageFindForUmfrage: umfrageID existiert nicht", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		// assumes there will be no zero objectID
+		umfrageID, err := primitive.ObjectIDFromHex("000000000000000000000000")
+		is.NoErr(err)
+
+		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
+		is.Equal(mitarbeiterUmfragen, []structs.MitarbeiterUmfrage{}) // leerer Array
+		is.Equal(err, structs.ErrUmfrageDoesNotExist)                 // Error raised
 	})
 }
