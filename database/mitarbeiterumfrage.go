@@ -55,6 +55,10 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 		return nil, err
 	}
 
+	if umfrage.ID == primitive.NilObjectID {
+		return []structs.MitarbeiterUmfrage{}, structs.ErrUmfrageDoesNotExist
+	}
+
 	// get ref ids from umfrage
 	umfrageRefs := umfrage.MitarbeiterUmfrageRef
 
@@ -69,7 +73,7 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 	}
 
 	var results []structs.MitarbeiterUmfrage
-
+	
 	err = cursor.All(ctx, &results)
 	if err != nil {
 		return nil, err
