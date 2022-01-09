@@ -80,7 +80,6 @@ func UmfrageUpdate(data structs.UpdateUmfrageReq) (primitive.ObjectID, error) {
 				{"jahr", data.Jahr},
 				{"gebaeude", data.Gebaeude},
 				{"itGeraete", data.ITGeraete},
-				// TODO also update "revision"-field?
 			},
 		}},
 	).Decode(&updatedDoc)
@@ -119,7 +118,6 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
-	// TODO needs to be commented out if not used with user authentification to work properly
 	err = NutzerdatenAddUmfrageref(data.Hauptverantwortlicher.Username, id)
 	if err != nil {
 		return primitive.NilObjectID, err
