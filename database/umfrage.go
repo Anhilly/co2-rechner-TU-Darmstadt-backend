@@ -35,6 +35,48 @@ func AlleUmfragen() ([]structs.Umfrage, error) {
 }
 
 /**
+Funktion gibt alle Umfragen in der Datenbank zurueck, die mit gegebenem User assoziiert sind.
+*/
+func AlleUmfragenForUser(email string) ([]structs.Umfrage, error) {
+	// TODO API methods
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	// find umfrage for given id
+	nutzerdaten, err := NutzerdatenFind(email)
+	if err != nil {
+		return nil, err
+	}
+
+	// get ref ids from umfrage
+	umfrageRefs := nutzerdaten.UmfrageRef
+
+	// return empty list if umfrageRefs are nil
+	if umfrageRefs == nil {
+		return []structs.Umfrage{}, nil
+	}
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{{"_id", bson.M{"$in": umfrageRefs}}},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []structs.Umfrage
+
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+/**
 Die Funktion liefert einen Umfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
 falls ein Document vorhanden ist.
 */

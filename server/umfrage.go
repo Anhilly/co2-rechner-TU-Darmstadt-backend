@@ -22,6 +22,7 @@ func RouteUmfrage() chi.Router {
 	// Get
 	r.Get("/gebaeude", GetAllGebaeude)
 	r.Get("/alleUmfragen", GetAllUmfragen)
+	r.Get("/GetAllUmfragenForUser", GetAllUmfragenForUser)
 
 	return r
 }
@@ -121,32 +122,6 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	_, _ = res.Write(response)
 }
 
-// GetAllUmfragen returns all Umfragen as structs.AlleUmfragen
-func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
-	umfragenRes := structs.AlleUmfragen{}
-
-	var err error
-	umfragenRes.Umfragen, err = database.AlleUmfragen()
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfragenRes,
-		Error:  nil,
-	})
-
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
-}
-
 // PostInsertUmfrage inserts the received Umfrage and returns the ID of the Umfrage-Entry
 func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
@@ -207,6 +182,62 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 		Data:   umfrageRes,
 		Error:  nil,
 	})
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	_, _ = res.Write(response)
+}
+
+// GetAllUmfragen returns all Umfragen as structs.AlleUmfragen
+func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
+	umfragenRes := structs.AlleUmfragen{}
+
+	var err error
+	umfragenRes.Umfragen, err = database.AlleUmfragen()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   umfragenRes,
+		Error:  nil,
+	})
+
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	_, _ = res.Write(response)
+}
+
+// GetAllUmfragenForUser returns all Umfragen for a given user as structs.AlleUmfragen
+func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
+
+	user := req.URL.Query().Get("user")
+
+	umfragenRes := structs.AlleUmfragen{}
+
+	// hole Umfragen aus der Datenbank
+	var err error
+	umfragenRes.Umfragen, err = database.AlleUmfragenForUser(user)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   umfragenRes,
+		Error:  nil,
+	})
+
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
