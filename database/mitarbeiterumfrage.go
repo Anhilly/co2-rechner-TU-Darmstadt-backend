@@ -8,7 +8,7 @@ import (
 )
 
 // MitarbeiterUmfrageUpdate Updates a umfrage with value given in data and returns the ID of the updated Umfrage
-func MitarbeiterUmfrageUpdate(data structs.UpdateMitarbeiterUmfrageReq) (primitive.ObjectID, error) {
+func MitarbeiterUmfrageUpdate(data structs.UpdateMitarbeiterUmfrage) (primitive.ObjectID, error) {
 	// TODO Tests
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()

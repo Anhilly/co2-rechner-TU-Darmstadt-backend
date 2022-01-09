@@ -31,7 +31,7 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	umfrageReq := structs.UpdateMitarbeiterUmfrageReq{}
+	umfrageReq := structs.UpdateMitarbeiterUmfrage{}
 	umfrageRes := structs.UmfrageID{}
 
 	err = json.Unmarshal(s, &umfrageReq)

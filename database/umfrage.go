@@ -99,7 +99,7 @@ func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 }
 
 // UmfrageUpdate Updates a umfrage with value given in data and returns the ID of the updated Umfrage
-func UmfrageUpdate(data structs.UpdateUmfrageReq) (primitive.ObjectID, error) {
+func UmfrageUpdate(data structs.UpdateUmfrage) (primitive.ObjectID, error) {
 	// TODO Tests
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
