@@ -15,9 +15,9 @@ func RouteMitarbeiterUmfrage() chi.Router {
 	r := chi.NewRouter()
 
 	// POST
-	r.Post("/exists", PostUmfrageExists)
+	r.Post("/exists", PostUmfrageExists) // TODO make GET method
 	r.Post("/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
-	r.Post("/mitarbeiterUmfrageForUmfrage", PostMitarbeiterUmfrageForUmfrage)
+	r.Post("/mitarbeiterUmfrageForUmfrage", PostMitarbeiterUmfrageForUmfrage) // TODO make GET method
 	r.Post("/updateMitarbeiterUmfrage", PostUpdateMitarbeiterUmfrage)
 
 	return r
