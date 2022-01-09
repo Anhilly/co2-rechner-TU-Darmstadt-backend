@@ -30,6 +30,8 @@ func TestFind(t *testing.T) {
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
 	t.Run("TestMitarbeiterUmfageForUmfrage", TestMitarbeiterUmfageForUmfrage)
+	t.Run("TestAlleUmfragenForUser", TestAlleUmfragenForUser)
+
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -753,5 +755,57 @@ func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
 		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
 		is.Equal(mitarbeiterUmfragen, nil)  // leerer Array
 		is.Equal(err, mongo.ErrNoDocuments) // Error raised
+	})
+}
+
+func TestAlleUmfragen(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("AlleUmfragen: liefert alle existenten Umfragen zurück", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		alleUmfragen, err := database.AlleUmfragen()
+		is.NoErr(err)                         // kein Error seitens der Datenbank
+		is.Equal(len(alleUmfragen) > 0, true) // Slice ist nicht leer
+	})
+}
+
+func TestAlleUmfragenForUser(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// TODO tests are throwing errors. maybe wait for tests on NutzerdatenFind as these are used in database.AlleUmfragenForUser
+
+	// Normalfall
+	t.Run("AlleUmfragenForUser: liefert alle existenten Umfragen zurueck, die mit gegebenem User assoziiert sind.", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		userMail := "anton@tobi.com"
+		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
+		is.NoErr(err)                         // kein Error seitens der Datenbank
+		is.Equal(len(alleUmfragen) > 0, true) // Slice ist nicht leer
+
+		correctRefID, err := primitive.ObjectIDFromHex("61b23e9855aa64762baf76d7")
+		is.NoErr(err)
+		is.Equal(alleUmfragen[0].ID, correctRefID)
+	})
+
+	t.Run("AlleUmfragenForUser: Keine Umfragen mit User assoziiert", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		userMail := "lorem_ipsum_mustermann"
+		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(alleUmfragen, nil)
+	})
+
+	// Errorfaelle
+	t.Run("AlleUmfragenForUser: User existiert nicht", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		userMail := "KaeptnBlaubaer"
+		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
+		is.Equal(alleUmfragen, nil)
+		is.Equal(err, mongo.ErrNoDocuments)
 	})
 }
