@@ -751,7 +751,7 @@ func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
 		is.NoErr(err)
 
 		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
-		is.Equal(mitarbeiterUmfragen, []structs.MitarbeiterUmfrage{}) // leerer Array
-		is.Equal(err, structs.ErrUmfrageDoesNotExist)                 // Error raised
+		is.Equal(mitarbeiterUmfragen, nil)  // leerer Array
+		is.Equal(err, mongo.ErrNoDocuments) // Error raised
 	})
 }

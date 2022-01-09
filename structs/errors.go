@@ -63,11 +63,6 @@ var ( // Fehler, die bei Berechnungen auftreten
 	ErrBerechnungUnbekannt = errors.New("BerechneDienstreisen: Keine Berechnung fuer angegeben ID vorhanden")
 )
 
-var ( // Fehler die bei Find-Methoden auftreten
-	// UmfrageID konnte nicht gefunden werden
-	ErrUmfrageDoesNotExist = errors.New("Umfrage mit der gegebenen ID existiert nicht.")
-)
-
 var ( // Fehler die bei der Authentifizierung auftreten
 	// Nutzer will Account mit bestehender Email registrieren
 	ErrInsertExistingAccount = errors.New("Account mit dieser Email existiert bereits")
