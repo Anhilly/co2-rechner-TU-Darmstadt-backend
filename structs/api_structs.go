@@ -88,24 +88,20 @@ type InsertUmfrageRes struct {
 	ITGeraeteEmissionen float64 `json:"itGeraeteEmissionen"`
 }
 
-type UpdateUmfrageReq struct {
-	UmfrageID             string             `json:"umfrageID"`
-	Mitarbeiteranzahl     int32              `json:"mitarbeiteranzahl"`
-	Jahr                  int32              `json:"jahr"`
-	Gebaeude              []UmfrageGebaeude  `json:"gebaeude"`
-	ITGeraete             []UmfrageITGeraete `json:"itGeraete"`
-	Revision              int32              `json:"revision"`
-	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
+type UpdateUmfrage struct {
+	UmfrageID         string             `json:"umfrageID"`
+	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
+	Jahr              int32              `json:"jahr"`
+	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
+	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
 }
 
-type UpdateMitarbeiterUmfrageReq struct {
-	UmfrageID             string               `json:"umfrageID"`
-	Pendelweg             []UmfragePendelweg   `json:"pendelweg"`
-	TageImBuero           int32                `json:"tageImBuero"`
-	Dienstreise           []UmfrageDienstreise `json:"dienstreise"`
-	ITGeraete             []UmfrageITGeraete   `json:"itGeraete"`
-	Revision              int32                `json:"revision"`
-	Hauptverantwortlicher AuthToken            `json:"hauptverantwortlicher"`
+type UpdateMitarbeiterUmfrage struct {
+	UmfrageID   string               `json:"umfrageID"`
+	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
+	TageImBuero int32                `json:"tageImBuero"`
+	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
+	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
 }
 
 type InsertMitarbeiterUmfrage struct {
