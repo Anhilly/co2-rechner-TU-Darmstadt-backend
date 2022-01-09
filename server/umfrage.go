@@ -55,8 +55,6 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// TODO check if umfrage is valid before updating
-
 	// TODO authentication does not work here? says email would not have a valid session token?
 	//err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
 	//if err != nil {
@@ -150,7 +148,6 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// TODO check if umfrage is valid before inserting
 	err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
 	if err != nil {
 		sendResponse(res, false, structs.Error{

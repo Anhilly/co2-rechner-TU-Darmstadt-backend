@@ -55,8 +55,6 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// TODO check if umfrage is valid before updating
-
 	// TODO authentication does not work here? says email would not have a valid session token?
 	//err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
 	//if err != nil {
