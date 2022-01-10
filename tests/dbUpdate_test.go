@@ -12,9 +12,7 @@ import (
 
 func TestUpdate(t *testing.T) {
 	is := is.NewRelaxed(t)
-
-	// TODO tests are throwing errors. maybe wait for tests on NutzerdatenFind as these are used in database.AlleUmfragenForUser
-
+	
 	dir, err := database.CreateDump("TestUpdate")
 	is.NoErr(err)
 
