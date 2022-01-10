@@ -2,7 +2,7 @@ package structs
 
 import "errors"
 
-var ( // Fehler von Add und Insert Funktionen
+var ( // Fehler von Add, Delete und Insert Funktionen
 	// Fehler durch Nutzereingabe
 	ErrZaehlerVorhanden = errors.New("Es ist schon ein Zaehler mit dem PK vorhanden")
 
@@ -20,6 +20,9 @@ var ( // Fehler von Add und Insert Funktionen
 
 	// Fehler bei Erstellung der ObjectID
 	ErrObjectIDNichtKonvertierbar = errors.New("ObjectID Konvertierung fehlerhaft")
+
+	// Fehler beim loeschen des Eintrags wo ObjectID nicht gefunden wurde
+	ErrObjectIDNichtGefunden = errors.New("ObjecctID nicht gefunden")
 )
 
 var ( // Fehler, die bei Berechnungen auftreten
