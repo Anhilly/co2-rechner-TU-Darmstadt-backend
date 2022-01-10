@@ -2,6 +2,7 @@ package tests
 
 import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -720,24 +721,58 @@ func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
 		correctMitarbeiterUmfrageID, err := primitive.ObjectIDFromHex("61b34f9324756df01eee5ff4")
 		is.NoErr(err)
 
-		// TODO which db dump do we use for testing? are there even mitarbeiterUmfrageRefs? Eventually update this here
 		// after clarification
 		is.Equal(mitarbeiterUmfragen[0], structs.MitarbeiterUmfrage{
-			ID:          correctMitarbeiterUmfrageID,
-			Pendelweg:   nil,
-			TageImBuero: 2,
-			Dienstreise: nil,
-			ITGeraete:   nil,
-			Revision:    1})
+			ID: correctMitarbeiterUmfrageID,
+			Pendelweg: []structs.UmfragePendelweg{
+				{
+					IDPendelweg:    1,
+					Strecke:        123,
+					Personenanzahl: 1,
+				},
+			},
+			TageImBuero: 7,
+			Dienstreise: []structs.UmfrageDienstreise{
+				{
+					IDDienstreise: 3,
+					Streckentyp:   "Langstrecke",
+					Strecke:       123,
+				},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{
+					IDITGeraete: 3,
+					Anzahl:      45,
+				},
+			},
+			Revision: 1})
 	})
 
 	// Normalfall
 	t.Run("MitarbeiterUmfrageFindForUmfrage: liefert keine MitarbeiterUmfrageRefs", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		// TODO which db dump do we use for testing? are there even mitarbeiterUmfrageRefs? Eventually update this here
-		umfrageID, err := primitive.ObjectIDFromHex("61bf450cfde746026b3326fa")
-		is.NoErr(err)
+		email := "anton@tobi.com"
+		token := server.GeneriereSessionToken(email)
+
+		data := structs.InsertUmfrage{
+			Mitarbeiteranzahl: 42,
+			Jahr:              3442,
+			Gebaeude: []structs.UmfrageGebaeude{
+				{GebaeudeNr: 1103, Nutzflaeche: 200},
+				{GebaeudeNr: 1105, Nutzflaeche: 200},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 6, Anzahl: 30},
+			},
+			Hauptverantwortlicher: structs.AuthToken{
+				Username:     email,
+				Sessiontoken: token,
+			},
+		}
+
+		umfrageID, err := database.UmfrageInsert(data)
+		is.NoErr(err) // kein Error seitens der Datenbank
 
 		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
 		is.NoErr(err)                                 // kein Error seitens der Datenbank
@@ -790,6 +825,7 @@ func TestAlleUmfragenForUser(t *testing.T) {
 		is.Equal(alleUmfragen[0].ID, correctRefID)
 	})
 
+	// TODO entry in db
 	t.Run("AlleUmfragenForUser: Keine Umfragen mit User assoziiert", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
