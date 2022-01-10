@@ -8,6 +8,74 @@ import (
 )
 
 /**
+Funktion gibt alle Umfragen in der Datenbank zurueck.
+*/
+func AlleUmfragen() ([]structs.Umfrage, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []structs.Umfrage
+
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+/**
+Funktion gibt alle Umfragen in der Datenbank zurueck, die mit gegebenem User assoziiert sind.
+*/
+func AlleUmfragenForUser(email string) ([]structs.Umfrage, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	// find umfrage for given id
+	nutzerdaten, err := NutzerdatenFind(email)
+	if err != nil {
+		return nil, err
+	}
+
+	// get ref ids from umfrage
+	umfrageRefs := nutzerdaten.UmfrageRef
+
+	// return empty list if umfrageRefs are nil
+	if umfrageRefs == nil {
+		return []structs.Umfrage{}, nil
+	}
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{{"_id", bson.M{"$in": umfrageRefs}}},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []structs.Umfrage
+
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+/**
 Die Funktion liefert einen Umfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
 falls ein Document vorhanden ist.
 */
@@ -30,9 +98,41 @@ func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 	return data, nil
 }
 
-/**
-Die Funktion fuegt eine Umfrage in die Datenbank ein und liefert die ObjectId der Umfrage zurueck.
-*/
+// UmfrageUpdate Updates a umfrage with value given in data and returns the ID of the updated Umfrage
+func UmfrageUpdate(data structs.UpdateUmfrage) (primitive.ObjectID, error) {
+	// TODO Tests
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	var updatedDoc structs.Umfrage
+	var umfrageID, err = primitive.ObjectIDFromHex(data.UmfrageID)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	err = collection.FindOneAndUpdate(
+		ctx,
+		bson.D{{"_id", umfrageID}},
+		bson.D{{"$set",
+			bson.D{
+				{"mitarbeiteranzahl", data.Mitarbeiteranzahl},
+				{"jahr", data.Jahr},
+				{"gebaeude", data.Gebaeude},
+				{"itGeraete", data.ITGeraete},
+			},
+		}},
+	).Decode(&updatedDoc)
+
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	return updatedDoc.ID, nil
+}
+
+// UmfrageInsert Die Funktion fuegt eine Umfrage in die Datenbank ein und liefert die ObjectId der Umfrage zurueck.
 func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -59,8 +159,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
-	// TODO needs to be commented out if not used with user authentification to work properly
-	err = NutzerdatenAddUmfrageref(data.NutzerEmail, id)
+	err = NutzerdatenAddUmfrageref(data.Hauptverantwortlicher.Username, id)
 	if err != nil {
 		return primitive.NilObjectID, err
 	}

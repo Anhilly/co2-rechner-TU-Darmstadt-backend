@@ -42,7 +42,7 @@ func RouteAuthentication() chi.Router {
 /**
 Generiert einen Cookie Token, welcher den Nutzer authentifiziert und speichert ihn in Map
 */
-func generiereSessionToken(email string) string {
+func GeneriereSessionToken(email string) string {
 	sessionToken := uuid.NewString()
 	authMap[email] = session{
 		Sessiontoken: sessionToken,
@@ -215,7 +215,7 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 
 	// Korrektes Passwort authentifiziere den Nutzer
 	// Generiere Cookie Token
-	token := generiereSessionToken(anmeldeReq.Username)
+	token := GeneriereSessionToken(anmeldeReq.Username)
 	sendResponse(res, true, structs.AuthRes{
 		Message:      "Nutzer authentifiziert",
 		Sessiontoken: token,
@@ -273,7 +273,7 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Generiere Cookie Token
-	token := generiereSessionToken(registrierungReq.Username)
+	token := GeneriereSessionToken(registrierungReq.Username)
 	sendResponse(res, true, structs.AuthRes{
 		Message:      "Der neue Nutzeraccount wurde erstellt",
 		Sessiontoken: token,

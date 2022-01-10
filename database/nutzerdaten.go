@@ -79,6 +79,7 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 		Passwort: string(passwordhash),
 		Rolle:    structs.IDRolleNutzer,
 		Revision: 1,
+		UmfrageRef: []primitive.ObjectID{},
 	})
 	if err != nil {
 		return err // DB Error

@@ -17,9 +17,12 @@ func RouteUmfrage() chi.Router {
 	// Posts
 	//r.Post("/mitarbeiter", PostMitarbeiter)
 	r.Post("/insertUmfrage", PostInsertUmfrage)
+	r.Post("/updateUmfrage", PostUpdateUmfrage)
 
 	// Get
 	r.Get("/gebaeude", GetAllGebaeude)
+	r.Get("/alleUmfragen", GetAllUmfragen)
+	r.Get("/GetAllUmfragenForUser", GetAllUmfragenForUser)
 
 	// Delete
 	r.Delete("/deleteUmfrage", DeleteUmfrage)
@@ -27,20 +30,64 @@ func RouteUmfrage() chi.Router {
 	return r
 }
 
-// GetAllGebaeude returns all gebaeude as []int32
-func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
-	gebaeudeRes := structs.AllGebaeudeRes{}
+// PostUpdateUmfrage updates an umfrage with received values
+func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
 
-	var err error
-	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNr()
+	umfrageReq := structs.UpdateUmfrage{}
+	umfrageRes := structs.UmfrageID{}
+
+	err = json.Unmarshal(s, &umfrageReq)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostUpdateUmfrage")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
+	// TODO authentication does not work here? says email would not have a valid session token?
+	//err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
+	//if err != nil {
+	//	sendResponse(res, false, structs.Error{
+	//		Code:    http.StatusUnauthorized,
+	//		Message: "Ungueltige Anmeldedaten",
+	//	}, http.StatusUnauthorized)
+	//}
+
+	umfrageID, err := database.UmfrageUpdate(umfrageReq)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Fatalln(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	// return empty umfrage string if umfrageID is invalid
+	if umfrageID == primitive.NilObjectID {
+		umfrageRes.UmfrageID = ""
+	} else {
+		umfrageRes.UmfrageID = umfrageID.Hex()
+	}
+
+	// Response
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,
-		Data:   gebaeudeRes,
+		Data:   umfrageRes,
 		Error:  nil,
 	})
 	if err != nil {
@@ -52,21 +99,29 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	_, _ = res.Write(response)
 }
 
-//Temporaere Funktion zum testen des Frontends
-//func PostMitarbeiter(res http.ResponseWriter, req *http.Request) {
-//	s, _ := ioutil.ReadAll(req.Body)
-//	umfrageReq := structs.UmfrageMitarbeiterReq{}
-//	umfrageRes := structs.UmfrageMitarbeiterRes{}
-//	json.Unmarshal(s, &umfrageReq)
-//	umfrageRes.DienstreisenEmissionen, _ = co2computation.BerechneDienstreisen(umfrageReq.Dienstreise)
-//	umfrageRes.PendelwegeEmissionen, _ = co2computation.BerechnePendelweg(umfrageReq.Pendelweg, umfrageReq.TageImBuero)
-//	umfrageRes.ITGeraeteEmissionen, _ = co2computation.BerechneITGeraete(umfrageReq.ITGeraete)
-//
-//	response, _ := json.Marshal(umfrageRes)
-//
-//	res.WriteHeader(http.StatusOK)
-//	res.Write(response)
-//}
+func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
+	gebaeudeRes := structs.AllGebaeudeRes{}
+
+	var err error
+	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNr()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   gebaeudeRes,
+		Error:  nil,
+	})
+
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	_, _ = res.Write(response)
+}
 
 // PostInsertUmfrage inserts the received Umfrage and returns the ID of the Umfrage-Entry
 func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
@@ -81,7 +136,11 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 
 	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
 		return
 	}
 
@@ -92,7 +151,14 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// TODO check if umfrage is valid before inserting
+	err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
+	if err != nil {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusUnauthorized,
+			Message: "Ungueltige Anmeldedaten",
+		}, http.StatusUnauthorized)
+	}
+
 	umfrageID, err := database.UmfrageInsert(umfrageReq)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
@@ -161,4 +227,60 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	}
 
 	sendResponse(res, true, nil, http.StatusOK)
+}
+
+// GetAllUmfragen returns all Umfragen as structs.AlleUmfragen
+func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
+	umfragenRes := structs.AlleUmfragen{}
+
+	var err error
+	umfragenRes.Umfragen, err = database.AlleUmfragen()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   umfragenRes,
+		Error:  nil,
+	})
+
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	_, _ = res.Write(response)
+}
+
+// GetAllUmfragenForUser returns all Umfragen for a given user as structs.AlleUmfragen
+func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
+
+	user := req.URL.Query().Get("user")
+
+	umfragenRes := structs.AlleUmfragen{}
+
+	// hole Umfragen aus der Datenbank
+	var err error
+	umfragenRes.Umfragen, err = database.AlleUmfragenForUser(user)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   umfragenRes,
+		Error:  nil,
+	})
+
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	_, _ = res.Write(response)
 }

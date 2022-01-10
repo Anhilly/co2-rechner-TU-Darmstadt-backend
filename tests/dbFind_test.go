@@ -29,6 +29,9 @@ func TestFind(t *testing.T) {
 	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
+	t.Run("TestMitarbeiterUmfageForUmfrage", TestMitarbeiterUmfageForUmfrage)
+	t.Run("TestAlleUmfragenForUser", TestAlleUmfragenForUser)
+
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -698,5 +701,146 @@ func TestGebaeudeAlleNr(t *testing.T) {
 		gebaeudenummer, err := database.GebaeudeAlleNr()
 		is.NoErr(err)                           // kein Error seitens der Datenbank
 		is.Equal(len(gebaeudenummer) > 0, true) // Slice ist nicht leer
+	})
+}
+
+func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("MitarbeiterUmfrageFindForUmfrage: liefert MitarbeiterUmfrageIDs zurück", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		umfrageID, err := primitive.ObjectIDFromHex("61b23e9855aa64762baf76d7")
+		is.NoErr(err)
+
+		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
+		is.NoErr(err)                                // kein Error seitens der Datenbank
+		is.Equal(len(mitarbeiterUmfragen) > 0, true) // Slice ist nicht leer
+
+		correctMitarbeiterUmfrageID, err := primitive.ObjectIDFromHex("61b34f9324756df01eee5ff4")
+		is.NoErr(err)
+
+		// after clarification
+		is.Equal(mitarbeiterUmfragen[0], structs.MitarbeiterUmfrage{
+			ID: correctMitarbeiterUmfrageID,
+			Pendelweg: []structs.UmfragePendelweg{
+				{
+					IDPendelweg:    1,
+					Strecke:        123,
+					Personenanzahl: 1,
+				},
+			},
+			TageImBuero: 7,
+			Dienstreise: []structs.UmfrageDienstreise{
+				{
+					IDDienstreise: 3,
+					Streckentyp:   "Langstrecke",
+					Strecke:       321,
+				},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{
+					IDITGeraete: 3,
+					Anzahl:      45,
+				},
+			},
+			Revision: 1})
+	})
+
+	// Normalfall
+	// TODO
+	//t.Run("MitarbeiterUmfrageFindForUmfrage: liefert keine MitarbeiterUmfrageRefs", func(t *testing.T) {
+	//	is := is.NewRelaxed(t)
+	//
+	//	email := "anton@tobi.com"
+	//	token := server.GeneriereSessionToken(email)
+	//
+	//	data := structs.InsertUmfrage{
+	//		Mitarbeiteranzahl: 42,
+	//		Jahr:              3442,
+	//		Gebaeude: []structs.UmfrageGebaeude{
+	//			{GebaeudeNr: 1103, Nutzflaeche: 200},
+	//			{GebaeudeNr: 1105, Nutzflaeche: 200},
+	//		},
+	//		ITGeraete: []structs.UmfrageITGeraete{
+	//			{IDITGeraete: 6, Anzahl: 30},
+	//		},
+	//		Hauptverantwortlicher: structs.AuthToken{
+	//			Username:     email,
+	//			Sessiontoken: token,
+	//		},
+	//	}
+	//
+	//	umfrageID, err := database.UmfrageInsert(data)
+	//	is.NoErr(err) // kein Error seitens der Datenbank
+	//
+	//	mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
+	//	is.NoErr(err)                                 // kein Error seitens der Datenbank
+	//	is.Equal(len(mitarbeiterUmfragen) == 0, true) // Slice ist nicht leer
+	//})
+
+	// Errorfaelle
+	t.Run("MitarbeiterUmfrageFindForUmfrage: umfrageID existiert nicht", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		// assumes there will be no zero objectID
+		umfrageID, err := primitive.ObjectIDFromHex("000000000000000000000000")
+		is.NoErr(err)
+
+		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
+		is.Equal(mitarbeiterUmfragen, nil)  // leerer Array
+		is.Equal(err, mongo.ErrNoDocuments) // Error raised
+	})
+}
+
+func TestAlleUmfragen(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("AlleUmfragen: liefert alle existenten Umfragen zurück", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		alleUmfragen, err := database.AlleUmfragen()
+		is.NoErr(err)                         // kein Error seitens der Datenbank
+		is.Equal(len(alleUmfragen) > 0, true) // Slice ist nicht leer
+	})
+}
+
+func TestAlleUmfragenForUser(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("AlleUmfragenForUser: liefert alle existenten Umfragen zurueck, die mit gegebenem User assoziiert sind.", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		userMail := "anton@tobi.com"
+		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
+		is.NoErr(err)                         // kein Error seitens der Datenbank
+		is.Equal(len(alleUmfragen) > 0, true) // Slice ist nicht leer
+
+		correctRefID, err := primitive.ObjectIDFromHex("61b23e9855aa64762baf76d7")
+		is.NoErr(err)
+		is.Equal(alleUmfragen[0].ID, correctRefID)
+	})
+
+	// TODO entry in db
+	//t.Run("AlleUmfragenForUser: Keine Umfragen mit User assoziiert", func(t *testing.T) {
+	//	is := is.NewRelaxed(t)
+	//
+	//	userMail := "lorem_ipsum_mustermann"
+	//	alleUmfragen, err := database.AlleUmfragenForUser(userMail)
+	//	is.NoErr(err) // kein Error seitens der Datenbank
+	//	is.Equal(alleUmfragen, nil)
+	//})
+
+	// Errorfaelle
+	t.Run("AlleUmfragenForUser: User existiert nicht", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		userMail := "KaeptnBlaubaer"
+		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
+		is.Equal(alleUmfragen, nil)
+		is.Equal(err, mongo.ErrNoDocuments)
 	})
 }

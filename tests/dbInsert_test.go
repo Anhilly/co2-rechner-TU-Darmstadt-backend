@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -329,6 +330,10 @@ func TestUmfrageInsert(t *testing.T) {
 	t.Run("UmfrageInsert: ID nach aktueller Zeitstempel", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		email := "anton@tobi.com"
+		password := "test_pw"
+		token := server.GeneriereSessionToken(email)
+
 		data := structs.InsertUmfrage{
 			Mitarbeiteranzahl: 42,
 			Jahr:              3442,
@@ -339,7 +344,10 @@ func TestUmfrageInsert(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			NutzerEmail: "anton@tobi.com",
+			Hauptverantwortlicher: structs.AuthToken{
+				Username:     email,
+				Sessiontoken: token,
+			},
 		}
 
 		id, err := database.UmfrageInsert(data)
@@ -366,11 +374,11 @@ func TestUmfrageInsert(t *testing.T) {
 		err = idVorhanden.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
 		is.NoErr(err)
 
-		updatedDoc, err := database.NutzerdatenFind(data.NutzerEmail)
+		updatedDoc, err := database.NutzerdatenFind(data.Hauptverantwortlicher.Username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
-			Email:      "anton@tobi.com",
-			Passwort:   "test_pw",
+			Email:      email,
+			Passwort:   password,
 			Revision:   1,
 			UmfrageRef: []primitive.ObjectID{idVorhanden, id},
 		}) // Ueberpruefung des zurueckgelieferten Elements
@@ -385,7 +393,10 @@ func TestUmfrageInsert(t *testing.T) {
 			Jahr:              3442,
 			Gebaeude:          []structs.UmfrageGebaeude{},
 			ITGeraete:         []structs.UmfrageITGeraete{},
-			NutzerEmail:       "0",
+			Hauptverantwortlicher: structs.AuthToken{
+				Username:     "0123",
+				Sessiontoken: "012345",
+			},
 		}
 
 		id, err := database.UmfrageInsert(data)
