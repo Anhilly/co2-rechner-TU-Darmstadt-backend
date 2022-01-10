@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
@@ -31,8 +32,9 @@ func RouteAuthentication() chi.Router {
 
 	r.Post("/anmeldung", PostAnmeldung)
 	r.Post("/registrierung", PostRegistrierung)
-	r.Delete("/abmeldung", DeleteAbmeldung)
 	r.Post("/pruefeSession", PostPruefeSession)
+	r.Post("/pruefeNutzerRolle", PostPruefeNutzerRolle)
+	r.Delete("/abmeldung", DeleteAbmeldung)
 
 	return r
 }
@@ -143,7 +145,7 @@ func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	//Falls kein valider Session Token vorhanden.
-	if checkValidSessionToken(sessionReq.Username) != nil {
+	if Authenticate(sessionReq.Username, sessionReq.Sessiontoken) != nil {
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusBadRequest,
 			Message: err.Error(),
@@ -188,7 +190,7 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		// Sende genauere Fehlermeldung zurueck, statt ErrNoDocuments
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusUnauthorized,
-			Message: structs.ErrNichtExistenteEmail.Error(),
+			Message: structs.ErrFalschesPasswortError.Error(),
 		}, http.StatusUnauthorized)
 		return
 	} else if err != nil {
@@ -276,6 +278,43 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		Message:      "Der neue Nutzeraccount wurde erstellt",
 		Sessiontoken: token,
 	}, http.StatusCreated)
+}
+
+func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+	sessionReq := structs.PruefeSessionReq{}
+	err = json.Unmarshal(s, &sessionReq)
+
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+	//Falls kein valider Session Token vorhanden.
+	if Authenticate(sessionReq.Username, sessionReq.Sessiontoken) != nil {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	} else {
+		nutzer, _ := database.NutzerdatenFind(sessionReq.Username)
+		fmt.Println(nutzer.Rolle)
+		// Falls ein valider Session Token vorhanden ist
+		sendResponse(res, true, nutzer.Rolle, 200)
+		return
+	}
 }
 
 /**

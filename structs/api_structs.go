@@ -93,7 +93,8 @@ type AbmeldungReq struct {
 }
 
 type PruefeSessionReq struct {
-	Username string `json:"username"`
+	Username     string `json:"username"`
+	Sessiontoken string `json:"sessiontoken"`
 }
 
 // Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind

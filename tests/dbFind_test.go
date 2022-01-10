@@ -669,6 +669,7 @@ func TestNutzerdatenFind(t *testing.T) {
 			structs.Nutzerdaten{
 				Email:      "anton@tobi.com",
 				Passwort:   "test_pw",
+				Rolle:      0,
 				Revision:   1,
 				UmfrageRef: []primitive.ObjectID{idUmfrage},
 			}) // Überprüfung des zurückgelieferten Elements

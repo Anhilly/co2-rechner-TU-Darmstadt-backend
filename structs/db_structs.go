@@ -103,6 +103,7 @@ type Pendelweg struct {
 type Nutzerdaten struct {
 	Email      string               `json:"email" bson:"email"` // (index)
 	Passwort   string               `json:"passwort" bson:"passwort"`
+	Rolle      int32                `json:"rolle" bson:"rolle"`
 	Revision   int32                `json:"revision" bson:"revision"`
 	UmfrageRef []primitive.ObjectID `json:"umfrageRef" bson:"umfrageRef"`
 }
