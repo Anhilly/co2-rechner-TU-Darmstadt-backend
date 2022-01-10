@@ -9,6 +9,7 @@ func TestAll(t *testing.T) {
 	t.Run("TestFind", TestFind)
 	t.Run("TestAdd", TestAdd)
 	t.Run("TestInsert", TestInsert)
+	t.Run("TestDelete", TestDelete)
 
 	// Tests für die Berechnungsvorschrift von Dienstreisen, Pendelwege und IT-Geraeten
 	t.Run("TestComputations", TestComputations)
