@@ -736,7 +736,7 @@ func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
 				{
 					IDDienstreise: 3,
 					Streckentyp:   "Langstrecke",
-					Strecke:       123,
+					Strecke:       321,
 				},
 			},
 			ITGeraete: []structs.UmfrageITGeraete{
