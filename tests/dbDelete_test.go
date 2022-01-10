@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -38,6 +39,7 @@ func TestUmfrageDelete(t *testing.T) {
 	//Normalfall
 	t.Run("UmfrageDelete umfrageID vorhanden ohne MitarbeiterUmfragen", func(t *testing.T) {
 		is := is.NewRelaxed(t)
+		email := "anton@tobi.com"
 
 		data := structs.InsertUmfrage{
 			Mitarbeiteranzahl: 42,
@@ -49,7 +51,10 @@ func TestUmfrageDelete(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			NutzerEmail: "anton@tobi.com",
+			Hauptverantwortlicher: structs.AuthToken{
+				Username:     email,
+				Sessiontoken: server.GeneriereSessionToken(email),
+			},
 		}
 
 		objectID, err := database.UmfrageInsert(data) // Neuen Eintrag erstellen
@@ -66,6 +71,7 @@ func TestUmfrageDelete(t *testing.T) {
 
 	t.Run("UmfrageDelete umfrageID vorhanden mit Mitarbeiterumfragen", func(t *testing.T) {
 		is := is.NewRelaxed(t)
+		email := "anton@tobi.com"
 
 		data := structs.InsertUmfrage{
 			Mitarbeiteranzahl: 42,
@@ -77,7 +83,10 @@ func TestUmfrageDelete(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			NutzerEmail: "anton@tobi.com",
+			Hauptverantwortlicher: structs.AuthToken{
+				Username:     email,
+				Sessiontoken: server.GeneriereSessionToken(email),
+			},
 		}
 
 		objectID, err := database.UmfrageInsert(data) // Neuen Eintrag erstellen

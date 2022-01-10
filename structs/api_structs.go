@@ -80,12 +80,6 @@ type AuthToken struct {
 	Sessiontoken string `json:"sessiontoken"`
 }
 
-// Nutzer Authentifikation Token
-type AuthToken struct {
-	Username     string `json:"username"`
-	Sessiontoken string `json:"sessiontoken"`
-}
-
 type InsertUmfrageRes struct {
 	UmfrageID           string  `json:"umfrageID"`
 	KaelteEmissionen    float64 `json:"kaelteEmissionen"`
