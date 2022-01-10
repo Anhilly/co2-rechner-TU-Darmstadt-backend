@@ -749,36 +749,17 @@ func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
 	})
 
 	// Normalfall
-	// TODO
-	//t.Run("MitarbeiterUmfrageFindForUmfrage: liefert keine MitarbeiterUmfrageRefs", func(t *testing.T) {
-	//	is := is.NewRelaxed(t)
-	//
-	//	email := "anton@tobi.com"
-	//	token := server.GeneriereSessionToken(email)
-	//
-	//	data := structs.InsertUmfrage{
-	//		Mitarbeiteranzahl: 42,
-	//		Jahr:              3442,
-	//		Gebaeude: []structs.UmfrageGebaeude{
-	//			{GebaeudeNr: 1103, Nutzflaeche: 200},
-	//			{GebaeudeNr: 1105, Nutzflaeche: 200},
-	//		},
-	//		ITGeraete: []structs.UmfrageITGeraete{
-	//			{IDITGeraete: 6, Anzahl: 30},
-	//		},
-	//		Hauptverantwortlicher: structs.AuthToken{
-	//			Username:     email,
-	//			Sessiontoken: token,
-	//		},
-	//	}
-	//
-	//	umfrageID, err := database.UmfrageInsert(data)
-	//	is.NoErr(err) // kein Error seitens der Datenbank
-	//
-	//	mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
-	//	is.NoErr(err)                                 // kein Error seitens der Datenbank
-	//	is.Equal(len(mitarbeiterUmfragen) == 0, true) // Slice ist nicht leer
-	//})
+	t.Run("MitarbeiterUmfrageFindForUmfrage: liefert keine MitarbeiterUmfrageRefs", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var umfrageID primitive.ObjectID
+		err := umfrageID.UnmarshalText([]byte("61dc0c543e48998484eefae9"))
+		is.NoErr(err)
+
+		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
+		is.NoErr(err)                                 // kein Error seitens der Datenbank
+		is.Equal(len(mitarbeiterUmfragen) == 0, true) // Slice ist nicht leer
+	})
 
 	// Errorfaelle
 	t.Run("MitarbeiterUmfrageFindForUmfrage: umfrageID existiert nicht", func(t *testing.T) {
@@ -824,15 +805,14 @@ func TestAlleUmfragenForUser(t *testing.T) {
 		is.Equal(alleUmfragen[0].ID, correctRefID)
 	})
 
-	// TODO entry in db
-	//t.Run("AlleUmfragenForUser: Keine Umfragen mit User assoziiert", func(t *testing.T) {
-	//	is := is.NewRelaxed(t)
-	//
-	//	userMail := "lorem_ipsum_mustermann"
-	//	alleUmfragen, err := database.AlleUmfragenForUser(userMail)
-	//	is.NoErr(err) // kein Error seitens der Datenbank
-	//	is.Equal(alleUmfragen, nil)
-	//})
+	t.Run("AlleUmfragenForUser: Keine Umfragen mit User assoziiert", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		userMail := "lorem_ipsum_mustermann"
+		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(alleUmfragen, nil)
+	})
 
 	// Errorfaelle
 	t.Run("AlleUmfragenForUser: User existiert nicht", func(t *testing.T) {
