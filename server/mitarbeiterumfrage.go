@@ -15,9 +15,7 @@ func RouteMitarbeiterUmfrage() chi.Router {
 	r := chi.NewRouter()
 
 	// POST
-	r.Post("/exists", PostUmfrageExists) // TODO remove after updating frontend to GET requests
 	r.Post("/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
-	r.Post("/mitarbeiterUmfrageForUmfrage", PostMitarbeiterUmfrageForUmfrage) // TODO remove after updating frontend to GET requests
 	r.Post("/updateMitarbeiterUmfrage", PostUpdateMitarbeiterUmfrage)
 
 	// GET
@@ -96,48 +94,6 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	_, _ = res.Write(response)
 }
 
-func PostMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	mitarbeiterUmfragenReq := structs.UmfrageID{}
-	mitarbeiterUmfragenRes := structs.AlleMitarbeiterUmfragenForUmfrage{}
-
-	err = json.Unmarshal(s, &mitarbeiterUmfragenReq)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	requestedUmfrageID, err := primitive.ObjectIDFromHex(mitarbeiterUmfragenReq.UmfrageID)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	mitarbeiterUmfragenRes.MitarbeiterUmfragen, err = database.MitarbeiterUmfrageFindForUmfrage(requestedUmfrageID)
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   mitarbeiterUmfragenRes,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
-}
-
 // GetMitarbeiterUmfrageForUmfrage returns all MitarbeiterUmfragen belonging to a certain given umfrageID
 func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
@@ -163,56 +119,6 @@ func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request)
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,
 		Data:   mitarbeiterUmfragenRes,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
-}
-
-// PostUmfrageExists returns true if the given ID exists
-func PostUmfrageExists(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	umfrageExistsReq := structs.UmfrageID{}
-	umfrageExistsRes := structs.UmfrageID{}
-
-	err = json.Unmarshal(s, &umfrageExistsReq)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	requestedUmfrageID, err := primitive.ObjectIDFromHex(umfrageExistsReq.UmfrageID)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	foundUmfrage, err := database.UmfrageFind(requestedUmfrageID)
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	// return empty string if id is nil
-	if foundUmfrage.ID == primitive.NilObjectID {
-		umfrageExistsRes.UmfrageID = ""
-	} else {
-		umfrageExistsRes.UmfrageID = foundUmfrage.ID.Hex()
-	}
-
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfrageExistsRes,
 		Error:  nil,
 	})
 	if err != nil {
