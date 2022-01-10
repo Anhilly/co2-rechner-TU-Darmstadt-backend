@@ -96,33 +96,6 @@ func Authenticate(email string, token string) error {
 	return nil
 }
 
-/**
-sendResponse sendet Response zurueck, bei Marshal Fehler sende 500 Code Error
- @param res Writer der den Response sendet
- @param data true falls normales Response Packet, false bei Error
- @param payload ist interface welches den data bzw. error struct enthaelt
- @param code ist der HTTP Header Code
-*/
-func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code int32) {
-	responseBuilder := structs.Response{}
-	if data {
-		responseBuilder.Status = structs.ResponseSuccess
-		responseBuilder.Error = nil
-		responseBuilder.Data = payload
-	} else {
-		responseBuilder.Status = structs.ResponseError
-		responseBuilder.Data = nil
-		responseBuilder.Error = payload
-	}
-	response, err := json.Marshal(responseBuilder)
-	if err == nil {
-		res.WriteHeader(int(code))
-	} else {
-		res.WriteHeader(http.StatusInternalServerError)
-	}
-	_, _ = res.Write(response)
-}
-
 func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
