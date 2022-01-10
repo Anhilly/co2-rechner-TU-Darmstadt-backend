@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/json"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -38,4 +40,31 @@ func StartServer() {
 	log.Println("Server Started")
 
 	log.Fatalln(http.ListenAndServe(port, r))
+}
+
+/**
+sendResponse sendet Response zurueck, bei Marshal Fehler sende 500 Code Error
+ @param res Writer der den Response sendet
+ @param data true falls normales Response Packet, false bei Error
+ @param payload ist interface welches den data bzw. error struct enthaelt
+ @param code ist der HTTP Header Code
+*/
+func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code int32) {
+	responseBuilder := structs.Response{}
+	if data {
+		responseBuilder.Status = structs.ResponseSuccess
+		responseBuilder.Error = nil
+		responseBuilder.Data = payload
+	} else {
+		responseBuilder.Status = structs.ResponseError
+		responseBuilder.Data = nil
+		responseBuilder.Error = payload
+	}
+	response, err := json.Marshal(responseBuilder)
+	if err == nil {
+		res.WriteHeader(int(code))
+	} else {
+		res.WriteHeader(http.StatusInternalServerError)
+	}
+	_, _ = res.Write(response)
 }
