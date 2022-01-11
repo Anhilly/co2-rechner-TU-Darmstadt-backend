@@ -112,6 +112,15 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 		auswertung.EmissionenPendelwege += emission
 	}
 
+	// Hochrechnung der Mitarbeiteremissionen
+	if auswertung.Umfragenanzahl != 0 { // Hochrechnung nur falls Mitarbeiterumfragen vorhanden
+		factor := (float64(auswertung.Mitarbeiteranzahl) / float64(auswertung.Umfragenanzahl))
+
+		auswertung.EmissionenITGeraeteMitarbeiter *= factor
+		auswertung.EmissionenPendelwege *= factor
+		auswertung.EmissionenDienstreisen *= factor
+	}
+
 	// Response
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,
