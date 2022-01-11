@@ -117,6 +117,28 @@ type DeleteUmfrage struct {
 	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
 }
 
+// Request fuer Umfragenauswertung
+type AuswertungReq struct {
+	UmfrageIDTemp primitive.ObjectID `json:"umfrageID"`
+}
+
+type AuswertungRes struct {
+	// Information von Umfrage
+	ID                primitive.ObjectID `json:"id"`
+	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
+	Jahr              int32              `json:"jahr"`
+	Umfragenanzahl    int32              `json:"umfragenanzahl"`
+
+	// Berechnete Werte fuer Auswertung
+	EmissionenWaerme                         float64 `json:"emissionenWaerme"`
+	EmissionenStrom                          float64 `json:"emissionenStrom"`
+	EmissionenKaelte                         float64 `json:"emissionenKaelte"`
+	EmissionenITGeraeteHauptverantwortlicher float64 `json:"emissionenITGeraeteHauptverantwortlicher"`
+	EmissionenITGeraeteMitarbeiter           float64 `json:"emissionenITGeraeteMitarbeiter"`
+	EmissionenDienstreisen                   float64 `json:"emissionenDienstreisen"`
+	EmissionenPendelwege                     float64 `json:"emissionenPendelwege"`
+}
+
 // Requests zur Authentifizierung und Abmeldung
 type AuthReq struct { // wird fuer Anmeldung und Registrierung verwendet
 	Username string `json:"username"`

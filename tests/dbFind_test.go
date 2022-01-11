@@ -29,9 +29,23 @@ func TestFind(t *testing.T) {
 	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
+	t.Run("TestMitarbeiterUmfrageFindMany", TestMitarbeiterUmfrageFindMany)
 	t.Run("TestMitarbeiterUmfageForUmfrage", TestMitarbeiterUmfageForUmfrage)
 	t.Run("TestAlleUmfragenForUser", TestAlleUmfragenForUser)
 
+}
+
+func TestTester(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	err := database.ConnectDatabase()
+	is.NoErr(err)
+	defer func() {
+		err := database.DisconnectDatabase()
+		is.NoErr(err)
+	}()
+
+	t.Run("TestMitarbeiterUmfrageFindMany", TestMitarbeiterUmfrageFindMany)
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -650,6 +664,102 @@ func TestMitarbeiterUmfrageFind(t *testing.T) {
 
 		is.Equal(err, mongo.ErrNoDocuments)          // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.MitarbeiterUmfrage{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestMitarbeiterUmfrageFindMany(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("MitarbeiterUmfrageFindMany: einzelne ID", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var id primitive.ObjectID
+		err := id.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		is.NoErr(err)
+
+		ids := []primitive.ObjectID{id}
+
+		data, err := database.MitarbeiterUmfrageFindMany(ids)
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			[]structs.MitarbeiterUmfrage{{
+				ID: id,
+				Pendelweg: []structs.UmfragePendelweg{
+					{IDPendelweg: 1, Strecke: 123, Personenanzahl: 1},
+				},
+				TageImBuero: 7,
+				Dienstreise: []structs.UmfrageDienstreise{
+					{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321},
+				},
+				ITGeraete: []structs.UmfrageITGeraete{
+					{IDITGeraete: 3, Anzahl: 45},
+				},
+				Revision: 1,
+			}}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	t.Run("MitarbeiterUmfrageFindMany: mehrere IDs", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dir, err := database.CreateDump("MitarbeiterUmfrageFindMany")
+		is.NoErr(err)
+
+		var id primitive.ObjectID
+		err = id.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		is.NoErr(err)
+
+		var idUmfrage primitive.ObjectID
+		err = idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+
+		id2, err := database.MitarbeiterUmfrageInsert(structs.InsertMitarbeiterUmfrage{IDUmfrage: idUmfrage})
+		is.NoErr(err)
+
+		ids := []primitive.ObjectID{id, id2}
+
+		data, err := database.MitarbeiterUmfrageFindMany(ids)
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data, []structs.MitarbeiterUmfrage{{
+			ID: id,
+			Pendelweg: []structs.UmfragePendelweg{
+				{IDPendelweg: 1, Strecke: 123, Personenanzahl: 1},
+			},
+			TageImBuero: 7,
+			Dienstreise: []structs.UmfrageDienstreise{
+				{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 3, Anzahl: 45},
+			},
+			Revision: 1,
+		},
+			{
+				ID:          id2,
+				Pendelweg:   nil,
+				TageImBuero: 0,
+				Dienstreise: nil,
+				ITGeraete:   nil,
+				Revision:    1,
+			},
+		}) // Überprüfung des zurückgelieferten Elements
+
+		err = database.RestoreDump(dir)
+		is.NoErr(err)
+	})
+
+	// Errortests
+	t.Run("MitarbeiterUmfrageFind: zu wenige Dokumente", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		ids := []primitive.ObjectID{primitive.NewObjectID()}
+
+		data, err := database.MitarbeiterUmfrageFindMany(ids)
+
+		is.Equal(err, structs.ErrDokumenteNichtGefunden) // Funktion wirft ErrDokumenteNichtGefunden
+		is.Equal(data, nil)                              // Bei einem Fehler soll nil zurückgeliefert werden
 	})
 }
 

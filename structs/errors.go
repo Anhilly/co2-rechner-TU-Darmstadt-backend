@@ -25,6 +25,11 @@ var ( // Fehler von Add, Delete und Insert Funktionen
 	ErrObjectIDNichtGefunden = errors.New("ObjecctID nicht gefunden")
 )
 
+var ( // Fehler von Find Funktionen
+	// Fehler beim Abrufen von mehreren Dokumenten
+	ErrDokumenteNichtGefunden = errors.New("Es kommten nicht alle angefragen Dokumente gefunden werden")
+)
+
 var ( // Fehler, die bei Berechnungen auftreten
 	// Fehler durch Nutzereingabe
 	ErrJahrNichtVorhanden = errors.New("getEnergieCO2Faktor: Kein CO2 Faktor für angegebenes Jahr vorhanden")
