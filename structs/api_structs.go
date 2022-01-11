@@ -95,12 +95,13 @@ type AuswertungRes struct {
 	Umfragenanzahl    int32              `json:"umfragenanzahl"`
 
 	// Berechnete Werte fuer Auswertung
-	EmissionenWaerme       float64 `json:"emissionenWaerme"`
-	EmissionenStrom        float64 `json:"emissionenStrom"`
-	EmissionenKaelte       float64 `json:"emissionenKaelte"`
-	EmissionenITGeraete    float64 `json:"emissionenITGeraete"`
-	EmissionenDienstreisen float64 `json:"emissionenDienstreisen"`
-	EmissionenPendelwege   float64 `json:"emissionenPendelwege"`
+	EmissionenWaerme                         float64 `json:"emissionenWaerme"`
+	EmissionenStrom                          float64 `json:"emissionenStrom"`
+	EmissionenKaelte                         float64 `json:"emissionenKaelte"`
+	EmissionenITGeraeteHauptverantwortlicher float64 `json:"emissionenITGeraeteHauptverantwortlicher"`
+	EmissionenITGeraeteMitarbeiter           float64 `json:"emissionenITGeraeteMitarbeiter"`
+	EmissionenDienstreisen                   float64 `json:"emissionenDienstreisen"`
+	EmissionenPendelwege                     float64 `json:"emissionenPendelwege"`
 }
 
 // Requests zur Authentifizierung und Abmeldung

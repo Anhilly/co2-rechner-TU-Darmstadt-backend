@@ -80,12 +80,11 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// andere Emissionen
-	emission, err := co2computation.BerechneITGeraete(umfrage.ITGeraete)
+	auswertung.EmissionenITGeraeteHauptverantwortlicher, err = co2computation.BerechneITGeraete(umfrage.ITGeraete)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
-	auswertung.EmissionenITGeraete += emission
 
 	for _, mitarbeiterumfrage := range mitarbeiterumfragen {
 		// IT-Geraete
@@ -94,7 +93,7 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 			errorResponse(res, err, http.StatusInternalServerError)
 			return
 		}
-		auswertung.EmissionenITGeraete += emission
+		auswertung.EmissionenITGeraeteMitarbeiter += emission
 
 		// Dienstreisen
 		emission, err = co2computation.BerechneDienstreisen(mitarbeiterumfrage.Dienstreise)
