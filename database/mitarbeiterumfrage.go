@@ -29,7 +29,6 @@ func MitarbeiterUmfrageUpdate(data structs.UpdateMitarbeiterUmfrage) (primitive.
 				{"tageImBuero", data.TageImBuero},
 				{"dienstreise", data.Dienstreise},
 				{"itGeraete", data.ITGeraete},
-				// TODO also update "revision"-field?
 			},
 		}},
 	).Decode(&updatedDoc)
@@ -152,7 +151,7 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 
 	mitarbeiterMax := umfrage.Mitarbeiteranzahl
 	umfragenFilled := int32(len(mitarbeiterumfragen))
-	
+
 	if umfragenFilled >= mitarbeiterMax {
 		return primitive.NilObjectID, structs.ErrUmfrageVollstaendig
 	}
