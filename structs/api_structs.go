@@ -33,9 +33,10 @@ type UmfrageID struct {
 
 // Structs für Request JSONs zum Hinzufuegen und Aendern von Daten der Datenbank
 type AddCO2Faktor struct {
-	IDEnergieversorgung int32 `json:"idEnergieversorgung"`
-	Jahr                int32 `json:"jahr"`
-	Wert                int32 `json:"wert"`
+	Auth                AuthToken `json:"authToken"`
+	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
+	Jahr                int32     `json:"jahr"`
+	Wert                int32     `json:"wert"`
 }
 
 type AddZaehlerdaten struct {
