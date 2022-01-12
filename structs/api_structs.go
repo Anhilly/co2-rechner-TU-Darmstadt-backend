@@ -112,6 +112,11 @@ type InsertMitarbeiterUmfrage struct {
 	IDUmfrage   primitive.ObjectID   `json:"idUmfrage"`
 }
 
+type UmfrageExistsRes struct {
+	UmfrageID string `json:"umfrageID"`
+	Complete  bool   `json:"complete"`
+}
+
 type DeleteUmfrage struct {
 	UmfrageID             primitive.ObjectID `json:"umfrageID"`
 	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
