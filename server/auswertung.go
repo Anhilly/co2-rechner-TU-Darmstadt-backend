@@ -49,6 +49,7 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.Jahr = umfrage.Jahr
 	auswertung.Mitarbeiteranzahl = umfrage.Mitarbeiteranzahl
 	auswertung.Umfragenanzahl = int32(len(mitarbeiterumfragen))
+	auswertung.Umfragenanteil = float64(auswertung.Umfragenanzahl) / float64(auswertung.Mitarbeiteranzahl)
 
 	auswertung.EmissionenWaerme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)
 	if err != nil {
@@ -121,6 +122,12 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 		auswertung.EmissionenPendelwege *= factor
 		auswertung.EmissionenDienstreisen *= factor
 	}
+
+	auswertung.EmissionenITGeraete = auswertung.EmissionenITGeraeteMitarbeiter + auswertung.EmissionenITGeraeteHauptverantwortlicher
+	auswertung.EmissionenEnergie = auswertung.EmissionenWaerme + auswertung.EmissionenStrom + auswertung.EmissionenKaelte
+	auswertung.EmissionenGesamt = auswertung.EmissionenPendelwege + auswertung.EmissionenITGeraete + auswertung.EmissionenDienstreisen + auswertung.EmissionenEnergie
+
+	auswertung.EmissionenProMitarbeiter = auswertung.EmissionenGesamt / float64(auswertung.Mitarbeiteranzahl)
 
 	// Response
 	response, err := json.Marshal(structs.Response{
