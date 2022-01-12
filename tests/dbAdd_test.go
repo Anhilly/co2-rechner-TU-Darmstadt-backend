@@ -538,6 +538,7 @@ func TestUmfrageAddMitarbeiterUmfrageRef(t *testing.T) {
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Umfrage{
 			ID:                idUmfrage,
+			Bezeichnung:       "testumfrage1",
 			Mitarbeiteranzahl: 1,
 			Jahr:              2020,
 			Gebaeude: []structs.UmfrageGebaeude{

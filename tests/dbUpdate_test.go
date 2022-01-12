@@ -12,7 +12,7 @@ import (
 
 func TestUpdate(t *testing.T) {
 	is := is.NewRelaxed(t)
-	
+
 	dir, err := database.CreateDump("TestUpdate")
 	is.NoErr(err)
 
@@ -45,6 +45,7 @@ func TestUmfrageUpdate(t *testing.T) {
 		token := server.GeneriereSessionToken(email)
 
 		data := structs.InsertUmfrage{
+			Bezeichnung:       "TestUmfrageUpdated",
 			Mitarbeiteranzahl: 42,
 			Jahr:              3442,
 			Gebaeude: []structs.UmfrageGebaeude{
@@ -65,6 +66,7 @@ func TestUmfrageUpdate(t *testing.T) {
 
 		updateData := structs.UpdateUmfrage{
 			UmfrageID:         id.Hex(),
+			Bezeichnung:       "neuer Name",
 			Mitarbeiteranzahl: 12,
 			Jahr:              2077,
 			Gebaeude: []structs.UmfrageGebaeude{
@@ -85,6 +87,7 @@ func TestUmfrageUpdate(t *testing.T) {
 
 		is.Equal(updatedUmfrage, structs.Umfrage{
 			ID:                    id,
+			Bezeichnung:           "neuer Name",
 			Mitarbeiteranzahl:     updateData.Mitarbeiteranzahl,
 			Jahr:                  updateData.Jahr,
 			Gebaeude:              updateData.Gebaeude,

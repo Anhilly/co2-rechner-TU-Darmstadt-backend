@@ -7,18 +7,18 @@ In dieser Daten sind Request und Response JSON für die API als structs aufgelis
 */
 
 // For testing:
-type UmfrageMitarbeiterReq struct {
-	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
-	TageImBuero int32                `json:"tageImBuero"`
-	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
-	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
-}
-
-type UmfrageMitarbeiterRes struct {
-	PendelwegeEmissionen   float64 `json:"pendelwegeEmissionen"`
-	DienstreisenEmissionen float64 `json:"dienstreisenEmissionen"`
-	ITGeraeteEmissionen    float64 `json:"itGeraeteEmissionen"`
-}
+//type UmfrageMitarbeiterReq struct {
+//	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
+//	TageImBuero int32                `json:"tageImBuero"`
+//	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
+//	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
+//}
+//
+//type UmfrageMitarbeiterRes struct {
+//	PendelwegeEmissionen   float64 `json:"pendelwegeEmissionen"`
+//	DienstreisenEmissionen float64 `json:"dienstreisenEmissionen"`
+//	ITGeraeteEmissionen    float64 `json:"itGeraeteEmissionen"`
+//}
 
 // Struct zum Abfragen aller Gebaeudedaten
 type AllGebaeudeRes struct {
@@ -59,6 +59,7 @@ type InsertGebaeude struct {
 }
 
 type InsertUmfrage struct {
+	Bezeichnung           string             `json:"bezeichnung"`
 	Mitarbeiteranzahl     int32              `json:"mitarbeiteranzahl"`
 	Jahr                  int32              `json:"jahr"`
 	Gebaeude              []UmfrageGebaeude  `json:"gebaeude"`
@@ -80,16 +81,18 @@ type AuthToken struct {
 	Sessiontoken string `json:"sessiontoken"`
 }
 
-type InsertUmfrageRes struct {
-	UmfrageID           string  `json:"umfrageID"`
-	KaelteEmissionen    float64 `json:"kaelteEmissionen"`
-	WaermeEmissionen    float64 `json:"waermeEmissionen"`
-	StromEmissionen     float64 `json:"stromEmissionen"`
-	ITGeraeteEmissionen float64 `json:"itGeraeteEmissionen"`
-}
+// TODO wird das noch benötigt?
+//type InsertUmfrageRes struct {
+//	UmfrageID           string  `json:"umfrageID"`
+//	KaelteEmissionen    float64 `json:"kaelteEmissionen"`
+//	WaermeEmissionen    float64 `json:"waermeEmissionen"`
+//	StromEmissionen     float64 `json:"stromEmissionen"`
+//	ITGeraeteEmissionen float64 `json:"itGeraeteEmissionen"`
+//}
 
 type UpdateUmfrage struct {
 	UmfrageID         string             `json:"umfrageID"`
+	Bezeichnung       string             `json:"bezeichnung"`
 	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
 	Jahr              int32              `json:"jahr"`
 	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
@@ -118,13 +121,14 @@ type DeleteUmfrage struct {
 }
 
 // Request fuer Umfragenauswertung
-type AuswertungReq struct {
-	UmfrageIDTemp primitive.ObjectID `json:"umfrageID"`
-}
+//type AuswertungReq struct {
+//	UmfrageIDTemp primitive.ObjectID `json:"umfrageID"`
+//}
 
 type AuswertungRes struct {
 	// Information von Umfrage
 	ID                primitive.ObjectID `json:"id"`
+	Bezeichnung       string             `json:"bezeichnung"`
 	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
 	Jahr              int32              `json:"jahr"`
 	Umfragenanzahl    int32              `json:"umfragenanzahl"`

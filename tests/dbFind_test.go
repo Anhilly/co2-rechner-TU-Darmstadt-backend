@@ -597,6 +597,7 @@ func TestUmfrageFind(t *testing.T) {
 		is.Equal(data,
 			structs.Umfrage{
 				ID:                id,
+				Bezeichnung:       "testumfrage1",
 				Mitarbeiteranzahl: 1,
 				Jahr:              2020,
 				Gebaeude: []structs.UmfrageGebaeude{
