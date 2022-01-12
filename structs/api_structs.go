@@ -40,21 +40,24 @@ type AddCO2Faktor struct {
 }
 
 type AddZaehlerdaten struct {
-	PKEnergie           int32   `json:"pkEnergie"`
-	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
-	Jahr                int32   `json:"jahr"`
-	Wert                float64 `json:"wert"`
+	Auth                AuthToken `json:"authToken"`
+	PKEnergie           int32     `json:"pkEnergie"`
+	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
+	Jahr                int32     `json:"jahr"`
+	Wert                float64   `json:"wert"`
 }
 
 type InsertZaehler struct {
-	PKEnergie           int32   `json:"pkEnergie"`
-	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
-	Bezeichnung         string  `json:"bezeichnung"`
-	Einheit             string  `json:"einheit"`
-	GebaeudeRef         []int32 `json:"gebaeudeRef"`
+	Auth                AuthToken `json:"authToken"`
+	PKEnergie           int32     `json:"pkEnergie"`
+	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
+	Bezeichnung         string    `json:"bezeichnung"`
+	Einheit             string    `json:"einheit"`
+	GebaeudeRef         []int32   `json:"gebaeudeRef"`
 }
 
 type InsertGebaeude struct {
+	Auth        AuthToken       `json:"authToken"`
 	Nr          int32           `json:"nr"`
 	Bezeichnung string          `json:"bezeichnung"`
 	Flaeche     GebaeudeFlaeche `json:"flaeche"`
