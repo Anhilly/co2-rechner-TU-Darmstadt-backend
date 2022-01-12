@@ -121,9 +121,9 @@ func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 	err = Authenticate(sessionReq.Username, sessionReq.Sessiontoken)
 	if err != nil {
 		sendResponse(res, false, structs.Error{
-			Code:    http.StatusBadRequest,
+			Code:    http.StatusUnauthorized,
 			Message: err.Error(),
-		}, http.StatusBadRequest)
+		}, http.StatusUnauthorized)
 		return
 	} else {
 		//Falls ein valider Session Token vorhanden ist
