@@ -117,6 +117,10 @@ type UmfrageExistsRes struct {
 	Complete  bool   `json:"complete"`
 }
 
+type UmfrageYearRes struct {
+	Jahr int32 `json:"jahr"`
+}
+
 type DeleteUmfrage struct {
 	UmfrageID             primitive.ObjectID `json:"umfrageID"`
 	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
