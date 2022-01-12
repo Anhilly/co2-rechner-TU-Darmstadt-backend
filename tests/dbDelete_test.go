@@ -60,13 +60,12 @@ func TestUmfrageDelete(t *testing.T) {
 		objectID, err := database.UmfrageInsert(data) // Neuen Eintrag erstellen
 		is.NoErr(err)                                 // Kein Fehler im Normalfall
 
-		err = database.UmfrageDelete(objectID) // Eintrag loeschen
-		is.NoErr(err)                          // Kein Fehler im Normalfall
+		err = database.UmfrageDelete(email, objectID) // Eintrag loeschen
+		is.NoErr(err)                                 // Kein Fehler im Normalfall
 
 		_, err = database.UmfrageFind(objectID) // Eintrag wird nicht mehr gefunden?
 		is.Equal(err, mongo.ErrNoDocuments)     // Datenbank wirft ErrNoDocuments
 
-		//TODO Restliche Datenbank unveraendert
 	})
 
 	t.Run("UmfrageDelete umfrageID vorhanden mit Mitarbeiterumfragen", func(t *testing.T) {
@@ -127,8 +126,8 @@ func TestUmfrageDelete(t *testing.T) {
 		mitarbeiterID[1], err = database.MitarbeiterUmfrageInsert(mitarbeiter)
 		is.NoErr(err) // Kein Fehler im Normalfall
 
-		err = database.UmfrageDelete(objectID) // Loesche Umfrage und Mitarbeiterumfragen
-		is.NoErr(err)                          // Kein Fehler im Normalfall
+		err = database.UmfrageDelete(email, objectID) // Loesche Umfrage und Mitarbeiterumfragen
+		is.NoErr(err)                                 // Kein Fehler im Normalfall
 
 		_, err = database.UmfrageFind(objectID) // Eintraege koennen nicht mehr gefunden werden
 		is.Equal(err, mongo.ErrNoDocuments)     // Datenbank wirft ErrNoDocument
@@ -147,7 +146,7 @@ func TestUmfrageDelete(t *testing.T) {
 		err := idUmfrage.UnmarshalText([]byte("61b23e9835aa64762baf76a9"))
 		is.NoErr(err)
 
-		err = database.UmfrageDelete(idUmfrage)
+		err = database.UmfrageDelete("anton@tobi.com", idUmfrage)
 		is.Equal(err, mongo.ErrNoDocuments) // Eintrag konnte nicht gefunden
 	})
 }
