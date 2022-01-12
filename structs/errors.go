@@ -23,11 +23,14 @@ var ( // Fehler von Add, Delete und Insert Funktionen
 
 	// Fehler beim loeschen des Eintrags wo ObjectID nicht gefunden wurde
 	ErrObjectIDNichtGefunden = errors.New("ObjecctID nicht gefunden")
+
+	// Fehler beim loeschen des Eintrags wo ObjectID nicht gefunden wurde
+	ErrUmfrageVollstaendig = errors.New("Umfrage ist bereits von allen Mitarbeitenden ausgefüllt.")
 )
 
 var ( // Fehler von Find Funktionen
 	// Fehler beim Abrufen von mehreren Dokumenten
-	ErrDokumenteNichtGefunden = errors.New("Es kommten nicht alle angefragen Dokumente gefunden werden")
+	ErrDokumenteNichtGefunden = errors.New("Es konnten nicht alle angefragen Dokumente gefunden werden")
 )
 
 var ( // Fehler, die bei Berechnungen auftreten

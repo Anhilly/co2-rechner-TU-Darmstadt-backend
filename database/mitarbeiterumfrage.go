@@ -9,7 +9,6 @@ import (
 
 // MitarbeiterUmfrageUpdate Updates a umfrage with value given in data and returns the ID of the updated Umfrage
 func MitarbeiterUmfrageUpdate(data structs.UpdateMitarbeiterUmfrage) (primitive.ObjectID, error) {
-	// TODO Tests
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -137,6 +136,27 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 
 	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
 
+	// only insert if umfrage is not complete yet
+	umfrageID := data.IDUmfrage
+
+	// hole Umfrage aus der Datenbank
+	umfrage, err := UmfrageFind(umfrageID)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	mitarbeiterumfragen, err := MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	mitarbeiterMax := umfrage.Mitarbeiteranzahl
+	umfragenFilled := int32(len(mitarbeiterumfragen))
+	
+	if umfragenFilled >= mitarbeiterMax {
+		return primitive.NilObjectID, structs.ErrUmfrageVollstaendig
+	}
+
 	insertedDoc, err := collection.InsertOne(
 		ctx,
 		structs.MitarbeiterUmfrage{
@@ -157,7 +177,7 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
-	err = UmfrageAddMitarbeiterUmfrageRef(data.IDUmfrage, id)
+	err = UmfrageAddMitarbeiterUmfrageRef(umfrageID, id)
 	if err != nil {
 		return primitive.NilObjectID, err
 	}
