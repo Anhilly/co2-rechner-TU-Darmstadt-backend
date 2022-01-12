@@ -111,6 +111,7 @@ type Nutzerdaten struct {
 // Collection umfrage
 type Umfrage struct {
 	ID                    primitive.ObjectID   `json:"_id" bson:"_id"`
+	Bezeichnung           string               `json:"bezeichnung" bson:"bezeichnung"`
 	Mitarbeiteranzahl     int32                `json:"mitarbeiteranzahl" bson:"mitarbeiteranzahl"`
 	Jahr                  int32                `json:"jahr" bson:"jahr"`
 	Gebaeude              []UmfrageGebaeude    `json:"gebaeude" bson:"gebaeude"`

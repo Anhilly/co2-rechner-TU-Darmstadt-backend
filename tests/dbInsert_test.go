@@ -335,6 +335,7 @@ func TestUmfrageInsert(t *testing.T) {
 		token := server.GeneriereSessionToken(email)
 
 		data := structs.InsertUmfrage{
+			Bezeichnung:       "TestUmfrageInsert",
 			Mitarbeiteranzahl: 42,
 			Jahr:              3442,
 			Gebaeude: []structs.UmfrageGebaeude{
@@ -357,6 +358,7 @@ func TestUmfrageInsert(t *testing.T) {
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(insertedDoc, structs.Umfrage{
 			ID:                id,
+			Bezeichnung:       "TestUmfrageInsert",
 			Mitarbeiteranzahl: 42,
 			Jahr:              3442,
 			Gebaeude: []structs.UmfrageGebaeude{
@@ -458,6 +460,7 @@ func TestMitarbeiterUmfrageInsert(t *testing.T) {
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Umfrage{
 			ID:                idUmfrage,
+			Bezeichnung:       "testumfrage1",
 			Mitarbeiteranzahl: 1,
 			Jahr:              2020,
 			Gebaeude: []structs.UmfrageGebaeude{
