@@ -55,36 +55,44 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if !AuthWithResponse(res, req, data.Auth.Username, data.Auth.Sessiontoken) {
+		return
+	}
+
+	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
 	// Datenverarbeitung
-	ordner, err := database.CreateDump("PostAddFaktor")
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	err = database.EnergieversorgungAddFaktor(data)
-	if err != nil {
-		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
-		if err2 != nil {
-			log.Fatalln(err2)
+	if nutzer.Rolle == 1 {
+		ordner, err := database.CreateDump("PostAddFaktor")
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
 		}
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
+
+		err = database.EnergieversorgungAddFaktor(data)
+		if err != nil {
+			err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+			if err2 != nil {
+				log.Fatalln(err2)
+			}
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
+
+		// Response
+		response, err := json.Marshal(structs.Response{
+			Status: structs.ResponseSuccess,
+			Data:   nil,
+			Error:  nil,
+		})
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
+
+		res.WriteHeader(http.StatusOK)
+		_, _ = res.Write(response)
 	}
 
-	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   nil,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
 }
 
 func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
