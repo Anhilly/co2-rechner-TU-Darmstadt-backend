@@ -194,7 +194,7 @@ func UmfrageAddMitarbeiterUmfrageRef(idUmfrage primitive.ObjectID, referenz prim
 Die Funktion loescht eine Umfrage mit der ObjectID und alle assoziierten Mitarbeiterumfragen aus der Datenbank,
 falls der Eintrag existiert, liefert Fehler oder nil zurueck
 */
-func UmfrageDelete(umfrageID primitive.ObjectID) error {
+func UmfrageDelete(hauptverantwortlicher string, umfrageID primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -218,9 +218,24 @@ func UmfrageDelete(umfrageID primitive.ObjectID) error {
 		ctx,
 		bson.M{"_id": umfrageID})
 
+	if err != nil {
+		return err
+	}
+
 	if anzahl.DeletedCount == 0 {
 		return structs.ErrObjectIDNichtGefunden
 	}
+
+	// Loesche Umfrage aus RefListe des Nutzers
+	collection = client.Database(dbName).Collection(structs.NutzerdatenCol)
+
+	var updatedDoc structs.Nutzerdaten
+	err = collection.FindOneAndUpdate(
+		ctx,
+		bson.M{"email": hauptverantwortlicher},
+		bson.D{{"$pull",
+			bson.D{{"umfrageRef", umfrageID}}}}).Decode(&updatedDoc)
+
 	return err
 }
 

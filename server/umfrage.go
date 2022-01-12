@@ -205,7 +205,7 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusBadRequest,
 			Message: err.Error(),
-		}, http.StatusBadRequest)
+		}, http.StatusBadRequest) // 400
 		return
 	}
 
@@ -215,15 +215,15 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusUnauthorized,
 			Message: "Ungueltige Anmeldedaten",
-		}, http.StatusUnauthorized)
+		}, http.StatusUnauthorized) // 401
 	}
 
-	err = database.UmfrageDelete(umfrageReq.UmfrageID)
+	err = database.UmfrageDelete(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.UmfrageID)
 	if err != nil {
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusNotFound,
 			Message: "Datenbankeintrag nicht gefunden",
-		}, http.StatusNotFound)
+		}, http.StatusNotFound) // 404
 	}
 
 	sendResponse(res, true, nil, http.StatusOK)
