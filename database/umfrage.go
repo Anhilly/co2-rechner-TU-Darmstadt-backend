@@ -118,6 +118,7 @@ func UmfrageUpdate(data structs.UpdateUmfrage) (primitive.ObjectID, error) {
 		bson.D{{"$set",
 			bson.D{
 				{"mitarbeiteranzahl", data.Mitarbeiteranzahl},
+				{"bezeichnung", data.Bezeichnung},
 				{"jahr", data.Jahr},
 				{"gebaeude", data.Gebaeude},
 				{"itGeraete", data.ITGeraete},
@@ -143,6 +144,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 		ctx,
 		structs.Umfrage{
 			ID:                    primitive.NewObjectID(),
+			Bezeichnung:           data.Bezeichnung,
 			Mitarbeiteranzahl:     data.Mitarbeiteranzahl,
 			Jahr:                  data.Jahr,
 			Gebaeude:              data.Gebaeude,

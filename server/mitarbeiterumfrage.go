@@ -152,6 +152,7 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 		umfrageExistsRes.UmfrageID = ""
 	} else {
 		umfrageExistsRes.UmfrageID = foundUmfrage.ID.Hex()
+		umfrageExistsRes.Bezeichnung = foundUmfrage.Bezeichnung
 	}
 
 	response, err := json.Marshal(structs.Response{

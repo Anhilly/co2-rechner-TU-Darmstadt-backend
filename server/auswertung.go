@@ -45,6 +45,7 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 
 	// allgemeine Information der Umfrage
 	auswertung.ID = umfrage.ID
+	auswertung.Bezeichnung = umfrage.Bezeichnung
 	auswertung.Jahr = umfrage.Jahr
 	auswertung.Mitarbeiteranzahl = umfrage.Mitarbeiteranzahl
 	auswertung.Umfragenanzahl = int32(len(mitarbeiterumfragen))
