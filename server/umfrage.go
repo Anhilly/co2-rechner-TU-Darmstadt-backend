@@ -221,9 +221,9 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	err = database.UmfrageDelete(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.UmfrageID)
 	if err != nil {
 		sendResponse(res, false, structs.Error{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusInternalServerError,
 			Message: "Datenbankeintrag nicht gefunden",
-		}, http.StatusNotFound) // 404
+		}, http.StatusInternalServerError) // Nicht vorhanden -> 500
 	}
 
 	sendResponse(res, true, nil, http.StatusOK)
