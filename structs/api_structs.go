@@ -133,15 +133,23 @@ type AuswertungRes struct {
 	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
 	Jahr              int32              `json:"jahr"`
 	Umfragenanzahl    int32              `json:"umfragenanzahl"`
+	Umfragenanteil    float64            `json:"umfragenanteil"`
 
 	// Berechnete Werte fuer Auswertung
 	EmissionenWaerme                         float64 `json:"emissionenWaerme"`
 	EmissionenStrom                          float64 `json:"emissionenStrom"`
 	EmissionenKaelte                         float64 `json:"emissionenKaelte"`
+	EmissionenEnergie                        float64 `json:"emissionenEnergie"`
 	EmissionenITGeraeteHauptverantwortlicher float64 `json:"emissionenITGeraeteHauptverantwortlicher"`
 	EmissionenITGeraeteMitarbeiter           float64 `json:"emissionenITGeraeteMitarbeiter"`
+	EmissionenITGeraete                      float64 `json:"emissionenITGeraete"`
 	EmissionenDienstreisen                   float64 `json:"emissionenDienstreisen"`
 	EmissionenPendelwege                     float64 `json:"emissionenPendelwege"`
+	EmissionenGesamt                         float64 `json:"emissionenGesamt"`
+	EmissionenProMitarbeiter                 float64 `json:"emissionenProMitarbeiter"`
+
+	Vergleich2PersonenHaushalt float64 `json:"vergleich2PersonenHaushalt"`
+	Vergleich4PersonenHaushalt float64 `json:"vergleich4PersonenHaushalt"`
 }
 
 // Requests zur Authentifizierung und Abmeldung
