@@ -95,7 +95,8 @@ func Authenticate(email string, token string) error {
 	return nil
 }
 
-// Returns true if authentication is successfull, false if not
+// Returnt true zurück falls kein Fehler besteht, falls ein fehler besteht,
+// wird ein StatusUnauthorized gesendet und falls zurueckgegeben
 func AuthWithResponse(res http.ResponseWriter, req *http.Request, email string, token string) bool {
 	_, err := ioutil.ReadAll(req.Body)
 
@@ -106,7 +107,7 @@ func AuthWithResponse(res http.ResponseWriter, req *http.Request, email string, 
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusUnauthorized,
 			Message: err.Error(),
-		}, http.StatusBadRequest)
+		}, http.StatusUnauthorized)
 		return false
 	}
 	return true
