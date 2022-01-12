@@ -27,7 +27,8 @@ type AllGebaeudeRes struct {
 
 // Struct zum Abfragen ob Umfrage existiert
 type UmfrageID struct {
-	UmfrageID string `json:"umfrageID"`
+	UmfrageID   string `json:"umfrageID"`
+	Bezeichnung string `json:"bezeichnung"`
 }
 
 // Structs für Request JSONs zum Hinzufuegen und Aendern von Daten der Datenbank
