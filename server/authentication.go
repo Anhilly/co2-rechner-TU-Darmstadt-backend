@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
@@ -94,6 +93,23 @@ func Authenticate(email string, token string) error {
 		return structs.ErrFalscherSessiontoken
 	}
 	return nil
+}
+
+// Returns true if authentication is successfull, false if not
+func AuthWithResponse(res http.ResponseWriter, req *http.Request, email string, token string) bool {
+	_, err := ioutil.ReadAll(req.Body)
+
+	//Authentication
+	errAuth := Authenticate(email, token)
+	//Falls kein valider Session Token vorhanden.
+	if errAuth != nil {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusUnauthorized,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return false
+	}
+	return true
 }
 
 func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
@@ -284,7 +300,6 @@ func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
 		return
 	} else {
 		nutzer, _ := database.NutzerdatenFind(sessionReq.Username)
-		fmt.Println(nutzer.Rolle)
 		// Falls ein valider Session Token vorhanden ist
 		sendResponse(res, true, nutzer.Rolle, 200)
 		return
