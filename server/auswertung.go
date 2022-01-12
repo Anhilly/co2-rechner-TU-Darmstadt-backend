@@ -129,6 +129,9 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 
 	auswertung.EmissionenProMitarbeiter = auswertung.EmissionenGesamt / float64(auswertung.Mitarbeiteranzahl)
 
+	auswertung.Vergleich2PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch2PersonenHaushalt
+	auswertung.Vergleich4PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch4PersonenHaushalt
+
 	// Response
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,

@@ -56,3 +56,8 @@ const ( // Status responses
 	ResponseSuccess = "success"
 	ResponseError   = "error"
 )
+
+const ( // Einheit g CO2 eq.
+	Verbrauch2PersonenHaushalt = 23200000.0
+	Verbrauch4PersonenHaushalt = 46400000.0
+)
