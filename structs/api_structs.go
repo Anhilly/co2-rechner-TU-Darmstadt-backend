@@ -96,7 +96,8 @@ type AuthToken struct {
 //}
 
 type UpdateUmfrage struct {
-	UmfrageID         string             `json:"umfrageID"`
+	Auth              AuthToken          `json:"authToken"`
+	UmfrageID         primitive.ObjectID `json:"umfrageID"`
 	Bezeichnung       string             `json:"bezeichnung"`
 	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
 	Jahr              int32              `json:"jahr"`
@@ -105,7 +106,7 @@ type UpdateUmfrage struct {
 }
 
 type UpdateMitarbeiterUmfrage struct {
-	UmfrageID   string               `json:"umfrageID"`
+	UmfrageID   primitive.ObjectID   `json:"umfrageID"`
 	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`
 	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
