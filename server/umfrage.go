@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
@@ -30,6 +31,18 @@ func RouteUmfrage() chi.Router {
 	return r
 }
 
+func isOwnerOfUmfrage(umfrageRef []primitive.ObjectID, umfrageID primitive.ObjectID) bool {
+	//TODO Error checking statt verwerfen
+	for _, id := range umfrageRef {
+		fmt.Println(id, " == ", umfrageID, "InLoop")
+		if id == umfrageID {
+			fmt.Println(id, " == ", umfrageID)
+			return true
+		}
+	}
+	return false
+}
+
 // PostUpdateUmfrage updates an umfrage with received values
 func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
@@ -48,6 +61,19 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 			Code:    http.StatusBadRequest,
 			Message: err.Error(),
 		}, http.StatusBadRequest)
+		return
+	}
+
+	if !AuthWithResponse(res, req, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
+
+	if nutzer.Rolle != 1 || !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusUnauthorized,
+			Message: err.Error(),
+		}, http.StatusUnauthorized)
 		return
 	}
 
@@ -259,7 +285,9 @@ func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
 func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
 
 	user := req.URL.Query().Get("user")
-
+	if checkValidSessionToken(user) != nil {
+		return
+	}
 	umfragenRes := structs.AlleUmfragen{}
 
 	// hole Umfragen aus der Datenbank

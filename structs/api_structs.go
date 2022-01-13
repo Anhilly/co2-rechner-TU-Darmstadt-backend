@@ -40,21 +40,24 @@ type AddCO2Faktor struct {
 }
 
 type AddZaehlerdaten struct {
-	PKEnergie           int32   `json:"pkEnergie"`
-	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
-	Jahr                int32   `json:"jahr"`
-	Wert                float64 `json:"wert"`
+	Auth                AuthToken `json:"authToken"`
+	PKEnergie           int32     `json:"pkEnergie"`
+	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
+	Jahr                int32     `json:"jahr"`
+	Wert                float64   `json:"wert"`
 }
 
 type InsertZaehler struct {
-	PKEnergie           int32   `json:"pkEnergie"`
-	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
-	Bezeichnung         string  `json:"bezeichnung"`
-	Einheit             string  `json:"einheit"`
-	GebaeudeRef         []int32 `json:"gebaeudeRef"`
+	Auth                AuthToken `json:"authToken"`
+	PKEnergie           int32     `json:"pkEnergie"`
+	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
+	Bezeichnung         string    `json:"bezeichnung"`
+	Einheit             string    `json:"einheit"`
+	GebaeudeRef         []int32   `json:"gebaeudeRef"`
 }
 
 type InsertGebaeude struct {
+	Auth        AuthToken       `json:"authToken"`
 	Nr          int32           `json:"nr"`
 	Bezeichnung string          `json:"bezeichnung"`
 	Flaeche     GebaeudeFlaeche `json:"flaeche"`
@@ -93,7 +96,8 @@ type AuthToken struct {
 //}
 
 type UpdateUmfrage struct {
-	UmfrageID         string             `json:"umfrageID"`
+	Auth              AuthToken          `json:"authToken"`
+	UmfrageID         primitive.ObjectID `json:"umfrageID"`
 	Bezeichnung       string             `json:"bezeichnung"`
 	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
 	Jahr              int32              `json:"jahr"`
@@ -102,7 +106,7 @@ type UpdateUmfrage struct {
 }
 
 type UpdateMitarbeiterUmfrage struct {
-	UmfrageID   string               `json:"umfrageID"`
+	UmfrageID   primitive.ObjectID   `json:"umfrageID"`
 	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`
 	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
