@@ -89,4 +89,7 @@ var ( // Fehler die bei der Authentifizierung auftreten
 
 	// Falscher Sessiontoken beim Authentifizieren
 	ErrFalscherSessiontoken = errors.New("Falscher Sessiontoken für diesen Benutzer")
+
+	// Nutzer nicht berechtigt oder kein Admin
+	ErrNutzerHatKeineBerechtigung = errors.New("Der Nutzer hat nicht die passende Berechtigung")
 )

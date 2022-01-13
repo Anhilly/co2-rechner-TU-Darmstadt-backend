@@ -126,6 +126,11 @@ type DeleteUmfrage struct {
 	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
 }
 
+type RequestUmfrage struct {
+	UmfrageID primitive.ObjectID `json:"umfrageID"`
+	Auth      AuthToken          `json:"authToken"`
+}
+
 // Request fuer Umfragenauswertung
 //type AuswertungReq struct {
 //	UmfrageIDTemp primitive.ObjectID `json:"umfrageID"`
