@@ -19,6 +19,7 @@ func RouteUmfrage() chi.Router {
 	//r.Post("/mitarbeiter", PostMitarbeiter)
 	r.Post("/insertUmfrage", PostInsertUmfrage)
 	r.Post("/updateUmfrage", PostUpdateUmfrage)
+	r.Post("/getUmfrage", GetUmfrage)
 
 	// Get
 	r.Get("/gebaeude", GetAllGebaeude)
@@ -68,11 +69,11 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
-
-	if nutzer.Rolle != 1 || !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
+	fmt.Println(umfrageReq.UmfrageID)
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusUnauthorized,
-			Message: err.Error(),
+			Message: structs.ErrNutzerHatKeineBerechtigung.Error(),
 		}, http.StatusUnauthorized)
 		return
 	}
@@ -83,15 +84,6 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
-
-	// TODO authentication does not work here? says email would not have a valid session token?
-	//err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
-	//if err != nil {
-	//	sendResponse(res, false, structs.Error{
-	//		Code:    http.StatusUnauthorized,
-	//		Message: "Ungueltige Anmeldedaten",
-	//	}, http.StatusUnauthorized)
-	//}
 
 	umfrageID, err := database.UmfrageUpdate(umfrageReq)
 	if err != nil {
@@ -123,6 +115,48 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 
 	res.WriteHeader(http.StatusOK)
 	_, _ = res.Write(response)
+}
+
+//Postrequest sendet Umfrage struct fuer passende UmfrageID zurueck, sofern auth Eigentuemer oder Admin
+func GetUmfrage(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	umfrageReq := structs.RequestUmfrage{}
+
+	err = json.Unmarshal(s, &umfrageReq)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+
+	if !AuthWithResponse(res, req, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
+
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusUnauthorized,
+			Message: structs.ErrNutzerHatKeineBerechtigung.Error(),
+		}, http.StatusUnauthorized)
+		return
+	}
+
+	umfrage, err := database.UmfrageFind(umfrageReq.UmfrageID)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	sendResponse(res, true, umfrage, http.StatusOK)
 }
 
 func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
