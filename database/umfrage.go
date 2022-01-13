@@ -107,14 +107,10 @@ func UmfrageUpdate(data structs.UpdateUmfrage) (primitive.ObjectID, error) {
 	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	var updatedDoc structs.Umfrage
-	var umfrageID, err = primitive.ObjectIDFromHex(data.UmfrageID)
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
 
-	err = collection.FindOneAndUpdate(
+	err := collection.FindOneAndUpdate(
 		ctx,
-		bson.D{{"_id", umfrageID}},
+		bson.D{{"_id", data.UmfrageID}},
 		bson.D{{"$set",
 			bson.D{
 				{"mitarbeiteranzahl", data.Mitarbeiteranzahl},

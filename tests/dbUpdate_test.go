@@ -65,7 +65,7 @@ func TestUmfrageUpdate(t *testing.T) {
 		is.NoErr(err) // kein Error seitens der Datenbank
 
 		updateData := structs.UpdateUmfrage{
-			UmfrageID:         id.Hex(),
+			UmfrageID:         id,
 			Bezeichnung:       "neuer Name",
 			Mitarbeiteranzahl: 12,
 			Jahr:              2077,
