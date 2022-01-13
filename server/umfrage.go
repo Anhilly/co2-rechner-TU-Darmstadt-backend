@@ -35,9 +35,7 @@ func RouteUmfrage() chi.Router {
 func isOwnerOfUmfrage(umfrageRef []primitive.ObjectID, umfrageID primitive.ObjectID) bool {
 	//TODO Error checking statt verwerfen
 	for _, id := range umfrageRef {
-		fmt.Println(id, " == ", umfrageID, "InLoop")
 		if id == umfrageID {
-			fmt.Println(id, " == ", umfrageID)
 			return true
 		}
 	}
