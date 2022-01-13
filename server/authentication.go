@@ -99,6 +99,12 @@ func Authenticate(email string, token string) error {
 // wird ein StatusUnauthorized gesendet und falls zurueckgegeben
 func AuthWithResponse(res http.ResponseWriter, req *http.Request, email string, token string) bool {
 	_, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		sendResponse(res, false, structs.Error{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}, http.StatusInternalServerError)
+	}
 
 	//Authentication
 	errAuth := Authenticate(email, token)
@@ -106,7 +112,7 @@ func AuthWithResponse(res http.ResponseWriter, req *http.Request, email string, 
 	if errAuth != nil {
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusUnauthorized,
-			Message: err.Error(),
+			Message: errAuth.Error(),
 		}, http.StatusUnauthorized)
 		return false
 	}
