@@ -22,7 +22,7 @@ var ( // Fehler von Add, Delete und Insert Funktionen
 	ErrObjectIDNichtKonvertierbar = errors.New("ObjectID Konvertierung fehlerhaft")
 
 	// Fehler beim loeschen des Eintrags wo ObjectID nicht gefunden wurde
-	ErrObjectIDNichtGefunden = errors.New("ObjecctID nicht gefunden")
+	ErrObjectIDNichtGefunden = errors.New("ObjectID nicht gefunden")
 
 	// Fehler beim loeschen des Eintrags wo ObjectID nicht gefunden wurde
 	ErrUmfrageVollstaendig = errors.New("Umfrage ist bereits von allen Mitarbeitenden ausgefüllt.")
@@ -85,7 +85,7 @@ var ( // Fehler die bei der Authentifizierung auftreten
 	ErrAbgelaufenerSessiontoken = errors.New("Der Sessiontoken ist abgelaufen")
 
 	// Falsches Passwort beim Anmelden
-	ErrFalschesPasswortError = errors.New("Die Kombination aus Passwort und Email stimmt nicht überein")
+	ErrFalschesPasswortError = errors.New("Die Kombination aus Passwort und Nutzername stimmt nicht überein")
 
 	// Falsche Email beim Anmelden
 	ErrNichtExistenteEmail = errors.New("Es existiert kein Konto mit dieser Email")
