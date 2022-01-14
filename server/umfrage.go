@@ -25,6 +25,7 @@ func RouteUmfrage() chi.Router {
 	r.Get("/gebaeude", GetAllGebaeude)
 	r.Get("/alleUmfragen", GetAllUmfragen)
 	r.Get("/GetAllUmfragenForUser", GetAllUmfragenForUser)
+	r.Get("/GetUmfrageYear", GetUmfrageYear)
 
 	// Delete
 	r.Delete("/deleteUmfrage", DeleteUmfrage)
@@ -333,6 +334,43 @@ func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
 	response, err := json.Marshal(structs.Response{
 		Status: structs.ResponseSuccess,
 		Data:   umfragenRes,
+		Error:  nil,
+	})
+
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	_, _ = res.Write(response)
+}
+
+// GetUmfrageYear returns the bilanzierungsjahr for the given umfrage
+func GetUmfrageYear(res http.ResponseWriter, req *http.Request) {
+
+	var requestedUmfrageID primitive.ObjectID
+	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	umfrageJahrRes := structs.UmfrageYearRes{}
+
+	// hole Umfrage aus der Datenbank
+	umfrage, err := database.UmfrageFind(requestedUmfrageID)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	// set year
+	umfrageJahrRes.Jahr = umfrage.Jahr
+
+	response, err := json.Marshal(structs.Response{
+		Status: structs.ResponseSuccess,
+		Data:   umfrageJahrRes,
 		Error:  nil,
 	})
 

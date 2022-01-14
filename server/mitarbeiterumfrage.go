@@ -130,7 +130,7 @@ func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request)
 	_, _ = res.Write(response)
 }
 
-// GetUmfrageExists returns true if the given ID exists
+// GetUmfrageExists returns the umfrageID if the umfrage exists and whether it is already complete or not.
 func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
@@ -139,20 +139,51 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	umfrageExistsRes := structs.UmfrageID{}
+	umfrageExistsRes := structs.UmfrageExistsRes{}
 
-	foundUmfrage, err := database.UmfrageFind(requestedUmfrageID)
+	umfrage, err := database.UmfrageFind(requestedUmfrageID)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
 	// return empty string if id is nil
-	if foundUmfrage.ID == primitive.NilObjectID {
+	if umfrage.ID == primitive.NilObjectID {
 		umfrageExistsRes.UmfrageID = ""
+
+		response, err := json.Marshal(structs.Response{
+			Status: structs.ResponseSuccess,
+			Data:   umfrageExistsRes,
+			Error:  nil,
+		})
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
+
+		res.WriteHeader(http.StatusOK)
+		_, _ = res.Write(response)
+		return
+
 	} else {
 		umfrageExistsRes.UmfrageID = foundUmfrage.ID.Hex()
 		umfrageExistsRes.Bezeichnung = foundUmfrage.Bezeichnung
+	}
+
+	mitarbeiterumfragen, err := database.MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	mitarbeiterMax := umfrage.Mitarbeiteranzahl
+	umfragenFilled := int32(len(mitarbeiterumfragen))
+
+	// check if umfrage is complete
+	if umfragenFilled < mitarbeiterMax {
+		umfrageExistsRes.Complete = false
+	} else {
+		umfrageExistsRes.Complete = true
 	}
 
 	response, err := json.Marshal(structs.Response{
