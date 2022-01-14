@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"io/ioutil"
 	"log"
@@ -29,15 +29,15 @@ func ImportEnergieversorgung() {
 		panic(err)
 	}
 
-	var energieversorgung database.Energieversorgung
-	var energieversorgungArray []database.Energieversorgung
+	var energieversorgung structs.Energieversorgung
+	var energieversorgungArray []structs.Energieversorgung
 
 	for _, record := range rawCSVdata {
 		energieversorgung.Kategorie = record[0]
 
-		temp, _ := strconv.ParseFloat(record[1], 64)
+		temp, _ := strconv.ParseInt(record[1], 10, 32)
 		temp2, _ := strconv.ParseInt(record[2], 10, 32)
-		energieversorgung.CO2Faktor = []database.CO2Energie{{Wert: temp, Jahr: int32(temp2)}}
+		energieversorgung.CO2Faktor = []structs.CO2Energie{{Wert: int32(temp), Jahr: int32(temp2)}}
 
 		energieversorgung.Einheit = record[3]
 		energieversorgung.Revision = 1
@@ -72,7 +72,7 @@ func ImportGebaeude() {
 		panic(err)
 	}
 
-	var gebaeudeArray []database.Gebaeude
+	var gebaeudeArray []structs.Gebaeude
 
 	var data []byte
 	for _, b1 := range []byte("[\n") {
@@ -80,7 +80,7 @@ func ImportGebaeude() {
 	}
 
 	for _, record := range rawCSVdata {
-		var gebaeude database.Gebaeude
+		var gebaeude structs.Gebaeude
 		if record[0] == "" {
 			continue
 		}
@@ -100,38 +100,41 @@ func ImportGebaeude() {
 		vf, _ := strconv.ParseFloat(record[6], 64)
 		freif, _ := strconv.ParseFloat(record[7], 64)
 		gesamtf, _ := strconv.ParseFloat(record[8], 64)
-		gebaeude.Flaeche = database.GebaeudeFlaeche{HNF: hnf, NNF: nnf, NGF: ngf, FF: ff, VF: vf, FreiF: freif, GesamtF: gesamtf}
+		gebaeude.Flaeche = structs.GebaeudeFlaeche{HNF: hnf, NNF: nnf, NGF: ngf, FF: ff, VF: vf, FreiF: freif, GesamtF: gesamtf}
 
 		gebaeude.Einheit = "m^2"
 		gebaeude.Revision = 1
 
+		specialcase, _ := strconv.ParseFloat(record[9], 64)
+		gebaeude.Spezialfall = int32(specialcase)
+
 		gebaeude.StromRef = []int32{}
 		for i := 0; i < 10; i++ {
-			if record[i+9] == "" {
+			if record[i+10] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+9], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+10], 10, 32)
 			gebaeude.StromRef = append(gebaeude.StromRef, int32(temp))
 		}
 
 		gebaeude.KaelteRef = []int32{}
 		for i := 0; i < 10; i++ {
-			if record[i+19] == "" {
+			if record[i+20] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+19], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+20], 10, 32)
 			gebaeude.KaelteRef = append(gebaeude.KaelteRef, int32(temp))
 		}
 
 		gebaeude.WaermeRef = []int32{}
 		for i := 0; i < 10; i++ {
-			if record[i+29] == "" {
+			if record[i+30] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+29], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+30], 10, 32)
 			gebaeude.WaermeRef = append(gebaeude.WaermeRef, int32(temp))
 		}
 
@@ -174,7 +177,7 @@ func ImportStromzaehler() {
 		panic(err)
 	}
 
-	var stromArray []database.Stromzaehler
+	var stromArray []structs.Zaehler
 
 	var data []byte
 	for _, b1 := range []byte("[\n") {
@@ -182,7 +185,7 @@ func ImportStromzaehler() {
 	}
 
 	for _, record := range rawCSVdata {
-		var strom database.Stromzaehler
+		var strom structs.Zaehler
 		if record[0] == "" {
 			continue
 		}
@@ -202,25 +205,28 @@ func ImportStromzaehler() {
 		strom.Einheit = record[6]
 		strom.Revision = 1
 
-		location, err := time.LoadLocation("Europe/Berlin")
+		location, err := time.LoadLocation("Etc/GMT")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		strom.Zaehlerdaten = []database.Zaehlerwerte{
-			database.Zaehlerwerte{Wert: d21, Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location)},
-			database.Zaehlerwerte{Wert: d20, Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location)},
-			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
-			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
+		strom.Zaehlerdaten = []structs.Zaehlerwerte{
+			structs.Zaehlerwerte{Wert: d21, Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location)},
+			structs.Zaehlerwerte{Wert: d20, Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location)},
+			structs.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
+			structs.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
+
+		specialcase, _ := strconv.ParseFloat(record[7], 64)
+		strom.Spezialfall = int32(specialcase)
 
 		strom.GebaeudeRef = []int32{}
 
 		for i := 0; i < 10; i++ {
-			if record[i+7] == "" {
+			if record[i+8] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+7], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+8], 10, 32)
 			strom.GebaeudeRef = append(strom.GebaeudeRef, int32(temp))
 		}
 
@@ -264,7 +270,7 @@ func ImportWaermedaten() {
 		panic(err)
 	}
 
-	var waermeArray []database.Waermezaehler
+	var waermeArray []structs.Zaehler
 
 	var data []byte
 	for _, b1 := range []byte("[\n") {
@@ -272,12 +278,12 @@ func ImportWaermedaten() {
 	}
 
 	for _, record := range rawCSVdata {
-		var waerme database.Waermezaehler
+		var waerme structs.Zaehler
 		if record[0] == "" {
 			continue
 		}
 
-		waerme.ExtSystemID = record[0]
+		//waerme.ExtSystemID = record[0]
 		waerme.Bezeichnung = record[1]
 		waerme.Einheit = record[2]
 
@@ -294,24 +300,27 @@ func ImportWaermedaten() {
 		d19, _ := strconv.ParseFloat(record[4], 64)
 		d18, _ := strconv.ParseFloat(record[5], 64)
 
-		location, err := time.LoadLocation("Europe/Berlin")
+		location, err := time.LoadLocation("Etc/GMT")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		waerme.Zaehlerdaten = []database.Zaehlerwerte{
-			database.Zaehlerwerte{Wert: d20, Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location)},
-			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
-			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
+		waerme.Zaehlerdaten = []structs.Zaehlerwerte{
+			structs.Zaehlerwerte{Wert: d20, Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location)},
+			structs.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
+			structs.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
+
+		specialcase, _ := strconv.ParseFloat(record[7], 64)
+		waerme.Spezialfall = int32(specialcase)
 
 		waerme.GebaeudeRef = []int32{}
 
 		for i := 0; i < 10; i++ {
-			if record[i+7] == "" {
+			if record[i+8] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+7], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+8], 10, 32)
 			waerme.GebaeudeRef = append(waerme.GebaeudeRef, int32(temp))
 		}
 
@@ -356,7 +365,7 @@ func ImportKaeltedaten() {
 	}
 
 	//var kaelte database.Kaeltezaehler
-	var kaelteArray []database.Kaeltezaehler
+	var kaelteArray []structs.Zaehler
 
 	var data []byte
 
@@ -365,14 +374,14 @@ func ImportKaeltedaten() {
 	}
 
 	for _, record := range rawCSVdata {
-		var kaelte database.Kaeltezaehler
+		var kaelte structs.Zaehler
 
 		if record[0] == "" {
 			continue
 		}
 
 		kaelte.Bezeichnung = record[0]
-		kaelte.ExtSystemID = record[3]
+		//kaelte.ExtSystemID = record[3]
 		kaelte.Einheit = record[2]
 
 		kaelte.Revision = 1
@@ -389,25 +398,28 @@ func ImportKaeltedaten() {
 		d19, _ := strconv.ParseFloat(record[6], 64)
 		d18, _ := strconv.ParseFloat(record[7], 64)
 
-		location, err := time.LoadLocation("Europe/Berlin")
+		location, err := time.LoadLocation("Etc/GMT")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		kaelte.Zaehlerdaten = []database.Zaehlerwerte{
-			database.Zaehlerwerte{Wert: d21, Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location)},
-			database.Zaehlerwerte{Wert: d20, Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location)},
-			database.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
-			database.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
+		kaelte.Zaehlerdaten = []structs.Zaehlerwerte{
+			structs.Zaehlerwerte{Wert: d21, Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location)},
+			structs.Zaehlerwerte{Wert: d20, Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location)},
+			structs.Zaehlerwerte{Wert: d19, Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location)},
+			structs.Zaehlerwerte{Wert: d18, Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location)}}
+
+		specialcase, _ := strconv.ParseFloat(record[8], 64)
+		kaelte.Spezialfall = int32(specialcase)
 
 		kaelte.GebaeudeRef = []int32{}
 
 		for i := 0; i < 10; i++ {
-			if record[i+8] == "" {
+			if record[i+9] == "" {
 				continue
 			}
 
-			temp, _ := strconv.ParseInt(record[i+8], 10, 32)
+			temp, _ := strconv.ParseInt(record[i+9], 10, 32)
 			kaelte.GebaeudeRef = append(kaelte.GebaeudeRef, int32(temp))
 		}
 
