@@ -18,3 +18,9 @@
 #Database Config
 /database/db_config.go
 
+
+*.crt
+
+*.csr
+
+*.key
