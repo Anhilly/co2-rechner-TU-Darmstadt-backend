@@ -123,6 +123,7 @@ type InsertMitarbeiterUmfrage struct {
 
 type UmfrageExistsRes struct {
 	UmfrageID string `json:"umfrageID"`
+	Bezeichnung string `json:"bezeichnung"`
 	Complete  bool   `json:"complete"`
 }
 

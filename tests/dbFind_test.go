@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
@@ -13,10 +14,18 @@ import (
 func TestFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	err := database.ConnectDatabase()
+	dir, err := database.CreateDump("TestAdd")
 	is.NoErr(err)
+
+	fmt.Println(dir)
+
+	err = database.ConnectDatabase()
+	is.NoErr(err)
+
 	defer func() {
 		err := database.DisconnectDatabase()
+		is.NoErr(err)
+		err = database.RestoreDump(dir)
 		is.NoErr(err)
 	}()
 
@@ -598,7 +607,7 @@ func TestUmfrageFind(t *testing.T) {
 			structs.Umfrage{
 				ID:                id,
 				Bezeichnung:       "testumfrage1",
-				Mitarbeiteranzahl: 1,
+				Mitarbeiteranzahl: 10,
 				Jahr:              2020,
 				Gebaeude: []structs.UmfrageGebaeude{
 					{GebaeudeNr: 1101, Nutzflaeche: 100},

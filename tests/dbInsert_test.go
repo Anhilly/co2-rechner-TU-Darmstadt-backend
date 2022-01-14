@@ -461,7 +461,7 @@ func TestMitarbeiterUmfrageInsert(t *testing.T) {
 		is.Equal(updatedDoc, structs.Umfrage{
 			ID:                idUmfrage,
 			Bezeichnung:       "testumfrage1",
-			Mitarbeiteranzahl: 1,
+			Mitarbeiteranzahl: 10,
 			Jahr:              2020,
 			Gebaeude: []structs.UmfrageGebaeude{
 				{GebaeudeNr: 1101, Nutzflaeche: 100},

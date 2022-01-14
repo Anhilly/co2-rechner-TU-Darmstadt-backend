@@ -166,8 +166,8 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 		return
 
 	} else {
-		umfrageExistsRes.UmfrageID = foundUmfrage.ID.Hex()
-		umfrageExistsRes.Bezeichnung = foundUmfrage.Bezeichnung
+		umfrageExistsRes.UmfrageID = umfrage.ID.Hex()
+		umfrageExistsRes.Bezeichnung = umfrage.Bezeichnung
 	}
 
 	mitarbeiterumfragen, err := database.MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
