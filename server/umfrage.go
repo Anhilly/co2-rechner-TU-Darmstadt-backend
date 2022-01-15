@@ -204,7 +204,7 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Datenverarbeitung
-	ordner, err := database.CreateDump("PostAddFaktor")
+	ordner, err := database.CreateDump("PostInsertUmfrage")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

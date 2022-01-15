@@ -245,8 +245,8 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		}, http.StatusBadRequest)
 		return
 	}
-	var path = "registrierung"
-	restorepath, err := database.CreateDump(path)
+
+	restorepath, err := database.CreateDump("PostRegistrierung")
 	if err != nil {
 		sendResponse(res, false, structs.Error{
 			Code:    http.StatusInternalServerError,
