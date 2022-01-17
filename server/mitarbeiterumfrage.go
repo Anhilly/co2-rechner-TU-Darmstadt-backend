@@ -25,7 +25,9 @@ func RouteMitarbeiterUmfrage() chi.Router {
 	return r
 }
 
-// PostUpdateMitarbeiterUmfrage updates an mitarbeiterUmfrage with received values
+/**
+PostUpdateMitarbeiterUmfrage updates an mitarbeiterUmfrage with received values
+*/
 func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -78,7 +80,9 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
-// GetMitarbeiterUmfrageForUmfrage returns all MitarbeiterUmfragen belonging to a certain given umfrageID
+/**
+GetMitarbeiterUmfrageForUmfrage returns all MitarbeiterUmfragen belonging to a certain given umfrageID
+*/
 func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
@@ -98,7 +102,9 @@ func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request)
 	sendResponse(res, true, mitarbeiterUmfragenRes, http.StatusOK)
 }
 
-// GetUmfrageExists returns the umfrageID if the umfrage exists and whether it is already complete or not.
+/**
+GetUmfrageExists returns the umfrageID if the umfrage exists and whether it is already complete or not.
+*/
 func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
@@ -144,7 +150,9 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageExistsRes, http.StatusOK)
 }
 
-// PostMitarbeiterUmfrageInsert inserts the received Umfrage and returns the ID of the inserted Umfrage-Entry.
+/**
+PostMitarbeiterUmfrageInsert inserts the received Umfrage and returns the ID of the inserted Umfrage-Entry.
+*/
 func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
