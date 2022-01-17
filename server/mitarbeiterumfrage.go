@@ -102,18 +102,7 @@ func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   mitarbeiterUmfragenRes,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, mitarbeiterUmfragenRes, http.StatusOK)
 }
 
 // GetUmfrageExists returns the umfrageID if the umfrage exists and whether it is already complete or not.
@@ -137,18 +126,7 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	if umfrage.ID == primitive.NilObjectID {
 		umfrageExistsRes.UmfrageID = ""
 
-		response, err := json.Marshal(structs.Response{
-			Status: structs.ResponseSuccess,
-			Data:   umfrageExistsRes,
-			Error:  nil,
-		})
-		if err != nil {
-			errorResponse(res, err, http.StatusInternalServerError)
-			return
-		}
-
-		res.WriteHeader(http.StatusOK)
-		_, _ = res.Write(response)
+		sendResponse(res, true, umfrageExistsRes, http.StatusOK)
 		return
 
 	} else {
@@ -171,19 +149,7 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	} else {
 		umfrageExistsRes.Complete = true
 	}
-
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfrageExistsRes,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, umfrageExistsRes, http.StatusOK)
 }
 
 // PostMitarbeiterUmfrageInsert inserts the received Umfrage and returns the ID of the inserted Umfrage-Entry.
@@ -226,17 +192,5 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 		umfrageExistsRes.UmfrageID = umfrageID.Hex()
 	}
 
-	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfrageExistsRes,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, umfrageExistsRes, http.StatusOK)
 }

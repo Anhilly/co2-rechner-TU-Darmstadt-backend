@@ -95,19 +95,7 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 		umfrageRes.UmfrageID = umfrageID.Hex()
 	}
 
-	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfrageRes,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
 //Postrequest sendet Umfrage struct fuer passende UmfrageID zurueck, sofern auth Eigentuemer oder Admin
@@ -155,19 +143,7 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   gebaeudeRes,
-		Error:  nil,
-	})
-
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, gebaeudeRes, http.StatusOK)
 }
 
 // PostInsertUmfrage inserts the received Umfrage and returns the ID of the Umfrage-Entry
@@ -216,19 +192,7 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 		umfrageRes.UmfrageID = umfrageID.Hex()
 	}
 
-	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfrageRes,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
 /**
@@ -270,20 +234,7 @@ func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
-
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfragenRes,
-		Error:  nil,
-	})
-
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, umfragenRes, http.StatusOK)
 }
 
 // GetAllUmfragenForUser returns all Umfragen for a given user as structs.AlleUmfragen
@@ -303,19 +254,7 @@ func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfragenRes,
-		Error:  nil,
-	})
-
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, umfragenRes, http.StatusOK)
 }
 
 // GetUmfrageYear returns the bilanzierungsjahr for the given umfrage
@@ -340,17 +279,5 @@ func GetUmfrageYear(res http.ResponseWriter, req *http.Request) {
 	// set year
 	umfrageJahrRes.Jahr = umfrage.Jahr
 
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfrageJahrRes,
-		Error:  nil,
-	})
-
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, umfrageJahrRes, http.StatusOK)
 }

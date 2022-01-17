@@ -252,7 +252,7 @@ func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
 
 	nutzer, _ := database.NutzerdatenFind(sessionReq.Username)
 	// Falls ein valider Session Token vorhanden ist
-	sendResponse(res, true, nutzer.Rolle, 200)
+	sendResponse(res, true, nutzer.Rolle, http.StatusOK)
 }
 
 /**
