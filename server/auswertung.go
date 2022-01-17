@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/co2computation"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
@@ -136,17 +135,9 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.Vergleich2PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch2PersonenHaushalt
 	auswertung.Vergleich4PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch4PersonenHaushalt
 
-	// Response
-	response, err := json.Marshal(structs.Response{
+	sendResponse(res, true, structs.Response{
 		Status: structs.ResponseSuccess,
 		Data:   auswertung,
 		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	}, http.StatusOK)
 }

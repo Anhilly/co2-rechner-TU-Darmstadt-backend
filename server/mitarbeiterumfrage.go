@@ -39,10 +39,7 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
 		// Konnte Body der Request nicht lesen, daher Client error -> 400
-		sendResponse(res, false, structs.Error{
-			Code:    http.StatusBadRequest,
-			Message: err.Error(),
-		}, http.StatusBadRequest)
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
@@ -66,7 +63,7 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatalln(err2)
+			log.Fatal(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -80,18 +77,11 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Response
-	response, err := json.Marshal(structs.Response{
+	sendResponse(res, true, structs.Response{
 		Status: structs.ResponseSuccess,
 		Data:   umfrageRes,
 		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	}, http.StatusOK)
 }
 
 // GetMitarbeiterUmfrageForUmfrage returns all MitarbeiterUmfragen belonging to a certain given umfrageID
@@ -227,7 +217,7 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatalln(err2)
+			log.Fatal(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

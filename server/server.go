@@ -69,3 +69,16 @@ func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code 
 	}
 	_, _ = res.Write(response)
 }
+
+/**
+errorResponse sendet eine Fehlermeldung zurueck
+ @param res Writer der den Response sendet
+ @param err Error, welcher die Fehlernachricht enthaelt
+ @param statuscode, der http Statuscode fuer den Header
+*/
+func errorResponse(res http.ResponseWriter, err error, statuscode int32) {
+	sendResponse(res, false, structs.Error{
+		Code:    statuscode,
+		Message: err.Error(),
+	}, statuscode)
+}
