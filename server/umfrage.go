@@ -15,7 +15,6 @@ func RouteUmfrage() chi.Router {
 	r := chi.NewRouter()
 
 	// Posts
-	//r.Post("/mitarbeiter", PostMitarbeiter)
 	r.Post("/insertUmfrage", PostInsertUmfrage)
 	r.Post("/updateUmfrage", PostUpdateUmfrage)
 	r.Post("/getUmfrage", GetUmfrage)
@@ -41,7 +40,9 @@ func isOwnerOfUmfrage(umfrageRef []primitive.ObjectID, umfrageID primitive.Objec
 	return false
 }
 
-// PostUpdateUmfrage updates an umfrage with received values
+/**
+PostUpdateUmfrage updates an umfrage with received values
+*/
 func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -94,7 +95,9 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
-//Postrequest sendet Umfrage struct fuer passende UmfrageID zurueck, sofern auth Eigentuemer oder Admin
+/**
+Postrequest sendet Umfrage struct fuer passende UmfrageID zurueck, sofern auth Eigentuemer oder Admin
+*/
 func GetUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -143,7 +146,9 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, gebaeudeRes, http.StatusOK)
 }
 
-// PostInsertUmfrage inserts the received Umfrage and returns the ID of the Umfrage-Entry
+/**
+PostInsertUmfrage inserts the received Umfrage and returns the ID of the Umfrage-Entry
+*/
 func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -220,7 +225,9 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
-// GetAllUmfragen returns all Umfragen as structs.AlleUmfragen
+/**
+GetAllUmfragen returns all Umfragen as structs.AlleUmfragen
+*/
 func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
 	umfragenRes := structs.AlleUmfragen{}
 
@@ -233,7 +240,9 @@ func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfragenRes, http.StatusOK)
 }
 
-// GetAllUmfragenForUser returns all Umfragen for a given user as structs.AlleUmfragen
+/**
+GetAllUmfragenForUser returns all Umfragen for a given user as structs.AlleUmfragen
+*/
 func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
 
 	user := req.URL.Query().Get("user")
@@ -253,7 +262,9 @@ func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfragenRes, http.StatusOK)
 }
 
-// GetUmfrageYear returns the bilanzierungsjahr for the given umfrage
+/**
+GetUmfrageYear returns the bilanzierungsjahr for the given umfrage
+*/
 func GetUmfrageYear(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
