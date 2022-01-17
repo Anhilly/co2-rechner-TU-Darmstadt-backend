@@ -11,7 +11,7 @@ Funktion erstellt ein Dump der Abbildung mit mongodump im Verzeichnis "DumpPath 
 Zurueckgeliefert wird der Ordnername mit Timestamp.
 */
 func CreateDump(directoryName string) (string, error) {
-	dirTimestamp := directoryName + time.Now().Format("20060102150405") // Format: yyyyMMddHHmmss
+	dirTimestamp := time.Now().Format("20060102150405") + directoryName // Format: yyyyMMddHHmmss
 
 	cmd := exec.Command("docker", "exec", "-i", "mongodb", "/usr/bin/mongodump",
 		"--username", username, "--password", password, "--authenticationDatabase", "admin",

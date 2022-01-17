@@ -21,26 +21,6 @@ func RouteDB() chi.Router {
 	return r
 }
 
-func errorResponse(res http.ResponseWriter, err error, statuscode int) {
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseError,
-		Data:   nil,
-		Error: structs.Error{
-			Code:    int32(statuscode),
-			Message: err.Error(),
-		},
-	})
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	res.WriteHeader(statuscode)
-	_, err = res.Write(response)
-	if err != nil {
-		log.Fatalln(err)
-	}
-}
-
 func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -55,17 +35,15 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, req, data.Auth.Username, data.Auth.Sessiontoken) {
+	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
 		return
 	}
 	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
 	if nutzer.Rolle != 1 {
-		sendResponse(res, false, structs.Error{
-			Code:    http.StatusUnauthorized,
-			Message: err.Error(),
-		}, http.StatusUnauthorized)
+		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
+
 	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostAddFaktor")
 	if err != nil {
@@ -77,26 +55,13 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatalln(err2)
+			log.Println(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
-	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   nil,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
-
+	sendResponse(res, true, nil, http.StatusOK)
 }
 
 func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
@@ -113,15 +78,12 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, req, data.Auth.Username, data.Auth.Sessiontoken) {
+	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
 		return
 	}
 	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
 	if nutzer.Rolle != 1 {
-		sendResponse(res, false, structs.Error{
-			Code:    http.StatusUnauthorized,
-			Message: err.Error(),
-		}, http.StatusUnauthorized)
+		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
 
@@ -136,25 +98,13 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatalln(err2)
+			log.Println(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
-	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   nil,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, nil, http.StatusOK)
 }
 
 func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
@@ -170,17 +120,16 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-	if !AuthWithResponse(res, req, data.Auth.Username, data.Auth.Sessiontoken) {
+
+	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
 		return
 	}
 	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
 	if nutzer.Rolle != 1 {
-		sendResponse(res, false, structs.Error{
-			Code:    http.StatusUnauthorized,
-			Message: err.Error(),
-		}, http.StatusUnauthorized)
+		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
+
 	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostInsertZaehler")
 	if err != nil {
@@ -192,26 +141,13 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatalln(err2)
+			log.Println(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
-	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   nil,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
-
+	sendResponse(res, true, nil, http.StatusOK)
 }
 
 func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
@@ -228,15 +164,12 @@ func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, req, data.Auth.Username, data.Auth.Sessiontoken) {
+	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
 		return
 	}
 	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
 	if nutzer.Rolle != 1 {
-		sendResponse(res, false, structs.Error{
-			Code:    http.StatusUnauthorized,
-			Message: err.Error(),
-		}, http.StatusUnauthorized)
+		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
 
@@ -251,24 +184,11 @@ func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatalln(err2)
+			log.Println(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
-	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   nil,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
-
+	sendResponse(res, true, nil, http.StatusOK)
 }

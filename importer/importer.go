@@ -207,7 +207,7 @@ func ImportStromzaehler() {
 
 		location, err := time.LoadLocation("Etc/GMT")
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		strom.Zaehlerdaten = []structs.Zaehlerwerte{
@@ -302,7 +302,7 @@ func ImportWaermedaten() {
 
 		location, err := time.LoadLocation("Etc/GMT")
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		waerme.Zaehlerdaten = []structs.Zaehlerwerte{
@@ -400,7 +400,7 @@ func ImportKaeltedaten() {
 
 		location, err := time.LoadLocation("Etc/GMT")
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		kaelte.Zaehlerdaten = []structs.Zaehlerwerte{

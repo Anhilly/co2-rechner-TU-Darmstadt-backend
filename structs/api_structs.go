@@ -106,6 +106,7 @@ type UpdateUmfrage struct {
 }
 
 type UpdateMitarbeiterUmfrage struct {
+	Auth        AuthToken            `json:"authToken"`
 	UmfrageID   primitive.ObjectID   `json:"umfrageID"`
 	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`
@@ -122,9 +123,9 @@ type InsertMitarbeiterUmfrage struct {
 }
 
 type UmfrageExistsRes struct {
-	UmfrageID string `json:"umfrageID"`
+	UmfrageID   string `json:"umfrageID"`
 	Bezeichnung string `json:"bezeichnung"`
-	Complete  bool   `json:"complete"`
+	Complete    bool   `json:"complete"`
 }
 
 type UmfrageYearRes struct {
