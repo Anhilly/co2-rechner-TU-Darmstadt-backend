@@ -244,7 +244,6 @@ func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
 GetAllUmfragenForUser returns all Umfragen for a given user as structs.AlleUmfragen
 */
 func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
-
 	user := req.URL.Query().Get("user")
 	if checkValidSessionToken(user) != nil {
 		return
