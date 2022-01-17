@@ -35,11 +35,18 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 
 	umfrageReq := structs.UpdateMitarbeiterUmfrage{}
 	umfrageRes := structs.UmfrageID{}
-
 	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
 		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
 
@@ -50,20 +57,11 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// TODO authentication does not work here? says email would not have a valid session token?
-	//err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
-	//if err != nil {
-	//	sendResponse(res, false, structs.Error{
-	//		Code:    http.StatusUnauthorized,
-	//		Message: "Ungueltige Anmeldedaten",
-	//	}, http.StatusUnauthorized)
-	//}
-
 	umfrageID, err := database.MitarbeiterUmfrageUpdate(umfrageReq)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatal(err2)
+			log.Println(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -90,11 +88,6 @@ func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request)
 	}
 
 	mitarbeiterUmfragenRes := structs.AlleMitarbeiterUmfragenForUmfrage{}
-
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
 
 	mitarbeiterUmfragenRes.MitarbeiterUmfragen, err = database.MitarbeiterUmfrageFindForUmfrage(requestedUmfrageID)
 	if err != nil {
@@ -128,7 +121,6 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 
 		sendResponse(res, true, umfrageExistsRes, http.StatusOK)
 		return
-
 	} else {
 		umfrageExistsRes.UmfrageID = umfrage.ID.Hex()
 		umfrageExistsRes.Bezeichnung = umfrage.Bezeichnung
@@ -162,7 +154,6 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 
 	umfrageExistsReq := structs.InsertMitarbeiterUmfrage{}
 	umfrageExistsRes := structs.UmfrageID{}
-
 	err = json.Unmarshal(s, &umfrageExistsReq)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
@@ -179,7 +170,7 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatal(err2)
+			log.Println(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

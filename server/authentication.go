@@ -101,9 +101,9 @@ AuthWithResponse prueft ob fuer die uebergeben Anmeldedaten ein valider Benutzer
 Im Fehlerfall sendet es Unauthorized mit res Writer an Frontend und returned false, sonst nichts und gibt true zurueck
 */
 func AuthWithResponse(res http.ResponseWriter, email string, token string) bool {
-	//Authentication
+	// Authentication
 	errAuth := Authenticate(email, token)
-	//Falls kein valider Session Token vorhanden.
+	// Falls kein valider Session Token vorhanden.
 	if errAuth != nil {
 		errorResponse(res, errAuth, http.StatusUnauthorized)
 		return false
@@ -121,19 +121,21 @@ func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
+
 	sessionReq := structs.PruefeSessionReq{}
 	err = json.Unmarshal(s, &sessionReq)
-
 	if err != nil {
 		// Konnte Body der Request nicht lesen, daher Client error -> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-	//Authentifiziere Nutzer
+
+	// Authentifiziere Nutzer
 	if !AuthWithResponse(res, sessionReq.Username, sessionReq.Sessiontoken) {
 		return
 	}
-	//Falls ein valider Session Token vorhanden ist
+
+	// Falls ein valider Session Token vorhanden ist
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
@@ -147,9 +149,9 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
+
 	anmeldeReq := structs.AuthReq{}
 	err = json.Unmarshal(s, &anmeldeReq)
-
 	if err != nil {
 		// Konnte Body der Request nicht lesen, daher Client error -> 400
 		errorResponse(res, err, http.StatusBadRequest)
@@ -157,7 +159,6 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 	}
 
 	nutzerdaten, err := database.NutzerdatenFind(anmeldeReq.Username)
-
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		// Es existiert kein Account mit dieser Email
 		// Sende genauere Fehlermeldung zurueck, statt ErrNoDocuments
@@ -170,7 +171,6 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 
 	// Vergleiche Passwort mit gespeichertem Hash
 	evaluationError := bcrypt.CompareHashAndPassword([]byte(nutzerdaten.Passwort), []byte(anmeldeReq.Passwort))
-
 	if evaluationError != nil {
 		// Falsches Passwort
 		errorResponse(res, structs.ErrFalschesPasswortError, http.StatusUnauthorized)
@@ -198,14 +198,13 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	}
 
 	registrierungReq := structs.AuthReq{}
-
 	err = json.Unmarshal(s, &registrierungReq)
-
 	if err != nil {
 		// Konnte Body der Request nicht lesen, daher Client error -> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
+
 	var path = "registrierung"
 	restorepath, err := database.CreateDump(path)
 	if err != nil {
@@ -218,7 +217,7 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		err2 := database.RestoreDump(restorepath)
 		if err2 != nil {
 			// Datenbank konnte nicht wiederhergestellt werden
-			log.Fatal(err2)
+			log.Println(err2)
 		}
 		// Konnte keinen neuen Nutzer erstellen
 		errorResponse(res, err, http.StatusConflict)
@@ -243,15 +242,16 @@ func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
+
 	sessionReq := structs.PruefeSessionReq{}
 	err = json.Unmarshal(s, &sessionReq)
-
 	if err != nil {
 		// Konnte Body der Request nicht lesen, daher Client error -> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-	//Falls kein valider Session Token vorhanden.
+
+	// Falls kein valider Session Token vorhanden.
 	if !AuthWithResponse(res, sessionReq.Username, sessionReq.Sessiontoken) {
 		return
 	}
@@ -277,7 +277,6 @@ func DeleteAbmeldung(res http.ResponseWriter, req *http.Request) {
 
 	abmeldungReq := structs.AbmeldungReq{}
 	err = json.Unmarshal(s, &abmeldungReq)
-
 	if err != nil {
 		// Konnte Body der Request nicht lesen, daher Client error -> 400
 		errorResponse(res, err, http.StatusBadRequest)
@@ -285,13 +284,11 @@ func DeleteAbmeldung(res http.ResponseWriter, req *http.Request) {
 	}
 
 	err = loescheSessionToken(abmeldungReq.Username)
-
 	if err != nil {
 		// Konnte nicht loeschen
 		errorResponse(res, err, http.StatusConflict)
 		return
 	}
 	// session Token geloescht
-	sendResponse(res, true, structs.AbmeldeRes{
-		Message: "Der Session Token wurde gelöscht"}, http.StatusOK)
+	sendResponse(res, true, structs.AbmeldeRes{Message: "Der Session Token wurde gelöscht"}, http.StatusOK)
 }

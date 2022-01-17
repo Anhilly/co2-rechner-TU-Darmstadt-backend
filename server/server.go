@@ -46,13 +46,13 @@ func StartServer() {
 /**
 sendResponse sendet Response zurueck, bei Marshal Fehler sende 500 Code Error
  @param res Writer der den Response sendet
- @param data true falls normales Response Packet, false bei Error
+ @param success true falls normales Response Packet, false bei Error
  @param payload ist interface welches den data bzw. error struct enthaelt
  @param code ist der HTTP Header Code
 */
-func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code int32) {
+func sendResponse(res http.ResponseWriter, success bool, payload interface{}, code int32) {
 	responseBuilder := structs.Response{}
-	if data {
+	if success {
 		responseBuilder.Status = structs.ResponseSuccess
 		responseBuilder.Error = nil
 		responseBuilder.Data = payload
@@ -69,7 +69,7 @@ func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code 
 	}
 	_, err = res.Write(response)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
 

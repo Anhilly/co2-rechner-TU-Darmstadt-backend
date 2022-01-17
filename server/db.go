@@ -43,6 +43,7 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
+
 	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostAddFaktor")
 	if err != nil {
@@ -54,7 +55,7 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatal(err2)
+			log.Println(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -97,7 +98,7 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatal(err2)
+			log.Println(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -119,6 +120,7 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
+
 	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
 		return
 	}
@@ -127,6 +129,7 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
+
 	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostInsertZaehler")
 	if err != nil {
@@ -138,7 +141,7 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatal(err2)
+			log.Println(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -181,7 +184,7 @@ func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatal(err2)
+			log.Println(err2)
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
