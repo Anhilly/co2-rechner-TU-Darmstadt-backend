@@ -212,11 +212,11 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Pruefe ob Nutzer authentifiziert ist, dann ob er die zu loeschende Umfrage besitzt
-	if !AuthWithResponse(res, umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken) {
+	if !AuthWithResponse(res, umfrageReq.AuthToken.Username, umfrageReq.AuthToken.Sessiontoken) {
 		return
 	}
 
-	err = database.UmfrageDelete(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.UmfrageID)
+	err = database.UmfrageDelete(umfrageReq.AuthToken.Username, umfrageReq.UmfrageID)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

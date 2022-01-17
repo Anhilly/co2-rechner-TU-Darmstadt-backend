@@ -133,8 +133,8 @@ type UmfrageYearRes struct {
 }
 
 type DeleteUmfrage struct {
-	UmfrageID             primitive.ObjectID `json:"umfrageID"`
-	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
+	UmfrageID primitive.ObjectID `json:"umfrageID"`
+	AuthToken AuthToken          `json:"authToken"`
 }
 
 type RequestUmfrage struct {
