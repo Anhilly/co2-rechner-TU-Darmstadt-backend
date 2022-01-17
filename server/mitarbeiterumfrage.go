@@ -161,7 +161,7 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 	}
 
 	umfrageExistsReq := structs.InsertMitarbeiterUmfrage{}
-	umfrageExistsRes := structs.UmfrageID{}
+
 	err = json.Unmarshal(s, &umfrageExistsReq)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
@@ -174,7 +174,7 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
-	umfrageID, err := database.MitarbeiterUmfrageInsert(umfrageExistsReq)
+	_, err = database.MitarbeiterUmfrageInsert(umfrageExistsReq)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
@@ -184,12 +184,5 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// return empty string if id is nil
-	if umfrageID == primitive.NilObjectID {
-		umfrageExistsRes.UmfrageID = ""
-	} else {
-		umfrageExistsRes.UmfrageID = umfrageID.Hex()
-	}
-
-	sendResponse(res, true, umfrageExistsRes, http.StatusOK)
+	sendResponse(res, true, nil, http.StatusOK)
 }
