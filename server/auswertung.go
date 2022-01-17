@@ -135,9 +135,5 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.Vergleich2PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch2PersonenHaushalt
 	auswertung.Vergleich4PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch4PersonenHaushalt
 
-	sendResponse(res, true, structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   auswertung,
-		Error:  nil,
-	}, http.StatusOK)
+	sendResponse(res, true, auswertung, http.StatusOK)
 }

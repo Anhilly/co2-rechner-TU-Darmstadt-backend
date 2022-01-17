@@ -77,11 +77,7 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Response
-	sendResponse(res, true, structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfrageRes,
-		Error:  nil,
-	}, http.StatusOK)
+	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
 // GetMitarbeiterUmfrageForUmfrage returns all MitarbeiterUmfragen belonging to a certain given umfrageID
