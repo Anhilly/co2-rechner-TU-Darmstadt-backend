@@ -39,7 +39,8 @@ func RouteAuthentication() chi.Router {
 }
 
 /**
-Generiert einen Cookie Token, welcher den Nutzer authentifiziert und speichert ihn in Map
+GeneriereSessionToken generiert einen Cookie Token, welcher den Nutzer authentifiziert und speichert ihn in Map.
+Dabei findet keine Authentifizierung statt!
 */
 func GeneriereSessionToken(email string) string {
 	sessionToken := uuid.NewString()
@@ -51,7 +52,7 @@ func GeneriereSessionToken(email string) string {
 }
 
 /**
-Ueberprueft ob die email einen gueltigen Sessiontoken registriert hat, falls ja nil
+checkValidSessionToken ueberprueft ob die email einen gueltigen Sessiontoken registriert hat, falls ja nil, sonst error
 */
 func checkValidSessionToken(email string) error {
 	// TTL ist 2 Stunden
@@ -68,7 +69,7 @@ func checkValidSessionToken(email string) error {
 }
 
 /**
-Loescht den Cookie Token welcher den Nutzer mit email authentifiziert
+loescheSessionToken loescht den Cookie Token welcher den Nutzer mit email authentifiziert
 */
 func loescheSessionToken(email string) error {
 	err := checkValidSessionToken(email)
@@ -80,7 +81,7 @@ func loescheSessionToken(email string) error {
 }
 
 /**
-Authentifiziert einen Nutzer mit email und returned nil bei Erfolg, sonst error
+Authenticate authentifiziert einen Nutzer mit email und returned nil bei Erfolg, sonst error
 */
 func Authenticate(email string, token string) error {
 	err := checkValidSessionToken(email)
@@ -95,8 +96,10 @@ func Authenticate(email string, token string) error {
 	return nil
 }
 
-// Returnt true zurück falls kein Fehler besteht, falls ein fehler besteht,
-// wird ein StatusUnauthorized gesendet und falls zurueckgegeben
+/**
+AuthWithResponse prueft ob fuer die uebergeben Anmeldedaten ein valider Benutzer registriert ist.
+Im Fehlerfall sendet es Unauthorized mit res Writer an Frontend und returned false, sonst nichts und gibt true zurueck
+*/
 func AuthWithResponse(res http.ResponseWriter, email string, token string) bool {
 	//Authentication
 	errAuth := Authenticate(email, token)
@@ -108,6 +111,9 @@ func AuthWithResponse(res http.ResponseWriter, email string, token string) bool 
 	return true
 }
 
+/**
+PostPruefeSession prueft ob ein gueltiger Sessiontoken registriert ist und prueft diesen mit dem Request ab
+*/
 func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -123,10 +129,8 @@ func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-	//Falls kein valider Session Token vorhanden.
-	err = Authenticate(sessionReq.Username, sessionReq.Sessiontoken)
-	if err != nil {
-		errorResponse(res, err, http.StatusUnauthorized)
+	//Authentifiziere Nutzer
+	if !AuthWithResponse(res, sessionReq.Username, sessionReq.Sessiontoken) {
 		return
 	}
 	//Falls ein valider Session Token vorhanden ist
@@ -229,6 +233,9 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	}, http.StatusCreated)
 }
 
+/**
+PostPruefeNutzerRolle ueberprueft die Nutzerrolle (Admin, User) eines authentifizierten Nutzers und liefert die Kennung zurueck
+*/
 func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -245,12 +252,14 @@ func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	//Falls kein valider Session Token vorhanden.
-	if Authenticate(sessionReq.Username, sessionReq.Sessiontoken) != nil {
-		errorResponse(res, err, http.StatusBadRequest)
+	if !AuthWithResponse(res, sessionReq.Username, sessionReq.Sessiontoken) {
 		return
 	}
 
-	nutzer, _ := database.NutzerdatenFind(sessionReq.Username)
+	nutzer, err := database.NutzerdatenFind(sessionReq.Username)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+	}
 	// Falls ein valider Session Token vorhanden ist
 	sendResponse(res, true, nutzer.Rolle, http.StatusOK)
 }
