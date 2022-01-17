@@ -173,7 +173,7 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken) {
+	if !AuthWithResponse(res, umfrageReq.AuthToken.Username, umfrageReq.AuthToken.Sessiontoken) {
 		return
 	}
 

@@ -51,7 +51,7 @@ func TestUmfrageDelete(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			Hauptverantwortlicher: structs.AuthToken{
+			AuthToken: structs.AuthToken{
 				Username:     email,
 				Sessiontoken: server.GeneriereSessionToken(email),
 			},
@@ -82,7 +82,7 @@ func TestUmfrageDelete(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			Hauptverantwortlicher: structs.AuthToken{
+			AuthToken: structs.AuthToken{
 				Username:     email,
 				Sessiontoken: server.GeneriereSessionToken(email),
 			},
