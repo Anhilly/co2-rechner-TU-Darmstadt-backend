@@ -67,7 +67,10 @@ func sendResponse(res http.ResponseWriter, data bool, payload interface{}, code 
 	} else {
 		res.WriteHeader(http.StatusInternalServerError)
 	}
-	_, _ = res.Write(response)
+	_, err = res.Write(response)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 /**
