@@ -41,8 +41,8 @@ func TestUmfrageUpdate(t *testing.T) {
 	t.Run("UmfrageUpdate: Update von Umfragewerten", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		email := "anton@tobi.com"
-		token := server.GeneriereSessionToken(email)
+		username := "anton@tobi.com"
+		token := server.GeneriereSessionToken(username)
 
 		data := structs.InsertUmfrage{
 			Bezeichnung:       "TestUmfrageUpdated",
@@ -56,7 +56,7 @@ func TestUmfrageUpdate(t *testing.T) {
 				{IDITGeraete: 6, Anzahl: 30},
 			},
 			Auth: structs.AuthToken{
-				Username:     email,
+				Username:     username,
 				Sessiontoken: token,
 			},
 		}

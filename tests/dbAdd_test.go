@@ -480,20 +480,20 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("NutzerdatenAddUmfrageref: Email = anton@tobi.com", func(t *testing.T) {
+	t.Run("NutzerdatenAddUmfrageref: username = anton@tobi.com", func(t *testing.T) {
 		is.NewRelaxed(t)
 
-		email := "anton@tobi.com"
+		username := "anton@tobi.com"
 		id := primitive.NewObjectID()
 
 		var idVorhanden primitive.ObjectID
 		err := idVorhanden.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
 		is.NoErr(err)
 
-		err = database.NutzerdatenAddUmfrageref(email, id)
+		err = database.NutzerdatenAddUmfrageref(username, id)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, err := database.NutzerdatenFind(email)
+		updatedDoc, err := database.NutzerdatenFind(username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
 			Email:      "anton@tobi.com",
@@ -504,13 +504,13 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 	})
 
 	// Errortests
-	t.Run("NutzerdatenAddUmfrageref: Email = 0 nicht vorhanden", func(t *testing.T) {
+	t.Run("NutzerdatenAddUmfrageref: username = 0 nicht vorhanden", func(t *testing.T) {
 		is.NewRelaxed(t)
 
-		email := "0"
+		username := "0"
 		id := primitive.NewObjectID()
 
-		err := database.NutzerdatenAddUmfrageref(email, id)
+		err := database.NutzerdatenAddUmfrageref(username, id)
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 	})
 }

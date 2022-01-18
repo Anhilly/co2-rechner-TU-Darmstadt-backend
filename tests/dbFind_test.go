@@ -771,15 +771,15 @@ func TestNutzerdatenFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("NutzerdatenFind: EMail = anton@tobi.com", func(t *testing.T) {
+	t.Run("NutzerdatenFind: username = anton@tobi.com", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		email := "anton@tobi.com"
+		username := "anton@tobi.com"
 		var idUmfrage primitive.ObjectID
 		err := idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
 		is.NoErr(err)
 
-		data, err := database.NutzerdatenFind(email)
+		data, err := database.NutzerdatenFind(username)
 
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data,
@@ -793,12 +793,12 @@ func TestNutzerdatenFind(t *testing.T) {
 	})
 
 	// Errortests
-	t.Run("MitarbeiterUmfrageFind: EMail = 0 nicht vorhanden", func(t *testing.T) {
+	t.Run("MitarbeiterUmfrageFind: username = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		email := "0"
+		username := "0"
 
-		data, err := database.NutzerdatenFind(email)
+		data, err := database.NutzerdatenFind(username)
 
 		is.Equal(err, mongo.ErrNoDocuments)   // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Nutzerdaten{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden

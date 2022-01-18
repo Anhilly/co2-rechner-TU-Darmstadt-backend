@@ -330,9 +330,9 @@ func TestUmfrageInsert(t *testing.T) {
 	t.Run("UmfrageInsert: ID nach aktueller Zeitstempel", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		email := "anton@tobi.com"
+		username := "anton@tobi.com"
 		password := "test_pw"
-		token := server.GeneriereSessionToken(email)
+		token := server.GeneriereSessionToken(username)
 
 		data := structs.InsertUmfrage{
 			Bezeichnung:       "TestUmfrageInsert",
@@ -346,7 +346,7 @@ func TestUmfrageInsert(t *testing.T) {
 				{IDITGeraete: 6, Anzahl: 30},
 			},
 			Auth: structs.AuthToken{
-				Username:     email,
+				Username:     username,
 				Sessiontoken: token,
 			},
 		}
@@ -379,7 +379,7 @@ func TestUmfrageInsert(t *testing.T) {
 		updatedDoc, err := database.NutzerdatenFind(data.Auth.Username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
-			Email:      email,
+			Email:      username,
 			Passwort:   password,
 			Revision:   1,
 			UmfrageRef: []primitive.ObjectID{idVorhanden, id},
@@ -387,7 +387,7 @@ func TestUmfrageInsert(t *testing.T) {
 	})
 
 	// Errortest
-	t.Run("UmfrageInsert: ungueltige NutzerEmail", func(t *testing.T) {
+	t.Run("UmfrageInsert: ungueltiger Username", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.InsertUmfrage{
@@ -498,25 +498,25 @@ func TestNutzerdatenInsert(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("NutzerdatenInsert: {email = 'testingEmailPlsDontUse' password='verysecurepassword'} (nicht vorhanden)", func(t *testing.T) {
+	t.Run("NutzerdatenInsert: {username = 'testingUserPlsDontUse' password='verysecurepassword'} (nicht vorhanden)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
-		var email = "testingEmailPlsDontUse"
+		var username = "testingUserPlsDontUse"
 		testData := structs.AuthReq{
-			Username: email,
+			Username: username,
 			Passwort: "verysecurepassword",
 		}
 		err := database.NutzerdatenInsert(testData)
 		is.NoErr(err) // Kein Fehler wird geworfen
 
-		daten, err := database.NutzerdatenFind(email)
+		daten, err := database.NutzerdatenFind(username)
 		is.NoErr(err) // Kein Fehler seitens der Datenbank
 		// Eintrag wurde korrekt hinzugefuegt
-		is.Equal(daten.Email, email)
+		is.Equal(daten.Email, username)
 		is.NoErr(bcrypt.CompareHashAndPassword([]byte(daten.Passwort), []byte(testData.Passwort)))
 	})
 
 	// Errorfall
-	t.Run("NutzerdatenInsert: {email = 'anton@tobi.com' password='verysecurepassword'} (vorhanden)", func(t *testing.T) {
+	t.Run("NutzerdatenInsert: {username = 'anton@tobi.com' password='verysecurepassword'} (vorhanden)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 		testData := structs.AuthReq{
 			Username: "anton@tobi.com",

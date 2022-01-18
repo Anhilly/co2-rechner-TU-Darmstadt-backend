@@ -75,7 +75,7 @@ var ( // Fehler, die bei Berechnungen auftreten
 )
 
 var ( // Fehler die bei der Authentifizierung auftreten
-	// Nutzer will Account mit bestehender Email registrieren
+	// Nutzer will Account mit bestehender Username registrieren
 	ErrInsertExistingAccount = errors.New("Account mit diesem Nutzernamen existiert bereits")
 
 	// Fehler das für Nutzer kein Sessiontoken registriert ist

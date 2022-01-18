@@ -41,7 +41,7 @@ func TestUmfrageDelete(t *testing.T) {
 	//Normalfall
 	t.Run("UmfrageDelete umfrageID vorhanden ohne MitarbeiterUmfragen", func(t *testing.T) {
 		is := is.NewRelaxed(t)
-		email := "anton@tobi.com"
+		username := "anton@tobi.com"
 
 		data := structs.InsertUmfrage{
 			Mitarbeiteranzahl: 42,
@@ -54,16 +54,16 @@ func TestUmfrageDelete(t *testing.T) {
 				{IDITGeraete: 6, Anzahl: 30},
 			},
 			Auth: structs.AuthToken{
-				Username:     email,
-				Sessiontoken: server.GeneriereSessionToken(email),
+				Username:     username,
+				Sessiontoken: server.GeneriereSessionToken(username),
 			},
 		}
 
 		objectID, err := database.UmfrageInsert(data) // Neuen Eintrag erstellen
 		is.NoErr(err)                                 // Kein Fehler im Normalfall
 
-		err = database.UmfrageDelete(email, objectID) // Eintrag loeschen
-		is.NoErr(err)                                 // Kein Fehler im Normalfall
+		err = database.UmfrageDelete(username, objectID) // Eintrag loeschen
+		is.NoErr(err)                                    // Kein Fehler im Normalfall
 
 		_, err = database.UmfrageFind(objectID) // Eintrag wird nicht mehr gefunden?
 		is.Equal(err, mongo.ErrNoDocuments)     // Datenbank wirft ErrNoDocuments
@@ -72,7 +72,7 @@ func TestUmfrageDelete(t *testing.T) {
 
 	t.Run("UmfrageDelete umfrageID vorhanden mit Mitarbeiterumfragen", func(t *testing.T) {
 		is := is.NewRelaxed(t)
-		email := "anton@tobi.com"
+		username := "anton@tobi.com"
 
 		data := structs.InsertUmfrage{
 			Mitarbeiteranzahl: 42,
@@ -85,8 +85,8 @@ func TestUmfrageDelete(t *testing.T) {
 				{IDITGeraete: 6, Anzahl: 30},
 			},
 			Auth: structs.AuthToken{
-				Username:     email,
-				Sessiontoken: server.GeneriereSessionToken(email),
+				Username:     username,
+				Sessiontoken: server.GeneriereSessionToken(username),
 			},
 		}
 
@@ -128,8 +128,8 @@ func TestUmfrageDelete(t *testing.T) {
 		mitarbeiterID[1], err = database.MitarbeiterUmfrageInsert(mitarbeiter)
 		is.NoErr(err) // Kein Fehler im Normalfall
 
-		err = database.UmfrageDelete(email, objectID) // Loesche Umfrage und Mitarbeiterumfragen
-		is.NoErr(err)                                 // Kein Fehler im Normalfall
+		err = database.UmfrageDelete(username, objectID) // Loesche Umfrage und Mitarbeiterumfragen
+		is.NoErr(err)                                    // Kein Fehler im Normalfall
 
 		_, err = database.UmfrageFind(objectID) // Eintraege koennen nicht mehr gefunden werden
 		is.Equal(err, mongo.ErrNoDocuments)     // Datenbank wirft ErrNoDocument

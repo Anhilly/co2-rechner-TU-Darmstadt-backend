@@ -22,7 +22,7 @@ type session struct {
 
 var (
 	// authMap Speichert Authentication Daten fuer Benutzer
-	// key:= email -> {Sessiontoken, TTL}
+	// key:= username -> {Sessiontoken, TTL}
 	authMap = make(map[string]session)
 )
 

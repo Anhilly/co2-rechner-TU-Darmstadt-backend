@@ -10,7 +10,7 @@ import (
 
 // NutzerdatenFind liefert einen Nutzerdaten struct zurueck, der die uebergegebene E-Mail hat,
 // falls ein solches Dokument in der Datenbank vorhanden ist.
-func NutzerdatenFind(email string) (structs.Nutzerdaten, error) {
+func NutzerdatenFind(username string) (structs.Nutzerdaten, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -19,7 +19,7 @@ func NutzerdatenFind(email string) (structs.Nutzerdaten, error) {
 	var data structs.Nutzerdaten
 	err := collection.FindOne(
 		ctx,
-		bson.D{{"email", email}},
+		bson.D{{"email", username}},
 	).Decode(&data)
 	if err != nil {
 		return structs.Nutzerdaten{}, err
@@ -29,7 +29,7 @@ func NutzerdatenFind(email string) (structs.Nutzerdaten, error) {
 }
 
 // NutzerdatenAddUmfrageref fuegt einem Nutzer eine ObjectID einer Umfrage hinzu, falls der Nutzer vorhanden sind.
-func NutzerdatenAddUmfrageref(email string, id primitive.ObjectID) error {
+func NutzerdatenAddUmfrageref(username string, id primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -38,7 +38,7 @@ func NutzerdatenAddUmfrageref(email string, id primitive.ObjectID) error {
 	var updatedDoc structs.Nutzerdaten
 	err := collection.FindOneAndUpdate(
 		ctx,
-		bson.D{{"email", email}},
+		bson.D{{"email", username}},
 		bson.D{{"$addToSet",
 			bson.D{{"umfrageRef", id}}}},
 	).Decode(&updatedDoc)
