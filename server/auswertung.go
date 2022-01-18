@@ -22,6 +22,8 @@ func RouteAuswertung() chi.Router {
 // GetAuswertung fuehrt die CO2-Emissionen Berechnung fuer die uebertragene Umfrage durch und sendet einen
 // structs.AuswertungRes zurueck.
 func GetAuswertung(res http.ResponseWriter, req *http.Request) {
+	//TODO Authentifizierung des Nutzers
+
 	var umfrageID primitive.ObjectID
 	err := umfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
 	if err != nil {

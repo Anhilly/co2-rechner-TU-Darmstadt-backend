@@ -82,6 +82,7 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 // GetMitarbeiterUmfrageForUmfrage liefert alle Mitarbeiterumfragen,
 // welche mit der Umfrage mit der ID UmfrageID assoziiert sind, zurueck.
 func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
+	//TODO Authentifizierung des Nutzers
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
 	if err != nil {
@@ -102,6 +103,7 @@ func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request)
 
 // GetUmfrageExists liefert einen structs.UmfrageExistsRes zurueck, falls die Umfrage existiert,
 // dabei wird auch zurueck geliefert, ob die Umfrage durch alle Mitarbeiter ausgefuellt wurde.
+// Diese Funktion hat keine Authentifizierung, da sie fuer die Mitarbeiterumfrage benoetigt wird.
 func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))

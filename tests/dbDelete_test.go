@@ -33,6 +33,8 @@ func TestDelete(t *testing.T) {
 	t.Run("TestUmfrageDeleteMitarbeiterUmfrage", TestUmfrageDeleteMitarbeiterUmfrage)
 }
 
+// TODO Umfragen aus assoziierten Nutzer geloescht und assoziierte Mitarbeiterumfragen aus MitarbeiterumfrageCol geloescht?
+
 func TestUmfrageDelete(t *testing.T) {
 	is := is.NewRelaxed(t)
 
@@ -184,6 +186,7 @@ func TestUmfrageDeleteMitarbeiterUmfrage(t *testing.T) {
 
 		_, err = database.MitarbeiterUmfrageFind(idMitarbeiterumfrage) // Umfrage kann nicht mehr gefunden werden
 		is.Equal(err, mongo.ErrNoDocuments)
+		//TODO ergaenze Test ob noch in Umfrage drin?
 	})
 
 	//Fehlerfall

@@ -136,6 +136,7 @@ func GetUmfrage(res http.ResponseWriter, req *http.Request) {
 
 // GetAllGebaeude sendet Response mit allen Gebaeuden in der Datenbank zurueck.
 func GetAllGebaeude(res http.ResponseWriter, _ *http.Request) {
+	//TODO muss hier Authentifizierung gemacht werden?
 	gebaeudeRes := structs.AllGebaeudeRes{}
 
 	var err error
