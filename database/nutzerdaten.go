@@ -19,7 +19,7 @@ func NutzerdatenFind(username string) (structs.Nutzerdaten, error) {
 	var data structs.Nutzerdaten
 	err := collection.FindOne(
 		ctx,
-		bson.D{{"email", username}},
+		bson.D{{"nutzername", username}},
 	).Decode(&data)
 	if err != nil {
 		return structs.Nutzerdaten{}, err
@@ -38,7 +38,7 @@ func NutzerdatenAddUmfrageref(username string, id primitive.ObjectID) error {
 	var updatedDoc structs.Nutzerdaten
 	err := collection.FindOneAndUpdate(
 		ctx,
-		bson.D{{"email", username}},
+		bson.D{{"nutzername", username}},
 		bson.D{{"$addToSet",
 			bson.D{{"umfrageRef", id}}}},
 	).Decode(&updatedDoc)
@@ -69,7 +69,7 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 		return err // Bcrypt hashing error
 	}
 	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
-		Email:      anmeldedaten.Username,
+		Nutzername: anmeldedaten.Username,
 		Passwort:   string(passwordhash),
 		Rolle:      structs.IDRolleNutzer,
 		Revision:   1,

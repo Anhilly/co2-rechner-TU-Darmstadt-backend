@@ -784,7 +784,7 @@ func TestNutzerdatenFind(t *testing.T) {
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data,
 			structs.Nutzerdaten{
-				Email:      "anton@tobi.com",
+				Nutzername: "anton@tobi.com",
 				Passwort:   "test_pw",
 				Rolle:      0,
 				Revision:   1,

@@ -219,7 +219,7 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 	var updatedDoc structs.Nutzerdaten
 	err = collection.FindOneAndUpdate(
 		ctx,
-		bson.M{"email": username},
+		bson.M{"nutzername": username},
 		bson.D{{"$pull",
 			bson.D{{"umfrageRef", umfrageID}}}}).Decode(&updatedDoc)
 

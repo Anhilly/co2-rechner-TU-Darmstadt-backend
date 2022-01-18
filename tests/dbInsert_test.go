@@ -379,7 +379,7 @@ func TestUmfrageInsert(t *testing.T) {
 		updatedDoc, err := database.NutzerdatenFind(data.Auth.Username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
-			Email:      username,
+			Nutzername: username,
 			Passwort:   password,
 			Revision:   1,
 			UmfrageRef: []primitive.ObjectID{idVorhanden, id},
@@ -511,7 +511,7 @@ func TestNutzerdatenInsert(t *testing.T) {
 		daten, err := database.NutzerdatenFind(username)
 		is.NoErr(err) // Kein Fehler seitens der Datenbank
 		// Eintrag wurde korrekt hinzugefuegt
-		is.Equal(daten.Email, username)
+		is.Equal(daten.Nutzername, username)
 		is.NoErr(bcrypt.CompareHashAndPassword([]byte(daten.Passwort), []byte(testData.Passwort)))
 	})
 

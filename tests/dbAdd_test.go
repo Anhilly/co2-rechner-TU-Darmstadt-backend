@@ -496,7 +496,7 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 		updatedDoc, err := database.NutzerdatenFind(username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
-			Email:      "anton@tobi.com",
+			Nutzername: "anton@tobi.com",
 			Passwort:   "test_pw",
 			Revision:   1,
 			UmfrageRef: []primitive.ObjectID{idVorhanden, id},
