@@ -14,6 +14,7 @@ const (
 	port = ":9000"
 )
 
+// StartServer started den Router und mounted alle Subseiten.
 func StartServer() {
 	r := chi.NewRouter()
 

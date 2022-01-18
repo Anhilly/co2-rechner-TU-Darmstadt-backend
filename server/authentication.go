@@ -26,6 +26,7 @@ var (
 	authMap = make(map[string]session)
 )
 
+// RouteAuthentication mounted alle aufrufbaren API Endpunkte unter */auth
 func RouteAuthentication() chi.Router {
 	r := chi.NewRouter()
 

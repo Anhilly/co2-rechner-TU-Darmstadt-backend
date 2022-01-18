@@ -11,6 +11,7 @@ import (
 	"net/http"
 )
 
+// RouteMitarbeiterUmfrage mounted alle aufrufbaren API Endpunkte unter */mitarbeiterUmfrage
 func RouteMitarbeiterUmfrage() chi.Router {
 	r := chi.NewRouter()
 

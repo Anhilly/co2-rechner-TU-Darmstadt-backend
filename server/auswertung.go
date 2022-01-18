@@ -10,6 +10,7 @@ import (
 	"net/http"
 )
 
+// RouteAuswertung mounted alle aufrufbaren API Endpunkte unter */auswertung
 func RouteAuswertung() chi.Router {
 	r := chi.NewRouter()
 
@@ -18,6 +19,8 @@ func RouteAuswertung() chi.Router {
 	return r
 }
 
+// GetAuswertung fuehrt die CO2-Emissionen Berechnung fuer die uebertragene Umfrage durch und sendet einen
+// structs.AuswertungRes zurueck.
 func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 	var umfrageID primitive.ObjectID
 	err := umfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))

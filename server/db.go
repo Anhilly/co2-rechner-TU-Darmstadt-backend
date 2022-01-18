@@ -10,6 +10,7 @@ import (
 	"net/http"
 )
 
+// RouteDB mounted alle aufrufbaren API Endpunkte unter */db
 func RouteDB() chi.Router {
 	r := chi.NewRouter()
 
@@ -21,6 +22,8 @@ func RouteDB() chi.Router {
 	return r
 }
 
+// PostAddFaktor fuegt einen neuen CO2-Faktor fuer die Energieversorgung eines bestimmten Jahres in die DB ein,
+// sofern der Nutzer authentifizierter Admin ist und sendet eine Response mit null zurueck.
 func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -64,6 +67,8 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
+// PostAddZaehlerdaten fuegt Zaehlerdaten fuer einen bestimmten Zaehler in die DB ein,
+// sofern der Nutzer authentifizierter Admin ist und sendet eine Response mit null zurueck.
 func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -107,6 +112,8 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
+// PostInsertZaehler fuegt einen neuen Zaehler in die DB ein, sofern der Nutzer authentifizierter Admin ist
+// und sendet eine Response mit null zurueck.
 func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -150,6 +157,8 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
+// PostInsertGebaeude fuegt ein neues Gebeaude in die DB ein, sofern der Nutzer authentifizierter Admin ist
+// und sendet eine Response mit null zurueck.
 func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
