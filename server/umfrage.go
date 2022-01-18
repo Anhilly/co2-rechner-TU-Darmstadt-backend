@@ -31,6 +31,9 @@ func RouteUmfrage() chi.Router {
 	return r
 }
 
+// isOwnerOfUmfrage prueft, ob die Umfrage in der Liste der Umfragen des Nutzers auftaucht.
+// @param umfrageID Umfrage deren Nutzer bestimmt werden soll
+// @param umfrageRef Liste aller dem Nutzer gehoerende Umfragen
 func isOwnerOfUmfrage(umfrageRef []primitive.ObjectID, umfrageID primitive.ObjectID) bool {
 	for _, id := range umfrageRef {
 		if id == umfrageID {
@@ -40,9 +43,9 @@ func isOwnerOfUmfrage(umfrageRef []primitive.ObjectID, umfrageID primitive.Objec
 	return false
 }
 
-/**
-PostUpdateUmfrage updates an umfrage with received values
-*/
+// PostUpdateUmfrage updated die Werte der Umfrage mit UmfrageID,
+// wenn der authentifizierte Nutzer die Umfrage besitzt oder Admin ist.
+// Liefert im Erfolgsfall die gleichgebliebene UmfrageID zurueck.
 func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -95,9 +98,8 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
-/**
-Postrequest sendet Umfrage struct fuer passende UmfrageID zurueck, sofern auth Eigentuemer oder Admin
-*/
+// GetUmfrage empfaengt POST Request und sendet Umfrage struct fuer passende UmfrageID zurueck,
+// sofern auth Eigentuemer oder Admin
 func GetUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -131,10 +133,8 @@ func GetUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrage, http.StatusOK)
 }
 
-/**
-GetAllGebaeude liefert alle Gebaeude in der Datenbank zurueck.
-*/
-func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
+// GetAllGebaeude sendet Response mit allen Gebaeuden in der Datenbank zurueck.
+func GetAllGebaeude(res http.ResponseWriter, _ *http.Request) {
 	gebaeudeRes := structs.AllGebaeudeRes{}
 
 	var err error
@@ -146,9 +146,8 @@ func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, gebaeudeRes, http.StatusOK)
 }
 
-/**
-PostInsertUmfrage inserts the received Umfrage and returns the ID of the Umfrage-Entry
-*/
+// PostInsertUmfrage fuegt die empfangene Umfrage in die Datenbank ein
+// sendet ein structs.UmfrageID mit DB ID gesetzt zurueck
 func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -161,7 +160,7 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 
 	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
@@ -197,16 +196,15 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
-/**
-Loescht eine uebermittelte Umfrage, gegeben durch die UmfrageID
-*/
+// DeleteUmfrage loescht eine Umfrage mit der empfangenen UmfrageID aus der Datenbank.
+// Sendet im Erfolgsfall null zurueck
 func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
 	umfrageReq := structs.DeleteUmfrage{}
 
 	err := json.Unmarshal(s, &umfrageReq)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest) // 400
 		return
 	}
@@ -225,10 +223,9 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
-/**
-GetAllUmfragen returns all Umfragen as structs.AlleUmfragen
-*/
-func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
+// GetAllUmfragen sendet alle Umfragen aus der DB in structs.AlleUmfragen zurueck
+func GetAllUmfragen(res http.ResponseWriter, _ *http.Request) {
+	//TODO rework mit authentifizierung
 	umfragenRes := structs.AlleUmfragen{}
 
 	var err error
@@ -240,10 +237,10 @@ func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfragenRes, http.StatusOK)
 }
 
-/**
-GetAllUmfragenForUser returns all Umfragen for a given user as structs.AlleUmfragen
-*/
+// GetAllUmfragenForUser sendet alle Umfragen, die dem authentifizierten Nutzer gehoeren
+// als structs.AlleUmfragen zurueck
 func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
+	// TODO rework mit authentifizierung
 	user := req.URL.Query().Get("user")
 	if checkValidSessionToken(user) != nil {
 		return
@@ -261,9 +258,8 @@ func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfragenRes, http.StatusOK)
 }
 
-/**
-GetUmfrageYear returns the bilanzierungsjahr for the given umfrage
-*/
+// GetUmfrageYear sendet das Bilanzierungsjahr fuer den GET Parameter UmfrageID zurueck.
+// Diese Funktion muss ohne Authentifizierung funktionieren, da sie fuer die Mitarbeiterumfrage benoetigt wird
 func GetUmfrageYear(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))

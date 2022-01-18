@@ -7,9 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-/**
-MitarbeiterUmfrageUpdate Updates a umfrage with value given in data and returns the ID of the updated Umfrage
-*/
+// MitarbeiterUmfrageUpdate updated eine Mitarbeiterumfrage mit den in data uebergebenen Werten und
+// gibt die ID der aktualisierten Umfrage zurueck.
 func MitarbeiterUmfrageUpdate(data structs.UpdateMitarbeiterUmfrage) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -38,20 +37,19 @@ func MitarbeiterUmfrageUpdate(data structs.UpdateMitarbeiterUmfrage) (primitive.
 	return updatedDoc.ID, nil
 }
 
-/**
-Die Funktion liefert einen Array aus Umfrage structs aus der Datenbank zurueck, die mit der gegebenen Umfrage(ID) assoziiert sind.
-*/
+// MitarbeiterUmfrageFindForUmfrage liefert einen Array aus Mitarbeiterumfrage structs aus der Datenbank zurueck,
+// die mit der gegebenen Umfrage(ID) assoziiert sind.
 func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.MitarbeiterUmfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	// find umfrage for given id
+	// suche Umfrage mit der gegebenen umfrageID
 	umfrage, err := UmfrageFind(umfrageID)
 	if err != nil {
 		return nil, err
 	}
 
-	// get ref ids from umfrage
+	// hole die IDs der assoziierten Mitarbeiterumfragen
 	umfrageRefs := umfrage.MitarbeiterUmfrageRef
 
 	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
@@ -74,10 +72,8 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 	return results, nil
 }
 
-/**
-Die Funktion liefert einen Umfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
-falls ein Document vorhanden ist.
-*/
+// MitarbeiterUmfrageFind liefert einen Mitarbeiterumfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
+// falls ein Document vorhanden ist.
 func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -96,6 +92,8 @@ func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, 
 	return data, nil
 }
 
+// MitarbeiterUmfrageFindMany liefert ein Array aus allen Mitarbeiterumfragen zurueck, deren ID in ids liegt.
+// Wenn nicht alle IDs in ids in der DB gefunden wurden, wird der Fehler structs.ErrDokumenteNichtGefunden zurueckgegeben.
 func MitarbeiterUmfrageFindMany(ids []primitive.ObjectID) ([]structs.MitarbeiterUmfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -124,9 +122,7 @@ func MitarbeiterUmfrageFindMany(ids []primitive.ObjectID) ([]structs.Mitarbeiter
 	return data, nil
 }
 
-/**
-Die Funktion fügt eine neue Mitarbeiterumfrage in die Datenbank ein und liefert die ObjectId mit.
-*/
+// MitarbeiterUmfrageInsert fügt eine neue Mitarbeiterumfrage in die Datenbank ein und liefert die ObjectId zurueck.
 func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()

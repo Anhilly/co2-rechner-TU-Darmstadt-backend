@@ -6,9 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-/**
-Die Funktion liefert einen Energieversorgung struct mit idEnergieversorgung gleich dem Parameter.
-*/
+// EnergieversorgungFind liefert einen Energieversorgung struct mit idEnergieversorgung gleich dem Parameter.
 func EnergieversorgungFind(idEnergieversorgung int32) (structs.Energieversorgung, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -27,10 +25,8 @@ func EnergieversorgungFind(idEnergieversorgung int32) (structs.Energieversorgung
 	return data, nil
 }
 
-/**
-Funktion updated ein Dokument in der Datenbank, um den CO2-Faktor {jahr, wert}, falls Dokument vorhanden
-und Jahr noch nicht vorhanden.
-*/
+// EnergieversorgungAddFaktor updated ein Dokument in der Datenbank, um den CO2-Faktor {jahr, wert},
+// falls das Dokument vorhanden, aber das Jahr noch nicht vorhanden ist.
 func EnergieversorgungAddFaktor(data structs.AddCO2Faktor) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()

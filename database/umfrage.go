@@ -7,9 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-/**
-Funktion gibt alle Umfragen in der Datenbank zurueck.
-*/
+// AlleUmfragen gibt alle Umfragen in der Datenbank zurueck.
 func AlleUmfragen() ([]structs.Umfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -34,23 +32,21 @@ func AlleUmfragen() ([]structs.Umfrage, error) {
 	return results, nil
 }
 
-/**
-Funktion gibt alle Umfragen in der Datenbank zurueck, die mit gegebenem User assoziiert sind.
-*/
-func AlleUmfragenForUser(email string) ([]structs.Umfrage, error) {
+// AlleUmfragenForUser gibt alle Umfragen in der Datenbank zurueck, die mit gegebenem User assoziiert sind.
+func AlleUmfragenForUser(username string) ([]structs.Umfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	// find umfrage for given id
-	nutzerdaten, err := NutzerdatenFind(email)
+	// Finde Nutzerdaten fuer den gegeben Usernamen
+	nutzerdaten, err := NutzerdatenFind(username)
 	if err != nil {
 		return nil, err
 	}
 
-	// get ref ids from umfrage
+	// Hole mit Nutzer assoziierten UmfrageIDs
 	umfrageRefs := nutzerdaten.UmfrageRef
 
-	// return empty list if umfrageRefs are nil
+	// liefere leere Liste zurueck, falls keine assoziierten Umfragen gefunden wurden
 	if umfrageRefs == nil {
 		return []structs.Umfrage{}, nil
 	}
@@ -75,10 +71,8 @@ func AlleUmfragenForUser(email string) ([]structs.Umfrage, error) {
 	return results, nil
 }
 
-/**
-Die Funktion liefert einen Umfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
-falls ein Document vorhanden ist.
-*/
+// UmfrageFind liefert einen Umfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
+// falls ein Document vorhanden ist.
 func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -164,9 +158,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 	return id, nil
 }
 
-/**
-Die Funktion fuegt eine Referenz an eine Umfrage an.
-*/
+// UmfrageAddMitarbeiterUmfrageRef haengt eine Mitarbeiterumfrage Referenz an eine Umfrage an.
 func UmfrageAddMitarbeiterUmfrageRef(idUmfrage primitive.ObjectID, referenz primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -187,10 +179,8 @@ func UmfrageAddMitarbeiterUmfrageRef(idUmfrage primitive.ObjectID, referenz prim
 	return nil
 }
 
-/**
-Die Funktion loescht eine Umfrage mit der ObjectID und alle assoziierten Mitarbeiterumfragen aus der Datenbank,
-falls der Eintrag existiert, liefert Fehler oder nil zurueck
-*/
+// UmfrageDelete loescht eine Umfrage mit der ObjectID und alle assoziierten Mitarbeiterumfragen aus der Datenbank,
+// falls der Eintrag existiert, liefert Fehler oder nil zurueck
 func UmfrageDelete(hauptverantwortlicher string, umfrageID primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -236,9 +226,7 @@ func UmfrageDelete(hauptverantwortlicher string, umfrageID primitive.ObjectID) e
 	return err
 }
 
-/**
-Die Funktion loescht eine Mitarbeiterumfrage mit der UmfrageID
-*/
+// UmfrageDeleteMitarbeiterUmfrage loescht eine Mitarbeiterumfrage mit der gegebenen UmfrageID
 func UmfrageDeleteMitarbeiterUmfrage(umfrageID primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()

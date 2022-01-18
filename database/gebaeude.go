@@ -7,9 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-/**
-Die Funktion liefert einen Gebaeude struct mit nr gleich dem Parameter.
-*/
+// GebaeudeFind liefert einen Gebaeude struct mit nr gleich dem Parameter.
 func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -28,9 +26,7 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	return data, nil
 }
 
-/**
-Die Funktion fuegt ein Gebaeude in die Datenbank ein, falls die Nr noch nicht vorhanden ist.
-*/
+// GebaeudeInsert fuegt ein Gebaeude in die Datenbank ein, falls die Nr noch nicht vorhanden ist.
 func GebaeudeInsert(data structs.InsertGebaeude) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -63,9 +59,7 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 	return nil
 }
 
-/**
-Die Funktion fuegt einem Gebaeude eine Zaehlereferenz hinzu, falls diese noch nicht vorhanden ist.
-*/
+// GebaeudeAddZaehlerref fuegt einem Gebaeude eine Zaehlereferenz hinzu, falls diese noch nicht vorhanden ist.
 func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	var referenzname string
 
@@ -100,9 +94,7 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	return nil
 }
 
-/**
-Funktion gibt alle Nummern von Gebaeuden in der Datenbank zurueck.
-*/
+// GebaeudeAlleNr gibt alle Nummern von Gebaeuden in der Datenbank zurueck.
 func GebaeudeAlleNr() ([]int32, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()

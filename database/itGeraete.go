@@ -6,9 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-/**
-Die Funktion liefert einen ITGeraete struct mit idITGeraete gleich dem Parameter.
-*/
+// ITGeraeteFind liefert einen ITGeraete struct mit idITGeraete gleich dem Parameter.
 func ITGeraeteFind(idITGeraete int32) (structs.ITGeraete, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()

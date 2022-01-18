@@ -7,9 +7,7 @@ import (
 	"time"
 )
 
-/**
-Die Funktion liefert einen Zaehler struct fuer den Zaehler mit pkEnergie und uebergebenen Energieform.
-*/
+// ZaehlerFind liefert einen Zaehler struct fuer den Zaehler mit pkEnergie und uebergebenen Energieform.
 func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) {
 	var collectionname string
 	var zaehlertyp string
@@ -47,10 +45,8 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 	return data, nil
 }
 
-/**
-Funktion updated einen Zaehler in der Datenbank um den Zaehlerwert {jahr, wert}, falls Zaehler vorhanden
-und Jahr noch nicht vorhanden.
-*/
+// ZaehlerAddZaehlerdaten updated einen Zaehler in der Datenbank um den Zaehlerwert {jahr, wert},
+// falls Zaehler vorhanden und Jahr noch nicht vorhanden.
 func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	var collectionname string
 
@@ -101,11 +97,9 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	return nil
 }
 
-/**
-Funktion fuegt einen Zaehler in die Datenbank ein, falls PK noch nicht vergeben. Außerdem werden die referenzierten
-Gebaeude um eine Referenz auf diesen Zaehler erweitert.
-Sollte die Funktion durch einen Fehler beendet werden, kann es zu inkonsistenten Daten in der Datenbank fuehren!
-*/
+// ZaehlerInsert fuegt einen Zaehler in die Datenbank ein, falls PK noch nicht vergeben.
+// Außerdem werden die referenzierten Gebaeude um eine Referenz auf diesen Zaehler erweitert.
+// Sollte die Funktion durch einen Fehler beendet werden, kann es zu inkonsistenten Daten in der Datenbank fuehren!
 func ZaehlerInsert(data structs.InsertZaehler) error {
 	var collectionname string
 

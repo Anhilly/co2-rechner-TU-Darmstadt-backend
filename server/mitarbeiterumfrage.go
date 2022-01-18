@@ -25,9 +25,7 @@ func RouteMitarbeiterUmfrage() chi.Router {
 	return r
 }
 
-/**
-PostUpdateMitarbeiterUmfrage updates an mitarbeiterUmfrage with received values
-*/
+// PostUpdateMitarbeiterUmfrage updated eine Mitarbeiterumfrage mit den empfangenen Daten
 func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -80,9 +78,8 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
-/**
-GetMitarbeiterUmfrageForUmfrage returns all MitarbeiterUmfragen belonging to a certain given umfrageID
-*/
+// GetMitarbeiterUmfrageForUmfrage liefert alle Mitarbeiterumfragen,
+// welche mit der Umfrage mit der ID UmfrageID assoziiert sind, zurueck.
 func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
@@ -102,9 +99,8 @@ func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request)
 	sendResponse(res, true, mitarbeiterUmfragenRes, http.StatusOK)
 }
 
-/**
-GetUmfrageExists returns the umfrageID if the umfrage exists and whether it is already complete or not.
-*/
+// GetUmfrageExists liefert einen structs.UmfrageExistsRes zurueck, falls die Umfrage existiert,
+// dabei wird auch zurueck geliefert, ob die Umfrage durch alle Mitarbeiter ausgefuellt wurde.
 func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
@@ -150,9 +146,8 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageExistsRes, http.StatusOK)
 }
 
-/**
-PostMitarbeiterUmfrageInsert inserts the received Umfrage and returns the ID of the inserted Umfrage-Entry.
-*/
+// PostMitarbeiterUmfrageInsert fuegt die empfangene Mitarbeiterumfrage in die DB ein und
+// sendet null zurueck, wenn das Einfuegen erfolgreich war.
 func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {

@@ -6,10 +6,9 @@ import (
 	"time"
 )
 
-/**
-Funktion erstellt ein Dump der Abbildung mit mongodump im Verzeichnis "DumpPath + directoryName + timestamp".
-Zurueckgeliefert wird der Ordnername mit Timestamp.
-*/
+// CreateDump erstellt ein Dump der Abbildung mit mongodump im Verzeichnis "DumpPath + timestamp + directoryName".
+// Zurueckgeliefert wird der Ordnername mit Timestamp.
+// Beim Ausfuehren unter Linux Systemen muss Docker per default Sudo Rechte besitzen, da der Befehl Sudo Rechte benoetigt.
 func CreateDump(directoryName string) (string, error) {
 	dirTimestamp := time.Now().Format("20060102150405") + directoryName // Format: yyyyMMddHHmmss
 
@@ -25,9 +24,7 @@ func CreateDump(directoryName string) (string, error) {
 	return dirTimestamp, nil
 }
 
-/**
-Funktion spielt einen Dump, der in "DumpPath + directoryName" liegt, wieder in die Datenbank ein mittels mongorestore.
-*/
+// RestoreDump spielt einen Dump, der in "DumpPath + directoryName" liegt, wieder in die Datenbank ein mittels mongorestore.
 func RestoreDump(directoryName string) error {
 	cmd := exec.Command("docker", "exec", "-i", "mongodb", "/usr/bin/mongorestore",
 		"--username", username, "--password", password, "--authenticationDatabase", "admin",

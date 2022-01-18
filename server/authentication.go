@@ -38,29 +38,26 @@ func RouteAuthentication() chi.Router {
 	return r
 }
 
-/**
-GeneriereSessionToken generiert einen Cookie Token, welcher den Nutzer authentifiziert und speichert ihn in Map.
-Dabei findet keine Authentifizierung statt!
-*/
-func GeneriereSessionToken(email string) string {
+// GeneriereSessionToken generiert einen Cookie Token, welcher den Nutzer authentifiziert und speichert ihn in Map.
+// Dabei findet keine Authentifizierung statt!
+func GeneriereSessionToken(username string) string {
 	sessionToken := uuid.NewString()
-	authMap[email] = session{
+	authMap[username] = session{
 		Sessiontoken: sessionToken,
 		GenTime:      time.Now(),
 	}
 	return sessionToken
 }
 
-/**
-checkValidSessionToken ueberprueft ob die email einen gueltigen Sessiontoken registriert hat, falls ja nil, sonst error
-*/
-func checkValidSessionToken(email string) error {
+// checkValidSessionToken ueberprueft, ob der username einen gueltigen Sessiontoken registriert hat,
+// falls ja nil, sonst error
+func checkValidSessionToken(username string) error {
 	// TTL ist 2 Stunden
 	ttl := 2
-	if (authMap[email] == session{}) {
+	if (authMap[username] == session{}) {
 		return structs.ErrNutzerHatKeinenSessiontoken
 	}
-	entry := authMap[email]
+	entry := authMap[username]
 	genTimePlusTTL := entry.GenTime.Add(time.Hour * time.Duration(ttl))
 	if genTimePlusTTL.Before(time.Now()) {
 		return structs.ErrAbgelaufenerSessiontoken
@@ -68,41 +65,35 @@ func checkValidSessionToken(email string) error {
 	return nil
 }
 
-/**
-loescheSessionToken loescht den Cookie Token welcher den Nutzer mit email authentifiziert
-*/
-func loescheSessionToken(email string) error {
-	err := checkValidSessionToken(email)
+// loescheSessionToken loescht den Cookie Token welcher den Nutzer mit username authentifiziert
+func loescheSessionToken(username string) error {
+	err := checkValidSessionToken(username)
 	if err == nil || errors.Is(err, structs.ErrAbgelaufenerSessiontoken) {
-		authMap[email] = session{}
+		authMap[username] = session{}
 		return nil
 	}
 	return err
 }
 
-/**
-Authenticate authentifiziert einen Nutzer mit email und returned nil bei Erfolg, sonst error
-*/
-func Authenticate(email string, token string) error {
-	err := checkValidSessionToken(email)
+// Authenticate authentifiziert einen Nutzer mit username und returned nil bei Erfolg, sonst error
+func Authenticate(username string, token string) error {
+	err := checkValidSessionToken(username)
 	if err != nil {
 		// Kein valider Token registriert
 		return err
 	}
-	if authMap[email].Sessiontoken != token {
+	if authMap[username].Sessiontoken != token {
 		// Falscher Token fuer Nutzer
 		return structs.ErrFalscherSessiontoken
 	}
 	return nil
 }
 
-/**
-AuthWithResponse prueft ob fuer die uebergeben Anmeldedaten ein valider Benutzer registriert ist.
-Im Fehlerfall sendet es Unauthorized mit res Writer an Frontend und returned false, sonst nichts und gibt true zurueck
-*/
-func AuthWithResponse(res http.ResponseWriter, email string, token string) bool {
+// AuthWithResponse prueft ob fuer die uebergeben Anmeldedaten ein valider Benutzer registriert ist.
+// Im Fehlerfall sendet es Unauthorized mit res Writer und returned false, sonst nichts und gibt true zurueck
+func AuthWithResponse(res http.ResponseWriter, username string, token string) bool {
 	// Authentication
-	errAuth := Authenticate(email, token)
+	errAuth := Authenticate(username, token)
 	// Falls kein valider Session Token vorhanden.
 	if errAuth != nil {
 		errorResponse(res, errAuth, http.StatusUnauthorized)
@@ -111,13 +102,11 @@ func AuthWithResponse(res http.ResponseWriter, email string, token string) bool 
 	return true
 }
 
-/**
-PostPruefeSession prueft ob ein gueltiger Sessiontoken registriert ist und prueft diesen mit dem Request ab
-*/
+// PostPruefeSession prueft ob ein gueltiger Sessiontoken registriert ist und prueft diesen mit dem Request ab
 func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
@@ -125,7 +114,7 @@ func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 	sessionReq := structs.PruefeSessionReq{}
 	err = json.Unmarshal(s, &sessionReq)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
@@ -139,13 +128,11 @@ func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
-/**
-Die Funktion liefert einen Response welcher bei valider Benutzereingabe den Nutzer authentisiert, sonst Fehler
-*/
+// PostAnmeldung liefert eine Response welcher bei valider Benutzereingabe den Nutzer authentisiert, sonst Fehler
 func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
@@ -153,14 +140,14 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 	anmeldeReq := structs.AuthReq{}
 	err = json.Unmarshal(s, &anmeldeReq)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
 	nutzerdaten, err := database.NutzerdatenFind(anmeldeReq.Username)
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		// Es existiert kein Account mit dieser Email
+		// Es existiert kein Account mit diesem username
 		// Sende genauere Fehlermeldung zurueck, statt ErrNoDocuments
 		errorResponse(res, structs.ErrFalschesPasswortError, http.StatusUnauthorized)
 		return
@@ -186,13 +173,12 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 	}, http.StatusOK)
 }
 
-/**
-Die Funktion liefert einen HTTP Response zurueck, welcher den neuen Nutzer authentifiziert, oder eine Fehlermeldung liefert
-*/
+// PostRegistrierung liefert einen HTTP Response zurueck, welcher den neuen Nutzer authentifiziert,
+// oder eine Fehlermeldung liefert
 func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
@@ -200,7 +186,7 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	registrierungReq := structs.AuthReq{}
 	err = json.Unmarshal(s, &registrierungReq)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
@@ -231,13 +217,12 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	}, http.StatusCreated)
 }
 
-/**
-PostPruefeNutzerRolle ueberprueft die Nutzerrolle (Admin, User) eines authentifizierten Nutzers und liefert die Kennung zurueck
-*/
+// PostPruefeNutzerRolle ueberprueft die Nutzerrolle (Admin, User) eines authentifizierten Nutzers
+// und liefert die Rolle des Nutzers zurueck (0 User, 1 Admin)
 func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
@@ -245,7 +230,7 @@ func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
 	sessionReq := structs.PruefeSessionReq{}
 	err = json.Unmarshal(s, &sessionReq)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
@@ -263,13 +248,11 @@ func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nutzer.Rolle, http.StatusOK)
 }
 
-/**
-Die Funktion liefert einen HTTP Response zurueck, welcher den Nutzer abmeldet, sonst Fehler
-*/
+// DeleteAbmeldung liefert einen HTTP Response zurueck, welcher den Nutzer abmeldet, sonst Fehler
 func DeleteAbmeldung(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
@@ -277,7 +260,7 @@ func DeleteAbmeldung(res http.ResponseWriter, req *http.Request) {
 	abmeldungReq := structs.AbmeldungReq{}
 	err = json.Unmarshal(s, &abmeldungReq)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}

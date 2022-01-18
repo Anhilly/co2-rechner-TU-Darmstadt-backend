@@ -8,10 +8,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-/**
-Die Funktion liefert einen Nutzerdaten struct zurueck, der die uebergegebene E-Mail hat, falls ein solches Dokument in der
-Datenbank vorhanden ist.
-*/
+// NutzerdatenFind liefert einen Nutzerdaten struct zurueck, der die uebergegebene E-Mail hat,
+// falls ein solches Dokument in der Datenbank vorhanden ist.
 func NutzerdatenFind(email string) (structs.Nutzerdaten, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -30,9 +28,7 @@ func NutzerdatenFind(email string) (structs.Nutzerdaten, error) {
 	return data, nil
 }
 
-/**
-Die Funktion fuegt einem Nutzer eine ObjectID einer Umfrage hinzu, falls der Nutzer vorhanden sind.
-*/
+// NutzerdatenAddUmfrageref fuegt einem Nutzer eine ObjectID einer Umfrage hinzu, falls der Nutzer vorhanden sind.
 func NutzerdatenAddUmfrageref(email string, id primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -53,19 +49,17 @@ func NutzerdatenAddUmfrageref(email string, id primitive.ObjectID) error {
 	return nil
 }
 
-/**
-Fuegt einen Datenbankeintrag in Form des Nutzerdaten structs ein, dabei wird das Passwort gehashed
-*/
+// NutzerdatenInsert fuegt einen Datenbankeintrag in Form des Nutzerdaten structs ein, dabei wird das Passwort gehashed.
 func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
-	// Pruefe ob bereits ein Eintrag mit dieser Email existiert
+	// Pruefe, ob bereits ein Eintrag mit diesem Nutzernamen existiert
 	_, err := NutzerdatenFind(anmeldedaten.Username)
 
 	if err == nil {
-		// Eintrag mit dieser Email existiert bereits
+		// Eintrag mit diesem Nutzernamen existiert bereits
 		return structs.ErrInsertExistingAccount
 	}
 	// Kein Eintrag vorhanden
@@ -75,10 +69,10 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 		return err // Bcrypt hashing error
 	}
 	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
-		Email:    anmeldedaten.Username,
-		Passwort: string(passwordhash),
-		Rolle:    structs.IDRolleNutzer,
-		Revision: 1,
+		Email:      anmeldedaten.Username,
+		Passwort:   string(passwordhash),
+		Rolle:      structs.IDRolleNutzer,
+		Revision:   1,
 		UmfrageRef: []primitive.ObjectID{},
 	})
 	if err != nil {

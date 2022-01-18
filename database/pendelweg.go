@@ -6,9 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-/**
-Die Funktion liefert einen Pendelweg struct mit idPendelweg gleich dem Parameter.
-*/
+// PendelwegFind liefert einen Pendelweg struct mit idPendelweg gleich dem Parameter.
 func PendelwegFind(idPendelweg int32) (structs.Pendelweg, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
