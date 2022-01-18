@@ -14,7 +14,7 @@ import (
 func TestFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	dir, err := database.CreateDump("TestAdd")
+	dir, err := database.CreateDump("TestFind")
 	is.NoErr(err)
 
 	fmt.Println(dir)
@@ -713,11 +713,8 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 	t.Run("MitarbeiterUmfrageFindMany: mehrere IDs", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dir, err := database.CreateDump("MitarbeiterUmfrageFindMany")
-		is.NoErr(err)
-
 		var id primitive.ObjectID
-		err = id.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		err := id.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
 		is.NoErr(err)
 
 		var idUmfrage primitive.ObjectID
@@ -755,9 +752,6 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 				Revision:    1,
 			},
 		}) // Überprüfung des zurückgelieferten Elements
-
-		err = database.RestoreDump(dir)
-		is.NoErr(err)
 	})
 
 	// Errortests
