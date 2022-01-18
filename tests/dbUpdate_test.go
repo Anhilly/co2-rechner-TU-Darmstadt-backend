@@ -55,7 +55,7 @@ func TestUmfrageUpdate(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			AuthToken: structs.AuthToken{
+			Auth: structs.AuthToken{
 				Username:     email,
 				Sessiontoken: token,
 			},
@@ -97,7 +97,7 @@ func TestUmfrageUpdate(t *testing.T) {
 		}) // Ueberpruefung des geaenderten Elementes
 
 		// check that reference from user to umfrage is still correct
-		user, err := database.NutzerdatenFind(data.AuthToken.Username)
+		user, err := database.NutzerdatenFind(data.Auth.Username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		idStillInUserRefs := false
 

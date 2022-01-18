@@ -156,7 +156,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
-	err = NutzerdatenAddUmfrageref(data.AuthToken.Username, id)
+	err = NutzerdatenAddUmfrageref(data.Auth.Username, id)
 	if err != nil {
 		return primitive.NilObjectID, err
 	}

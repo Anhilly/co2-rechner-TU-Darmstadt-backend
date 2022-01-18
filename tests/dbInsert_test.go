@@ -345,7 +345,7 @@ func TestUmfrageInsert(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			AuthToken: structs.AuthToken{
+			Auth: structs.AuthToken{
 				Username:     email,
 				Sessiontoken: token,
 			},
@@ -376,7 +376,7 @@ func TestUmfrageInsert(t *testing.T) {
 		err = idVorhanden.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
 		is.NoErr(err)
 
-		updatedDoc, err := database.NutzerdatenFind(data.AuthToken.Username)
+		updatedDoc, err := database.NutzerdatenFind(data.Auth.Username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
 			Email:      email,
@@ -395,7 +395,7 @@ func TestUmfrageInsert(t *testing.T) {
 			Jahr:              3442,
 			Gebaeude:          []structs.UmfrageGebaeude{},
 			ITGeraete:         []structs.UmfrageITGeraete{},
-			AuthToken: structs.AuthToken{
+			Auth: structs.AuthToken{
 				Username:     "0123",
 				Sessiontoken: "012345",
 			},

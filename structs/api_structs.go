@@ -6,20 +6,6 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 In dieser Daten sind Request und Response JSON für die API als structs aufgelistet.
 */
 
-// For testing:
-//type UmfrageMitarbeiterReq struct {
-//	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
-//	TageImBuero int32                `json:"tageImBuero"`
-//	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
-//	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
-//}
-//
-//type UmfrageMitarbeiterRes struct {
-//	PendelwegeEmissionen   float64 `json:"pendelwegeEmissionen"`
-//	DienstreisenEmissionen float64 `json:"dienstreisenEmissionen"`
-//	ITGeraeteEmissionen    float64 `json:"itGeraeteEmissionen"`
-//}
-
 // Struct zum Abfragen aller Gebaeudedaten
 type AllGebaeudeRes struct {
 	Gebaeude []int32 `json:"gebaeude"`
@@ -69,7 +55,7 @@ type InsertUmfrage struct {
 	Jahr              int32              `json:"jahr"`
 	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
 	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
-	AuthToken         AuthToken          `json:"authToken"`
+	Auth              AuthToken          `json:"authToken"`
 }
 
 type AlleUmfragen struct {
@@ -85,15 +71,6 @@ type AuthToken struct {
 	Username     string `json:"username"`
 	Sessiontoken string `json:"sessiontoken"`
 }
-
-// TODO wird das noch benötigt?
-//type InsertUmfrageRes struct {
-//	UmfrageID           string  `json:"umfrageID"`
-//	KaelteEmissionen    float64 `json:"kaelteEmissionen"`
-//	WaermeEmissionen    float64 `json:"waermeEmissionen"`
-//	StromEmissionen     float64 `json:"stromEmissionen"`
-//	ITGeraeteEmissionen float64 `json:"itGeraeteEmissionen"`
-//}
 
 type UpdateUmfrage struct {
 	Auth              AuthToken          `json:"authToken"`
@@ -134,18 +111,13 @@ type UmfrageYearRes struct {
 
 type DeleteUmfrage struct {
 	UmfrageID primitive.ObjectID `json:"umfrageID"`
-	AuthToken AuthToken          `json:"authToken"`
+	Auth      AuthToken          `json:"authToken"`
 }
 
 type RequestUmfrage struct {
 	UmfrageID primitive.ObjectID `json:"umfrageID"`
 	Auth      AuthToken          `json:"authToken"`
 }
-
-// Request fuer Umfragenauswertung
-//type AuswertungReq struct {
-//	UmfrageIDTemp primitive.ObjectID `json:"umfrageID"`
-//}
 
 type AuswertungRes struct {
 	// Information von Umfrage
