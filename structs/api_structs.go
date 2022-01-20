@@ -119,6 +119,10 @@ type RequestUmfrage struct {
 	Auth      AuthToken          `json:"authToken"`
 }
 
+type RequestGebaeude struct {
+	Auth AuthToken `json:"authToken"`
+}
+
 type AuswertungRes struct {
 	// Information von Umfrage
 	ID                primitive.ObjectID `json:"id"`
