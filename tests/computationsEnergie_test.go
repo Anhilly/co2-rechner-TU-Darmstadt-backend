@@ -163,6 +163,37 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Nutzflaeche = keine Emissionen)
 	})
 
+	// Spezialfaelle
+	t.Run("BerechneEnergieverbrauch: Kaeltezaehler, Spezialfall 2", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
+			{GebaeudeNr: 3202, Nutzflaeche: 100},
+		}
+		var jahr int32 = 2020
+		var idEnergieversorgung = structs.IDEnergieversorgungKaelte
+
+		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+
+		is.NoErr(err)             // Spezialfall 2 wirft keine Errors
+		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0
+	})
+
+	t.Run("BerechneEnergieverbrauch: Kaeltezaehler, Spezialfall 3", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
+			{GebaeudeNr: 3204, Nutzflaeche: 100},
+		}
+		var jahr int32 = 2020
+		var idEnergieversorgung = structs.IDEnergieversorgungKaelte
+
+		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+
+		is.NoErr(err)                   // Spezialfall 3 wirft keine Errors
+		is.Equal(emissionen, 659215.24) // erwartetes Ergebnis: 659215.24
+	})
+
 	// Errortests
 	t.Run("BerechneEnergieverbrauch: idEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
@@ -219,4 +250,7 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		is.Equal(err, structs.ErrFlaecheNegativ) // Funktion wirft ErrFlaecheNegativ
 		is.Equal(emissionen, 0.0)                // im Fehlerfall ist Emissionen = 0.0
 	})
+
+	// Fehler GebaeudeSpezialfall --> Was ist 'Spezialfall' für ein Attribut bzw. warum ist es immer ==1?
+	// Fehler ErrStrEinheitUnbekannt momentan nicht abpruefbar. Benoetigt falschen Datensatz in Datenbank
 }
