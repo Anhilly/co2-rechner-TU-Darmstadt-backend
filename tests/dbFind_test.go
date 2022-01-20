@@ -755,7 +755,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 	})
 
 	// Errortests
-	t.Run("MitarbeiterUmfrageFind: zu wenige Dokumente", func(t *testing.T) {
+	t.Run("MitarbeiterUmfrageFindMany: zu wenige Dokumente", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
