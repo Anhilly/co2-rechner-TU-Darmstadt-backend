@@ -21,9 +21,9 @@ func RouteUmfrage() chi.Router {
 	r.Post("/getUmfrage", GetUmfrage)
 	r.Post("/gebaeude", PostAllGebaeude)
 	r.Post("/alleUmfragen", PostAllUmfragen)
+	r.Post("/GetAllUmfragenForUser", PostAllUmfragenForUser)
 
 	// Get
-	r.Get("/GetAllUmfragenForUser", GetAllUmfragenForUser)
 	r.Get("/GetUmfrageYear", GetUmfrageYear)
 
 	// Delete
@@ -142,7 +142,7 @@ func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	gebaeudeReq := structs.RequestGebaeude{}
+	gebaeudeReq := structs.RequestAuth{}
 	err = json.Unmarshal(s, &gebaeudeReq)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
@@ -248,16 +248,16 @@ func PostAllUmfragen(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	umfragenRes := structs.AlleUmfragen{}
-	auswertungReq := structs.RequestUmfrage{}
-	err = json.Unmarshal(s, &auswertungReq)
+	reqAuth := structs.RequestAuth{}
+	err = json.Unmarshal(s, &reqAuth)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-	if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
+	if !AuthWithResponse(res, reqAuth.Auth.Username, reqAuth.Auth.Sessiontoken) {
 		return
 	}
-	nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
+	nutzer, _ := database.NutzerdatenFind(reqAuth.Auth.Username)
 	if nutzer.Rolle != 1 {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
@@ -271,19 +271,31 @@ func PostAllUmfragen(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfragenRes, http.StatusOK)
 }
 
-// GetAllUmfragenForUser sendet alle Umfragen, die dem authentifizierten Nutzer gehoeren
+// PostAllUmfragenForUser sendet alle Umfragen, die dem authentifizierten Nutzer gehoeren
 // als structs.AlleUmfragen zurueck
-func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
-	// TODO rework mit authentifizierung
-	user := req.URL.Query().Get("user")
-	if checkValidSessionToken(user) != nil {
+func PostAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
+
+	reqAuth := structs.RequestAuth{}
+	err = json.Unmarshal(s, &reqAuth)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	if !AuthWithResponse(res, reqAuth.Auth.Username, reqAuth.Auth.Sessiontoken) {
+		return
+	}
+
+	nutzer, _ := database.NutzerdatenFind(reqAuth.Auth.Username)
 	umfragenRes := structs.AlleUmfragen{}
 
 	// hole Umfragen aus der Datenbank
-	var err error
-	umfragenRes.Umfragen, err = database.AlleUmfragenForUser(user)
+	umfragenRes.Umfragen, err = database.AlleUmfragenForUser(nutzer.Nutzername)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
