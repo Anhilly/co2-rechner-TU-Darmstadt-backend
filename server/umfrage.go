@@ -19,9 +19,9 @@ func RouteUmfrage() chi.Router {
 	r.Post("/insertUmfrage", PostInsertUmfrage)
 	r.Post("/updateUmfrage", PostUpdateUmfrage)
 	r.Post("/getUmfrage", GetUmfrage)
+	r.Post("/gebaeude", PostAllGebaeude)
 
 	// Get
-	r.Get("/gebaeude", GetAllGebaeude)
 	r.Get("/alleUmfragen", GetAllUmfragen)
 	r.Get("/GetAllUmfragenForUser", GetAllUmfragenForUser)
 	r.Get("/GetUmfrageYear", GetUmfrageYear)
@@ -135,11 +135,26 @@ func GetUmfrage(res http.ResponseWriter, req *http.Request) {
 }
 
 // GetAllGebaeude sendet Response mit allen Gebaeuden in der Datenbank zurueck.
-func GetAllGebaeude(res http.ResponseWriter, _ *http.Request) {
-	//TODO muss hier Authentifizierung gemacht werden?
+func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	gebaeudeReq := structs.RequestGebaeude{}
+	err = json.Unmarshal(s, &gebaeudeReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
 	gebaeudeRes := structs.AllGebaeudeRes{}
 
-	var err error
+	if !AuthWithResponse(res, gebaeudeReq.Auth.Username, gebaeudeReq.Auth.Sessiontoken) {
+		return
+	}
+
 	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNr()
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
