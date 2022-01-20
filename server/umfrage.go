@@ -20,9 +20,9 @@ func RouteUmfrage() chi.Router {
 	r.Post("/updateUmfrage", PostUpdateUmfrage)
 	r.Post("/getUmfrage", GetUmfrage)
 	r.Post("/gebaeude", PostAllGebaeude)
+	r.Post("/alleUmfragen", PostAllUmfragen)
 
 	// Get
-	r.Get("/alleUmfragen", GetAllUmfragen)
 	r.Get("/GetAllUmfragenForUser", GetAllUmfragenForUser)
 	r.Get("/GetUmfrageYear", GetUmfrageYear)
 
@@ -240,12 +240,29 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
-// GetAllUmfragen sendet alle Umfragen aus der DB in structs.AlleUmfragen zurueck
-func GetAllUmfragen(res http.ResponseWriter, _ *http.Request) {
-	//TODO rework mit authentifizierung
+// PostAllUmfragen sendet alle Umfragen aus der DB in structs.AlleUmfragen zurueck
+func PostAllUmfragen(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
 	umfragenRes := structs.AlleUmfragen{}
+	auswertungReq := structs.RequestUmfrage{}
+	err = json.Unmarshal(s, &auswertungReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+	if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
+		return
+	}
 
-	var err error
 	umfragenRes.Umfragen, err = database.AlleUmfragen()
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
