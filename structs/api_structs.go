@@ -119,7 +119,7 @@ type RequestUmfrage struct {
 	Auth      AuthToken          `json:"authToken"`
 }
 
-type RequestGebaeude struct {
+type RequestAuth struct {
 	Auth AuthToken `json:"authToken"`
 }
 
