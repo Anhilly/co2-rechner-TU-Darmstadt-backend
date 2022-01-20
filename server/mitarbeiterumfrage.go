@@ -17,7 +17,7 @@ func RouteMitarbeiterUmfrage() chi.Router {
 
 	// POST
 	r.Post("/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
-	r.Post("/updateMitarbeiterUmfrage", PostUpdateMitarbeiterUmfrage)
+	//r.Post("/updateMitarbeiterUmfrage", PostUpdateMitarbeiterUmfrage)
 
 	// GET
 	r.Get("/exists", GetUmfrageExists)
@@ -26,58 +26,58 @@ func RouteMitarbeiterUmfrage() chi.Router {
 	return r
 }
 
-// PostUpdateMitarbeiterUmfrage updated eine Mitarbeiterumfrage mit den empfangenen Daten
-func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	umfrageReq := structs.UpdateMitarbeiterUmfrage{}
-	umfrageRes := structs.UmfrageID{}
-	err = json.Unmarshal(s, &umfrageReq)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
-	if nutzer.Rolle != 1 {
-		errorResponse(res, err, http.StatusUnauthorized)
-		return
-	}
-
-	// Datenverarbeitung
-	ordner, err := database.CreateDump("PostUpdateMitarbeiterUmfrage")
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	umfrageID, err := database.MitarbeiterUmfrageUpdate(umfrageReq)
-	if err != nil {
-		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
-		if err2 != nil {
-			log.Println(err2)
-		}
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	// return empty umfrage string if umfrageID is invalid
-	if umfrageID == primitive.NilObjectID {
-		umfrageRes.UmfrageID = ""
-	} else {
-		umfrageRes.UmfrageID = umfrageID.Hex()
-	}
-
-	// Response
-	sendResponse(res, true, umfrageRes, http.StatusOK)
-}
+//// PostUpdateMitarbeiterUmfrage updated eine Mitarbeiterumfrage mit den empfangenen Daten
+//func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
+//	s, err := ioutil.ReadAll(req.Body)
+//	if err != nil {
+//		errorResponse(res, err, http.StatusBadRequest)
+//		return
+//	}
+//
+//	umfrageReq := structs.UpdateMitarbeiterUmfrage{}
+//	umfrageRes := structs.UmfrageID{}
+//	err = json.Unmarshal(s, &umfrageReq)
+//	if err != nil {
+//		errorResponse(res, err, http.StatusBadRequest)
+//		return
+//	}
+//
+//	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
+//		return
+//	}
+//	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
+//	if nutzer.Rolle != 1 {
+//		errorResponse(res, err, http.StatusUnauthorized)
+//		return
+//	}
+//
+//	// Datenverarbeitung
+//	ordner, err := database.CreateDump("PostUpdateMitarbeiterUmfrage")
+//	if err != nil {
+//		errorResponse(res, err, http.StatusInternalServerError)
+//		return
+//	}
+//
+//	umfrageID, err := database.MitarbeiterUmfrageUpdate(umfrageReq)
+//	if err != nil {
+//		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+//		if err2 != nil {
+//			log.Println(err2)
+//		}
+//		errorResponse(res, err, http.StatusInternalServerError)
+//		return
+//	}
+//
+//	// return empty umfrage string if umfrageID is invalid
+//	if umfrageID == primitive.NilObjectID {
+//		umfrageRes.UmfrageID = ""
+//	} else {
+//		umfrageRes.UmfrageID = umfrageID.Hex()
+//	}
+//
+//	// Response
+//	sendResponse(res, true, umfrageRes, http.StatusOK)
+//}
 
 // GetMitarbeiterUmfrageForUmfrage liefert alle Mitarbeiterumfragen,
 // welche mit der Umfrage mit der ID UmfrageID assoziiert sind, zurueck.
