@@ -899,7 +899,7 @@ func TestAlleUmfragen(t *testing.T) {
 
 		alleUmfragen, err := database.AlleUmfragen()
 		is.NoErr(err)                          // kein Error seitens der Datenbank
-		is.Equal(len(alleUmfragen) == 3, true) // Slice ist nicht leer
+		is.Equal(len(alleUmfragen) == 5, true) // Slice ist nicht leer
 	})
 }
 

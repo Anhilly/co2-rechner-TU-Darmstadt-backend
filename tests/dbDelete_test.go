@@ -94,7 +94,6 @@ func TestUmfrageDelete(t *testing.T) {
 		is.NoErr(err)                                 // Kein Fehler im Normalfall
 
 		// Fuege zwei Mitarbeiterumfragen ein
-
 		var mitarbeiterID [2]primitive.ObjectID
 		mitarbeiter := structs.InsertMitarbeiterUmfrage{
 			Pendelweg: []structs.UmfragePendelweg{
@@ -151,6 +150,17 @@ func TestUmfrageDelete(t *testing.T) {
 		err = database.UmfrageDelete("anton@tobi.com", idUmfrage)
 		is.Equal(err, mongo.ErrNoDocuments) // Eintrag konnte nicht gefunden
 	})
+
+	t.Run("UmfrageDelete mitarbeiterUmfrageID nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var idUmfrage primitive.ObjectID
+		err := idUmfrage.UnmarshalText([]byte("61dc0c543e48998484eefaea"))
+		is.NoErr(err)
+
+		err = database.UmfrageDelete("anton@tobi.com", idUmfrage)
+		is.Equal(err, structs.ErrObjectIDNichtGefunden) // Eintrag konnte nicht gefunden
+	})
 }
 
 func TestUmfrageDeleteMitarbeiterUmfrage(t *testing.T) {
@@ -186,7 +196,14 @@ func TestUmfrageDeleteMitarbeiterUmfrage(t *testing.T) {
 
 		_, err = database.MitarbeiterUmfrageFind(idMitarbeiterumfrage) // Umfrage kann nicht mehr gefunden werden
 		is.Equal(err, mongo.ErrNoDocuments)
-		//TODO ergaenze Test ob noch in Umfrage drin?
+
+		// pruefe, dass MitarbeiterUmfrage nicht mehr in Umfrage
+		umfrageAfterDeletion, err := database.UmfrageFind(idUmfrage)
+		is.NoErr(err)
+
+		for _, mitarbeiterRef := range umfrageAfterDeletion.MitarbeiterUmfrageRef {
+			is.Equal(mitarbeiterRef == idMitarbeiterumfrage, false)
+		}
 	})
 
 	//Fehlerfall
