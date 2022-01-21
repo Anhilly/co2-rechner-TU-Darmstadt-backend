@@ -225,20 +225,3 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 
 	return err
 }
-
-// UmfrageDeleteMitarbeiterUmfrage loescht eine Mitarbeiterumfrage mit der gegebenen UmfrageID
-func UmfrageDeleteMitarbeiterUmfrage(umfrageID primitive.ObjectID) error {
-	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
-	defer cancel()
-
-	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
-
-	anzahl, err := collection.DeleteOne(
-		ctx,
-		bson.M{"_id": umfrageID})
-
-	if anzahl.DeletedCount == 0 {
-		return structs.ErrObjectIDNichtGefunden
-	}
-	return err
-}

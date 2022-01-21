@@ -177,3 +177,40 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 
 	return id, nil
 }
+
+// UmfrageDeleteMitarbeiterUmfrage loescht eine Mitarbeiterumfrage mit der gegebenen UmfrageID
+func UmfrageDeleteMitarbeiterUmfrage(mitarbeiterUmfrageID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
+
+	anzahl, err := collection.DeleteOne(
+		ctx,
+		bson.M{"_id": mitarbeiterUmfrageID})
+	if err != nil {
+		return err
+	}
+
+	if anzahl.DeletedCount == 0 {
+		return structs.ErrObjectIDNichtGefunden
+	}
+	
+	// remove MitarbeiterUmfrage from Refs in Umfrage
+	umfrageCollection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	var updatedDocument structs.Umfrage
+
+	err = umfrageCollection.FindOneAndUpdate(
+		ctx,
+		bson.M{"mitarbeiterUmfrageRef": mitarbeiterUmfrageID},
+		bson.D{{"$pull",
+			bson.D{{"mitarbeiterUmfrageRef", mitarbeiterUmfrageID}}}},
+	).Decode(&updatedDocument)
+
+	if err != nil {
+		return err
+	}
+
+	return err
+}
