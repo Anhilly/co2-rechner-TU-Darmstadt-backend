@@ -40,6 +40,7 @@ func TestFind(t *testing.T) {
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
 	t.Run("TestMitarbeiterUmfrageFindMany", TestMitarbeiterUmfrageFindMany)
 	t.Run("TestMitarbeiterUmfageForUmfrage", TestMitarbeiterUmfageForUmfrage)
+	t.Run("TestAlleUmfragen", TestAlleUmfragen)
 	t.Run("TestAlleUmfragenForUser", TestAlleUmfragenForUser)
 
 }
@@ -755,7 +756,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 	})
 
 	// Errortests
-	t.Run("MitarbeiterUmfrageFind: zu wenige Dokumente", func(t *testing.T) {
+	t.Run("MitarbeiterUmfrageFindMany: zu wenige Dokumente", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
@@ -897,8 +898,8 @@ func TestAlleUmfragen(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		alleUmfragen, err := database.AlleUmfragen()
-		is.NoErr(err)                         // kein Error seitens der Datenbank
-		is.Equal(len(alleUmfragen) > 0, true) // Slice ist nicht leer
+		is.NoErr(err)                          // kein Error seitens der Datenbank
+		is.Equal(len(alleUmfragen) == 5, true) // Slice ist nicht leer
 	})
 }
 
@@ -925,7 +926,7 @@ func TestAlleUmfragenForUser(t *testing.T) {
 		userMail := "lorem_ipsum_mustermann"
 		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
 		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(alleUmfragen, nil)
+		is.Equal(alleUmfragen, []structs.Umfrage{})
 	})
 
 	// Errorfaelle
