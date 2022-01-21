@@ -33,8 +33,6 @@ func TestDelete(t *testing.T) {
 	t.Run("TestUmfrageDeleteMitarbeiterUmfrage", TestUmfrageDeleteMitarbeiterUmfrage)
 }
 
-// TODO Umfragen aus assoziierten Nutzer geloescht und assoziierte Mitarbeiterumfragen aus MitarbeiterumfrageCol geloescht?
-
 func TestUmfrageDelete(t *testing.T) {
 	is := is.NewRelaxed(t)
 
