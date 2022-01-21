@@ -47,7 +47,7 @@ func AlleUmfragenForUser(username string) ([]structs.Umfrage, error) {
 	umfrageRefs := nutzerdaten.UmfrageRef
 
 	// liefere leere Liste zurueck, falls keine assoziierten Umfragen gefunden wurden
-	if umfrageRefs == nil {
+	if umfrageRefs == nil || len(umfrageRefs) == 0 {
 		return []structs.Umfrage{}, nil
 	}
 
