@@ -209,6 +209,21 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 		is.Equal(emissionen, 3680.0) // erwartetes Ergebnis: 3680.0
 	})
 
+	t.Run("BerechnePendelweg: Eingabe mit Weg == 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		pendelwegDaten := []structs.UmfragePendelweg{
+			{IDPendelweg: 2, Strecke: 0, Personenanzahl: 1},
+			{IDPendelweg: 1, Strecke: 10, Personenanzahl: 1},
+		}
+		var tageImBuero int32 = 1
+
+		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+
+		is.NoErr(err)                // Normalfall wirft keine Errors
+		is.Equal(emissionen, 3680.0) // erwartetes Ergebnis: 3680.0
+	})
+
 	t.Run("BerechnePendelweg: Rundung auf 2 Nachkommastellen", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -440,6 +455,19 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 		is.Equal(emissionen, 0.0)           // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
+	t.Run("BerechneDienstreisen: Unbekannte DienstreisenID", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		dienstreisenDaten := []structs.UmfrageDienstreise{
+			{IDDienstreise: -1, Strecke: 100},
+		}
+
+		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
+
+		is.Equal(err, structs.ErrBerechnungUnbekannt) // Datenbank wirft ErrNoDocuments
+		is.Equal(emissionen, 0.0)                     // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+	})
+
 	t.Run("BerechneDienstreisen: unbekannte Tankart", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -480,4 +508,5 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 	})
 
 	// Fehler ErrStrEinheitUnbekannt momentan nicht abpruefbar. Benoetigt falschen Datensatz in Datenbank
+	// Fehler ErrGebaeudeSpezialfall momentan nicht abpruefbar. Benoetigt Datensatz mit spezialfall == 0 in Datenbank
 }

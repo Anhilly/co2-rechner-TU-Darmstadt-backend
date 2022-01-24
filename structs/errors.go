@@ -31,6 +31,9 @@ var ( // Fehler von Add, Delete und Insert Funktionen
 var ( // Fehler von Find Funktionen
 	// Fehler beim Abrufen von mehreren Dokumenten
 	ErrDokumenteNichtGefunden = errors.New("Es konnten nicht alle angefragen Dokumente gefunden werden")
+
+	// Fehler beim Finden einer Umfrage zu MitarbeiterUmfragen
+	ErrMitarbeiterUmfrageMehrfachAssoziiert = errors.New("Die gegebene MitarbeiterUmfrage ist in mehreren Umfragen referenziert.")
 )
 
 var ( // Fehler, die bei Berechnungen auftreten

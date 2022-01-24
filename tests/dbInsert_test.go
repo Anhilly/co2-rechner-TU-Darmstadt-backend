@@ -492,6 +492,27 @@ func TestMitarbeiterUmfrageInsert(t *testing.T) {
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(id, primitive.NilObjectID) // im Fehlerfall wird NilObjectID zurueckgegeben
 	})
+
+	t.Run("MitarbeiterUmfrageInsert: Umfrage vollstaendig", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var idUmfrage primitive.ObjectID
+		err := idUmfrage.UnmarshalText([]byte("61dc0c543e48998484eefaeb"))
+
+		data := structs.InsertMitarbeiterUmfrage{
+			Pendelweg: []structs.UmfragePendelweg{
+				{IDPendelweg: 2, Strecke: 20},
+			},
+			TageImBuero: 4,
+			Dienstreise: []structs.UmfrageDienstreise{},
+			ITGeraete:   []structs.UmfrageITGeraete{},
+			IDUmfrage:   idUmfrage,
+		}
+
+		id, err := database.MitarbeiterUmfrageInsert(data)
+		is.Equal(err, structs.ErrUmfrageVollstaendig) // Datenbank wirft ErrUmfrageVollstaendig
+		is.Equal(id, primitive.NilObjectID)           // im Fehlerfall wird NilObjectID zurueckgegeben
+	})
 }
 
 func TestNutzerdatenInsert(t *testing.T) {

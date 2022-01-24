@@ -7,6 +7,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
 )
 
@@ -29,9 +30,6 @@ func TestUpdate(t *testing.T) {
 	}(dir)
 
 	t.Run("TestUmfrageUpdate", TestUmfrageUpdate)
-
-	// TODO tests for update of MitarbeiterUmfrage
-	// t.Run("TestMitarbeiterUmfrageUpdate", TestMitarbeiterUmfrageUpdate)
 }
 
 func TestUmfrageUpdate(t *testing.T) {
@@ -109,8 +107,30 @@ func TestUmfrageUpdate(t *testing.T) {
 
 		is.Equal(idStillInUserRefs, true)
 	})
-}
 
-func TestMitarbeiterUmfrageUpdate(t *testing.T) {
-	// TODO ?
+	// Errorfall
+	t.Run("UmfrageUpdate: Umfrage ID unbekannt", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var id primitive.ObjectID
+		err := id.UnmarshalText([]byte("aaaaaaaaaaaaaaaaaaaaaaaa"))
+
+		updateData := structs.UpdateUmfrage{
+			UmfrageID:         id,
+			Bezeichnung:       "neuer Name",
+			Mitarbeiteranzahl: 12,
+			Jahr:              2077,
+			Gebaeude: []structs.UmfrageGebaeude{
+				{GebaeudeNr: 1102, Nutzflaeche: 100},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 6, Anzahl: 30},
+				{IDITGeraete: 4, Anzahl: 12},
+			},
+		}
+
+		idOfUpdatedUmfrage, err := database.UmfrageUpdate(updateData)
+		is.Equal(err, mongo.ErrNoDocuments) // ErrNoDocuments error
+		is.Equal(idOfUpdatedUmfrage, primitive.NilObjectID)
+	})
 }

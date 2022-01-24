@@ -17,7 +17,7 @@ func RouteMitarbeiterUmfrage() chi.Router {
 
 	// POST
 	r.Post("/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
-	r.Post("/updateMitarbeiterUmfrage", PostUpdateMitarbeiterUmfrage)
+	//r.Post("/updateMitarbeiterUmfrage", PostUpdateMitarbeiterUmfrage)
 	r.Post("/mitarbeiterUmfrageForUmfrage", PostMitarbeiterUmfrageForUmfrage)
 
 	// GET
@@ -26,13 +26,14 @@ func RouteMitarbeiterUmfrage() chi.Router {
 	return r
 }
 
+/*
 // PostUpdateMitarbeiterUmfrage updated eine Mitarbeiterumfrage mit den empfangenen Daten
-func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
+  func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
-	}
+ 	}
 
 	umfrageReq := structs.UpdateMitarbeiterUmfrage{}
 	umfrageRes := structs.UmfrageID{}
@@ -77,7 +78,9 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 
 	// Response
 	sendResponse(res, true, umfrageRes, http.StatusOK)
+	}
 }
+*/
 
 // PostMitarbeiterUmfrageForUmfrage liefert alle Mitarbeiterumfragen,
 // welche mit der Umfrage mit der ID UmfrageID assoziiert sind, zurueck.
