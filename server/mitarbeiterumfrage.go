@@ -18,10 +18,10 @@ func RouteMitarbeiterUmfrage() chi.Router {
 	// POST
 	r.Post("/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
 	r.Post("/updateMitarbeiterUmfrage", PostUpdateMitarbeiterUmfrage)
+	r.Post("/mitarbeiterUmfrageForUmfrage", PostMitarbeiterUmfrageForUmfrage)
 
 	// GET
 	r.Get("/exists", GetUmfrageExists)
-	r.Get("/mitarbeiterUmfrageForUmfrage", GetMitarbeiterUmfrageForUmfrage)
 
 	return r
 }
@@ -79,14 +79,30 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
-// GetMitarbeiterUmfrageForUmfrage liefert alle Mitarbeiterumfragen,
+// PostMitarbeiterUmfrageForUmfrage liefert alle Mitarbeiterumfragen,
 // welche mit der Umfrage mit der ID UmfrageID assoziiert sind, zurueck.
-func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
-	//TODO Authentifizierung des Nutzers
-	var requestedUmfrageID primitive.ObjectID
-	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
+func PostMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
+
+	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	auswertungReq := structs.RequestUmfrage{}
+	err = json.Unmarshal(s, &auswertungReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+	requestedUmfrageID := auswertungReq.UmfrageID
+
+	if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
 

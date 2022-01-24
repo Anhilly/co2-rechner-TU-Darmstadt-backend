@@ -1,12 +1,13 @@
 package server
 
 import (
+	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/co2computation"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -14,22 +15,37 @@ import (
 func RouteAuswertung() chi.Router {
 	r := chi.NewRouter()
 
-	r.Get("/", GetAuswertung)
+	r.Post("/", PostAuswertung)
 
 	return r
 }
 
-// GetAuswertung fuehrt die CO2-Emissionen Berechnung fuer die uebertragene Umfrage durch und sendet einen
+// PostAuswertung fuehrt die CO2-Emissionen Berechnung fuer die uebertragene Umfrage durch und sendet einen
 // structs.AuswertungRes zurueck.
-func GetAuswertung(res http.ResponseWriter, req *http.Request) {
-	//TODO Authentifizierung des Nutzers
-
-	var umfrageID primitive.ObjectID
-	err := umfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
+func PostAuswertung(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
+
+	auswertungReq := structs.RequestUmfrage{}
+	err = json.Unmarshal(s, &auswertungReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, auswertungReq.UmfrageID) {
+		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
+		return
+	}
+
+	var umfrageID = auswertungReq.UmfrageID
 
 	// hole Umfragen aus der Datenbank
 	umfrage, err := database.UmfrageFind(umfrageID)
