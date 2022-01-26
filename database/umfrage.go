@@ -227,6 +227,9 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 	return err
 }
 
+// UmfrageUpdateLinkShare setzt den auswertungFreigegeben Wert der Umfrage mit der gegebenen umfrageID
+// auf den uebergebenen setValue Wert. Dieser ist entweder 0 oder 1.
+// Der Wert steuert ob die Auswertung der Umfrage geteilt werden darf.
 func UmfrageUpdateLinkShare(setValue int32, umfrageID primitive.ObjectID) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
