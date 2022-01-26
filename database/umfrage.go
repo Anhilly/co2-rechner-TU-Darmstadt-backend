@@ -226,3 +226,28 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 
 	return err
 }
+
+func UmfrageUpdateLinkShare(setValue int32, umfrageID primitive.ObjectID) (primitive.ObjectID, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	var updatedDoc structs.Umfrage
+
+	err := collection.FindOneAndUpdate(
+		ctx,
+		bson.D{{"_id", umfrageID}},
+		bson.D{{"$set",
+			bson.D{
+				{"auswertungFreigegeben", setValue},
+			},
+		}},
+	).Decode(&updatedDoc)
+
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	return updatedDoc.ID, nil
+}
