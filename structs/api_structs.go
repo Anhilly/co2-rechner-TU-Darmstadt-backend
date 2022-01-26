@@ -109,6 +109,10 @@ type UmfrageYearRes struct {
 	Jahr int32 `json:"jahr"`
 }
 
+type UmfrageSharedResultsRes struct {
+	Freigegeben int32 `json:"freigegeben"`
+}
+
 type DeleteUmfrage struct {
 	UmfrageID primitive.ObjectID `json:"umfrageID"`
 	Auth      AuthToken          `json:"authToken"`

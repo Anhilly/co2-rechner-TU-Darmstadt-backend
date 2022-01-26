@@ -118,6 +118,7 @@ type Umfrage struct {
 	ITGeraete             []UmfrageITGeraete   `json:"itGeraete" bson:"itGeraete"`
 	Revision              int32                `json:"revision" bson:"revision"`
 	MitarbeiterUmfrageRef []primitive.ObjectID `json:"mitarbeiterUmfrageRef" bson:"mitarbeiterUmfrageRef"`
+	AuswertungFreigegeben int32                `json:"auswertungFreigegeben" bson:"auswertungFreigegeben"`
 }
 
 type UmfrageGebaeude struct {
