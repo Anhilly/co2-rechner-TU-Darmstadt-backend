@@ -28,6 +28,28 @@ func NutzerdatenFind(username string) (structs.Nutzerdaten, error) {
 	return data, nil
 }
 
+// NutzerdatenUpdateMailBestaetigung updatet den emailBestaetigt Eintrag von angegeben Nutzer in der Datenbank
+func NutzerdatenUpdateMailBestaetigung(id primitive.ObjectID, value int32) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+
+	// Update des Eintrages
+	_, err := collection.UpdateOne(
+		ctx,
+		bson.M{"_id": id},
+		bson.D{
+			{"$set", bson.D{{"emailBestaetigt", value}}},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // NutzerdatenAddUmfrageref fuegt einem Nutzer eine ObjectID einer Umfrage hinzu, falls der Nutzer vorhanden sind.
 func NutzerdatenAddUmfrageref(username string, id primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
@@ -69,11 +91,12 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 		return err // Bcrypt hashing error
 	}
 	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
-		Nutzername: anmeldedaten.Username,
-		Passwort:   string(passwordhash),
-		Rolle:      structs.IDRolleNutzer,
-		Revision:   1,
-		UmfrageRef: []primitive.ObjectID{},
+		Nutzername:      anmeldedaten.Username,
+		Passwort:        string(passwordhash),
+		Rolle:           structs.IDRolleNutzer,
+		EmailBestaetigt: structs.IDEmailNichtBestaetigt,
+		Revision:        1,
+		UmfrageRef:      []primitive.ObjectID{},
 	})
 	if err != nil {
 		return err // DB Error
