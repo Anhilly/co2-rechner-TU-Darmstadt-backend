@@ -31,6 +31,11 @@ const ( //nach IDs in der Datenbank
 	IDRolleAdmin  int32 = 1
 )
 
+const (
+	IDEmailNichtBestaetigt int32 = 0
+	IDEmailBestaetigt      int32 = 1
+)
+
 const ( // nach IDs in der Datenbank
 	IDDienstreiseBahn     int32 = 1
 	IDDienstreiseAuto     int32 = 2
