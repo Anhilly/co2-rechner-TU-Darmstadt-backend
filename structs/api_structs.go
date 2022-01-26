@@ -123,18 +123,25 @@ type RequestUmfrage struct {
 	Auth      AuthToken          `json:"authToken"`
 }
 
+type RequestLinkShare struct {
+	UmfrageID primitive.ObjectID `json:"umfrageID"`
+	LinkShare int32              `json:"linkShareValue"`
+	Auth      AuthToken          `json:"authToken"`
+}
+
 type RequestAuth struct {
 	Auth AuthToken `json:"authToken"`
 }
 
 type AuswertungRes struct {
 	// Information von Umfrage
-	ID                primitive.ObjectID `json:"id"`
-	Bezeichnung       string             `json:"bezeichnung"`
-	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
-	Jahr              int32              `json:"jahr"`
-	Umfragenanzahl    int32              `json:"umfragenanzahl"`
-	Umfragenanteil    float64            `json:"umfragenanteil"`
+	ID                  primitive.ObjectID `json:"id"`
+	Bezeichnung         string             `json:"bezeichnung"`
+	Mitarbeiteranzahl   int32              `json:"mitarbeiteranzahl"`
+	Jahr                int32              `json:"jahr"`
+	Umfragenanzahl      int32              `json:"umfragenanzahl"`
+	Umfragenanteil      float64            `json:"umfragenanteil"`
+	AuswertungFreigeben int32              `json:"linkShare"`
 
 	// Berechnete Werte fuer Auswertung
 	EmissionenWaerme                         float64 `json:"emissionenWaerme"`
