@@ -101,11 +101,12 @@ type Pendelweg struct {
 
 // Collection nutzerdaten
 type Nutzerdaten struct {
-	Nutzername string               `json:"nutzername" bson:"nutzername"`
-	Passwort   string               `json:"passwort" bson:"passwort"`
-	Rolle      int32                `json:"rolle" bson:"rolle"`
-	Revision   int32                `json:"revision" bson:"revision"`
-	UmfrageRef []primitive.ObjectID `json:"umfrageRef" bson:"umfrageRef"`
+	Nutzername      string               `json:"nutzername" bson:"nutzername"`
+	Passwort        string               `json:"passwort" bson:"passwort"`
+	Rolle           int32                `json:"rolle" bson:"rolle"`
+	EmailBestaetigt int32                `json:"emailBestaetigt" bson:"emailBestaetigt"`
+	Revision        int32                `json:"revision" bson:"revision"`
+	UmfrageRef      []primitive.ObjectID `json:"umfrageRef" bson:"umfrageRef"`
 }
 
 // Collection umfrage
