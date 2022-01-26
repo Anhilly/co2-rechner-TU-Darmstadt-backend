@@ -34,6 +34,7 @@ func RouteAuthentication() chi.Router {
 	r.Post("/registrierung", PostRegistrierung)
 	r.Post("/pruefeSession", PostPruefeSession)
 	r.Post("/pruefeNutzerRolle", PostPruefeNutzerRolle)
+	r.Post("/emailBestaetigung", PostEmailBestaetigung)
 	r.Delete("/abmeldung", DeleteAbmeldung)
 
 	return r
@@ -101,6 +102,32 @@ func AuthWithResponse(res http.ResponseWriter, username string, token string) bo
 		return false
 	}
 	return true
+}
+
+func PostEmailBestaetigung(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	data := structs.EmailBestaetigung{}
+	err = json.Unmarshal(s, &data)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	err = database.NutzerdatenUpdateMailBestaetigung(data.UserID, structs.IDEmailBestaetigt)
+
+	if err != nil {
+		errorResponse(res, err, http.StatusNotFound)
+		return
+	}
+
+	sendResponse(res, true, nil, http.StatusOK)
 }
 
 // PostPruefeSession prueft ob ein gueltiger Sessiontoken registriert ist und prueft diesen mit dem Request ab
