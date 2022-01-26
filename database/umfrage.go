@@ -140,6 +140,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 			ITGeraete:             data.ITGeraete,
 			Revision:              1,
 			MitarbeiterUmfrageRef: []primitive.ObjectID{},
+			AuswertungFreigegeben: 0,
 		})
 	if err != nil {
 		return primitive.NilObjectID, err
