@@ -36,15 +36,6 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
-	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, auswertungReq.UmfrageID) {
-		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
-		return
-	}
-
 	var umfrageID = auswertungReq.UmfrageID
 
 	// hole Umfragen aus der Datenbank
@@ -52,6 +43,19 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
+	}
+
+	// Wenn Auswertung nicht fuers teilen freigegeben muss Nutzer authoritaet geprueft werden
+	if umfrage.AuswertungFreigegeben == 0 {
+		// Authentifizierung
+		if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
+			return
+		}
+		nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
+		if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, auswertungReq.UmfrageID) {
+			errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
+			return
+		}
 	}
 
 	mitarbeiterumfragen, err := database.MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
