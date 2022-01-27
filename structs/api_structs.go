@@ -168,6 +168,11 @@ type PruefeSessionReq struct {
 	Sessiontoken string `json:"sessiontoken"`
 }
 
+type PruefeSessionRes struct {
+	Rolle           int32 `json:"rolle"`
+	EmailBestaetigt int32 `json:"emailBestaetigt"`
+}
+
 // Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
 type Response struct {
 	Status string      `json:"status"`
