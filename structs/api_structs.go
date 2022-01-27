@@ -156,7 +156,7 @@ type AuthReq struct { // wird fuer Anmeldung und Registrierung verwendet
 }
 
 type EmailBestaetigung struct {
-	UserID primitive.ObjectID `json:"userID" bson:"_id"`
+	UserID primitive.ObjectID `json:"nutzerID"`
 }
 
 type AbmeldungReq struct {
