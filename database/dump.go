@@ -12,7 +12,7 @@ import (
 func CreateDump(directoryName string) (string, error) {
 	dirTimestamp := time.Now().Format("20060102150405") + directoryName // Format: yyyyMMddHHmmss
 
-	cmd := exec.Command("docker", "exec", "-i", "mongodb", "/usr/bin/mongodump",
+	cmd := exec.Command("docker", "exec", "-i", containerName, "/usr/bin/mongodump",
 		"--username", username, "--password", password, "--authenticationDatabase", "admin",
 		"--db", dbName, "--out", structs.DumpPath+dirTimestamp)
 
@@ -26,9 +26,20 @@ func CreateDump(directoryName string) (string, error) {
 
 // RestoreDump spielt einen Dump, der in "DumpPath + directoryName" liegt, wieder in die Datenbank ein mittels mongorestore.
 func RestoreDump(directoryName string) error {
-	cmd := exec.Command("docker", "exec", "-i", "mongodb", "/usr/bin/mongorestore",
+	cmd := exec.Command("docker", "exec", "-i", containerName, "/usr/bin/mongorestore",
 		"--username", username, "--password", password, "--authenticationDatabase", "admin",
 		"--drop", "--db", dbName, structs.DumpPath+directoryName+"/"+dbName)
+
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RemoveDump(directoryName string) error {
+	cmd := exec.Command("docker", "exec", "-i", containerName, "rm", "-rf", structs.DumpPath+directoryName)
 
 	err := cmd.Run()
 	if err != nil {
