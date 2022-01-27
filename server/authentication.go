@@ -152,8 +152,12 @@ func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	nutzer, _ := database.NutzerdatenFind(sessionReq.Username)
+
+	data := structs.PruefeSessionRes{Rolle: nutzer.Rolle, EmailBestaetigt: nutzer.EmailBestaetigt}
+
 	// Falls ein valider Session Token vorhanden ist
-	sendResponse(res, true, nil, http.StatusOK)
+	sendResponse(res, true, data, http.StatusOK)
 }
 
 // PostAnmeldung liefert eine Response welcher bei valider Benutzereingabe den Nutzer authentisiert, sonst Fehler
@@ -181,6 +185,11 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		return
 	} else if err != nil {
 		errorResponse(res, err, http.StatusUnauthorized)
+		return
+	}
+
+	if nutzerdaten.EmailBestaetigt == structs.IDEmailNichtBestaetigt {
+		errorResponse(res, structs.ErrNutzerUnbestaetigteMail, http.StatusUnauthorized)
 		return
 	}
 
