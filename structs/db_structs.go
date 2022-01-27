@@ -101,6 +101,7 @@ type Pendelweg struct {
 
 // Collection nutzerdaten
 type Nutzerdaten struct {
+	NutzerID        primitive.ObjectID   `json:"_id" bson:"_id"`
 	Nutzername      string               `json:"nutzername" bson:"nutzername"`
 	Passwort        string               `json:"passwort" bson:"passwort"`
 	Rolle           int32                `json:"rolle" bson:"rolle"`
