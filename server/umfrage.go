@@ -351,6 +351,6 @@ func GetSharedResults(res http.ResponseWriter, req *http.Request) {
 	}
 
 	umfrageSharedRes.Freigegeben = umfrage.AuswertungFreigegeben
-	log.Println("Test", umfrageSharedRes.Freigegeben)
+
 	sendResponse(res, true, umfrageSharedRes, http.StatusOK)
 }
