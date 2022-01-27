@@ -182,12 +182,18 @@ func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Pruefe ob uebermittelter LinkShare Value korrekt ist, d.h. 0 oder 1
+	if linkshareReq.LinkShare != 0 && linkshareReq.LinkShare != 1 {
+		var err = errors.New("Anfrage ungueltig")
+		errorResponse(res, err, http.StatusBadRequest)
+	}
+
 	// Authentifizierung
 	if !AuthWithResponse(res, linkshareReq.Auth.Username, linkshareReq.Auth.Sessiontoken) {
 		return
 	}
 	nutzer, _ := database.NutzerdatenFind(linkshareReq.Auth.Username)
-	if !isOwnerOfUmfrage(nutzer.UmfrageRef, linkshareReq.UmfrageID) {
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, linkshareReq.UmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
