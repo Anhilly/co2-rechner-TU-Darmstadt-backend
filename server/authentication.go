@@ -204,10 +204,20 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		if err2 != nil {
 			// Datenbank konnte nicht wiederhergestellt werden
 			log.Println(err2)
+		} else {
+			err := database.RemoveDump(restorepath)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 		// Konnte keinen neuen Nutzer erstellen
 		errorResponse(res, err, http.StatusConflict)
 		return
+	}
+
+	err = database.RemoveDump(restorepath)
+	if err != nil {
+		log.Println(err)
 	}
 
 	// Generiere Cookie Token

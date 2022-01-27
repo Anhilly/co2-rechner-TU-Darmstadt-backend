@@ -64,9 +64,19 @@ func RouteMitarbeiterUmfrage() chi.Router {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
 			log.Println(err2)
+		} else{
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
+	}
+
+	err = database.RemoveDump(ordner)
+	if err != nil {
+		log.Println(err)
 	}
 
 	// return empty umfrage string if umfrageID is invalid
@@ -196,9 +206,19 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
 			log.Println(err2)
+		} else {
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
+	}
+
+	err = database.RemoveDump(ordner)
+	if err != nil {
+		log.Println(err)
 	}
 
 	sendResponse(res, true, nil, http.StatusOK)

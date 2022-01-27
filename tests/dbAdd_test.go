@@ -27,6 +27,8 @@ func TestAdd(t *testing.T) {
 		is.NoErr(err)
 		err = database.RestoreDump(dir)
 		is.NoErr(err)
+		err = database.RemoveDump(dir)
+		is.NoErr(err)
 	}(dir)
 
 	t.Run("TestEnergieversorgungAddFaktor", TestEnergieversorgungAddFaktor)

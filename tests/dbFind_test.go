@@ -27,6 +27,8 @@ func TestFind(t *testing.T) {
 		is.NoErr(err)
 		err = database.RestoreDump(dir)
 		is.NoErr(err)
+		err = database.RemoveDump(dir)
+		is.NoErr(err)
 	}()
 
 	t.Run("TestITGeraeteFind", TestITGeraeteFind)
