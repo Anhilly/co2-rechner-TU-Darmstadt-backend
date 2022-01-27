@@ -616,6 +616,7 @@ func TestUmfrageFind(t *testing.T) {
 				ITGeraete: []structs.UmfrageITGeraete{
 					{IDITGeraete: 5, Anzahl: 10},
 				},
+				AuswertungFreigegeben: 0,
 				Revision:              1,
 				MitarbeiterUmfrageRef: []primitive.ObjectID{idMitarbeiterumfrage},
 			}) // Überprüfung des zurückgelieferten Elements
