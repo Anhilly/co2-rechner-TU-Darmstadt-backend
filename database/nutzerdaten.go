@@ -28,6 +28,33 @@ func NutzerdatenFind(username string) (structs.Nutzerdaten, error) {
 	return data, nil
 }
 
+func NutzerdatenUpdate(nutzer structs.Nutzerdaten) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+
+	// Update des Eintrages
+	_, err := collection.UpdateOne(
+		ctx,
+		bson.M{"_id": nutzer.NutzerID},
+		bson.D{
+			{"$set",
+				bson.D{
+					{"nutzername", nutzer.EmailBestaetigt},
+					{"passwort", nutzer.Passwort},
+					{"rolle", nutzer.Rolle},
+					{"emailBestaetigt", nutzer.EmailBestaetigt},
+				}},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // NutzerdatenUpdateMailBestaetigung updatet den emailBestaetigt Eintrag von angegeben Nutzer in der Datenbank
 func NutzerdatenUpdateMailBestaetigung(id primitive.ObjectID, value int32) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
