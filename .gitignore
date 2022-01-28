@@ -24,3 +24,5 @@
 *.csr
 
 *.key
+
+server/mail_config.go
