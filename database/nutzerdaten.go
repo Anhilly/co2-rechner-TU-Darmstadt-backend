@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -99,7 +100,7 @@ func NutzerdatenAddUmfrageref(username string, id primitive.ObjectID) error {
 }
 
 // NutzerdatenInsert fuegt einen Datenbankeintrag in Form des Nutzerdaten structs ein, dabei wird das Passwort gehashed.
-func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
+func NutzerdatenInsert(anmeldedaten structs.AuthReq) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -109,15 +110,16 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 
 	if err == nil {
 		// Eintrag mit diesem Nutzernamen existiert bereits
-		return structs.ErrInsertExistingAccount
+		return primitive.NilObjectID, structs.ErrInsertExistingAccount
 	}
 	// Kein Eintrag vorhanden
 
 	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
 	if err != nil {
-		return err // Bcrypt hashing error
+		return primitive.NilObjectID, err // Bcrypt hashing error
 	}
-	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
+	result, err := collection.InsertOne(ctx, structs.Nutzerdaten{
+		NutzerID:        primitive.NewObjectID(),
 		Nutzername:      anmeldedaten.Username,
 		Passwort:        string(passwordhash),
 		Rolle:           structs.IDRolleNutzer,
@@ -126,8 +128,14 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 		UmfrageRef:      []primitive.ObjectID{},
 	})
 	if err != nil {
-		return err // DB Error
+		return primitive.NilObjectID, err // DB Error
 	}
 
-	return nil
+	id, ok := result.InsertedID.(primitive.ObjectID)
+
+	if !ok {
+		return primitive.NilObjectID, errors.New("Casten der ObjectID ist fehlgeschlagen")
+	}
+
+	return id, nil
 }
