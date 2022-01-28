@@ -184,6 +184,10 @@ type AbmeldeRes struct {
 	Message string `json:"message"`
 }
 
+type RegistrierungRes struct {
+	Message string `json:"message"`
+}
+
 type AuthRes struct {
 	Message      string `json:"message"`
 	Sessiontoken string `json:"sessiontoken"`

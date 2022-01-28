@@ -234,7 +234,7 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = database.NutzerdatenInsert(registrierungReq)
+	id, err := database.NutzerdatenInsert(registrierungReq)
 	if err != nil {
 		err2 := database.RestoreDump(restorepath)
 		if err2 != nil {
@@ -246,11 +246,15 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	err = SendeBestaetigungsMail(id, registrierungReq.Username)
+
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+	}
+
 	// Generiere Cookie Token
-	token := GeneriereSessionToken(registrierungReq.Username)
-	sendResponse(res, true, structs.AuthRes{
-		Message:      "Der neue Nutzeraccount wurde erstellt",
-		Sessiontoken: token,
+	sendResponse(res, true, structs.RegistrierungRes{
+		Message: "Der neue Nutzeraccount wurde erstellt, bitte bestätigen Sie noch ihre E-Mail",
 	}, http.StatusCreated)
 }
 
