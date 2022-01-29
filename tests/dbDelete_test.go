@@ -31,6 +31,7 @@ func TestDelete(t *testing.T) {
 
 	t.Run("TestUmfrageDelete", TestUmfrageDelete)
 	t.Run("TestUmfrageDeleteMitarbeiterUmfrage", TestUmfrageDeleteMitarbeiterUmfrage)
+	t.Run("TestNutzerdatenDelete", TestNutzerdatenDelete)
 }
 
 func TestUmfrageDelete(t *testing.T) {
@@ -214,5 +215,64 @@ func TestUmfrageDeleteMitarbeiterUmfrage(t *testing.T) {
 
 		err = database.UmfrageDeleteMitarbeiterUmfrage(idUmfrage)
 		is.Equal(err, structs.ErrObjectIDNichtGefunden)
+	})
+}
+
+func TestNutzerdatenDelete(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	//Normalfall
+	t.Run("NutzerdatenDelete username vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		username := "lorem_ipsum_mustermann"
+
+		err := database.NutzerdatenDelete(username)
+		is.NoErr(err) // kein Error im Normalfall
+
+		_, err = database.NutzerdatenFind(username) // Nutzer kann nicht mehr gefunden werden
+		is.Equal(err, mongo.ErrNoDocuments)
+	})
+
+	t.Run("NutzerdatenDelete username vorhanden und Umfragen geloescht und Mitarbeiterumfragen der Umfragen geloescht", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		username := "testuser"
+
+		nutzerdaten, err := database.NutzerdatenFind(username)
+		is.NoErr(err)
+
+		umfragenBefore := make([]structs.Umfrage, len(nutzerdaten.UmfrageRef))
+		for i, umfrageID := range nutzerdaten.UmfrageRef {
+			umfragenBefore[i], err = database.UmfrageFind(umfrageID)
+			is.NoErr(err)
+		}
+
+		err = database.NutzerdatenDelete(username)
+		is.NoErr(err) // kein Error im Normalfall
+
+		_, err = database.NutzerdatenFind(username) // Nutzer kann nicht mehr gefunden werden
+		is.Equal(err, mongo.ErrNoDocuments)
+
+		// Umfragen koennen nicht mehr gefunden werden
+		for _, umfrage := range umfragenBefore {
+			_, err = database.UmfrageFind(umfrage.ID)
+			is.Equal(err, mongo.ErrNoDocuments)
+
+			// mitarbeiterUmfragen koennen nicht mehr gefunden werden
+			for _, mitarbeiterUmfrageID := range umfrage.MitarbeiterUmfrageRef {
+				_, err = database.MitarbeiterUmfrageFind(mitarbeiterUmfrageID)
+				is.Equal(err, mongo.ErrNoDocuments)
+			}
+		}
+	})
+
+	//Fehlerfall
+	t.Run("NutzerdatenDelete username nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		username := "bielefeld"
+		err := database.NutzerdatenDelete(username)
+		is.Equal(err, mongo.ErrNoDocuments)
 	})
 }
