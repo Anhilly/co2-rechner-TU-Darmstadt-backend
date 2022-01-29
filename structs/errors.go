@@ -24,6 +24,9 @@ var ( // Fehler von Add, Delete und Insert Funktionen
 	// Fehler beim loeschen des Eintrags wo ObjectID nicht gefunden wurde
 	ErrObjectIDNichtGefunden = errors.New("ObjectID nicht gefunden")
 
+	// Fehler beim loeschen eines Nutzers wo Username nicht gefunden wurde
+	ErrUsernameNichtGefunden = errors.New("Username nicht gefunden")
+
 	// Fehler beim loeschen des Eintrags wo ObjectID nicht gefunden wurde
 	ErrUmfrageVollstaendig = errors.New("Umfrage ist bereits von allen Mitarbeitenden ausgefüllt.")
 )

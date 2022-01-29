@@ -81,3 +81,56 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 
 	return nil
 }
+
+// NutzerdatenDelete loescht einen Nutzer mit dem gegebenen username und alle assoziierten Umfragen aus der Datenbank.
+// falls der Eintrag nicht existiert, wird ein Fehler bzw nil zurückgeliefert
+func NutzerdatenDelete(username string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+
+	// finde nutzerdaten
+	nutzerdaten, err := NutzerdatenFind(username)
+	if err != nil {
+		return err
+	}
+
+	// Loesche assoziierte Umfragen
+	for _, umfrageID := range nutzerdaten.UmfrageRef {
+
+		umfrage, err := UmfrageFind(umfrageID)
+		if err != nil {
+			return err
+		}
+
+		// Loesche assoziierte Mitarbeiterumfragen pro Umfrage
+		for _, mitarbeiterumfrage := range umfrage.MitarbeiterUmfrageRef {
+			err = UmfrageDeleteMitarbeiterUmfrage(mitarbeiterumfrage)
+			if err != nil {
+				return err
+			}
+		}
+
+		// loesche Umfrage nun selbst
+		err = UmfrageDelete(username, umfrageID)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Loesche Nutzerdaten
+	anzahl, err := collection.DeleteOne(
+		ctx,
+		bson.M{"nutzername": username})
+
+	if err != nil {
+		return err
+	}
+
+	if anzahl.DeletedCount == 0 {
+		return structs.ErrUsernameNichtGefunden
+	}
+
+	return err
+}

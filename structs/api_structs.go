@@ -180,6 +180,11 @@ type AuthRes struct {
 	Sessiontoken string `json:"sessiontoken"`
 }
 
+type DeleteNutzerdatenReq struct {
+	Auth     AuthToken `json:"authToken"`
+	Username string    `json:"username"`
+}
+
 type Error struct {
 	Code    int32  `json:"code"`
 	Message string `json:"message"`
