@@ -42,7 +42,7 @@ func NutzerdatenUpdate(nutzer structs.Nutzerdaten) error {
 		bson.D{
 			{"$set",
 				bson.D{
-					{"nutzername", nutzer.EmailBestaetigt},
+					{"nutzername", nutzer.Nutzername},
 					{"passwort", nutzer.Passwort},
 					{"rolle", nutzer.Rolle},
 					{"emailBestaetigt", nutzer.EmailBestaetigt},
