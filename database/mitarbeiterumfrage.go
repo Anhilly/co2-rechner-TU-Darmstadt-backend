@@ -5,7 +5,31 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
+	"runtime/debug"
 )
+
+// MitarbeiterUmfrageFind liefert einen Mitarbeiterumfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
+// falls ein Document vorhanden ist.
+func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
+
+	var data structs.MitarbeiterUmfrage
+	err := collection.FindOne(
+		ctx,
+		bson.D{{"_id", id}},
+	).Decode(&data)
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return structs.MitarbeiterUmfrage{}, err
+	}
+
+	return data, nil
+}
 
 //// MitarbeiterUmfrageUpdate updated eine Mitarbeiterumfrage mit den in data uebergebenen Werten und
 //// gibt die ID der aktualisierten Umfrage zurueck.
@@ -31,6 +55,8 @@ import (
 //	).Decode(&updatedDoc)
 //
 //	if err != nil {
+//		log.Println(err)
+//		debug.PrintStack()
 //		return primitive.NilObjectID, err
 //	}
 //
@@ -59,6 +85,8 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 		bson.D{{"_id", bson.M{"$in": umfrageRefs}}},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
@@ -66,30 +94,12 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 
 	err = cursor.All(ctx, &results)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
 	return results, nil
-}
-
-// MitarbeiterUmfrageFind liefert einen Mitarbeiterumfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
-// falls ein Document vorhanden ist.
-func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
-	defer cancel()
-
-	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
-
-	var data structs.MitarbeiterUmfrage
-	err := collection.FindOne(
-		ctx,
-		bson.D{{"_id", id}},
-	).Decode(&data)
-	if err != nil {
-		return structs.MitarbeiterUmfrage{}, err
-	}
-
-	return data, nil
 }
 
 // MitarbeiterUmfrageFindMany liefert ein Array aus allen Mitarbeiterumfragen zurueck, deren ID in ids liegt.
@@ -106,16 +116,22 @@ func MitarbeiterUmfrageFindMany(ids []primitive.ObjectID) ([]structs.Mitarbeiter
 			bson.D{{"$in", ids}}}},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return []structs.MitarbeiterUmfrage{}, err
 	}
 
 	var data []structs.MitarbeiterUmfrage
 	err = cursor.All(ctx, &data)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return []structs.MitarbeiterUmfrage{}, err
 	}
 
 	if len(ids) != len(data) {
+		log.Println(structs.ErrDokumenteNichtGefunden)
+		debug.PrintStack()
 		return nil, structs.ErrDokumenteNichtGefunden
 	}
 
@@ -147,6 +163,8 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 	umfragenFilled := int32(len(mitarbeiterumfragen))
 
 	if umfragenFilled >= mitarbeiterMax {
+		log.Println(structs.ErrUmfrageVollstaendig)
+		debug.PrintStack()
 		return primitive.NilObjectID, structs.ErrUmfrageVollstaendig
 	}
 
@@ -162,11 +180,15 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 		},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return primitive.NilObjectID, err
 	}
 
 	id, ok := insertedDoc.InsertedID.(primitive.ObjectID)
 	if !ok {
+		log.Println(structs.ErrObjectIDNichtKonvertierbar)
+		debug.PrintStack()
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
@@ -189,10 +211,14 @@ func UmfrageDeleteMitarbeiterUmfrage(mitarbeiterUmfrageID primitive.ObjectID) er
 		ctx,
 		bson.M{"_id": mitarbeiterUmfrageID})
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
 	if anzahl.DeletedCount == 0 {
+		log.Println(structs.ErrObjectIDNichtGefunden)
+		debug.PrintStack()
 		return structs.ErrObjectIDNichtGefunden
 	}
 	
@@ -209,6 +235,8 @@ func UmfrageDeleteMitarbeiterUmfrage(mitarbeiterUmfrageID primitive.ObjectID) er
 	).Decode(&updatedDocument)
 
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 

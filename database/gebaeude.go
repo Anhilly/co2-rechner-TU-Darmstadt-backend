@@ -5,6 +5,8 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
+	"runtime/debug"
 )
 
 // GebaeudeFind liefert einen Gebaeude struct mit nr gleich dem Parameter.
@@ -20,6 +22,8 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 		bson.D{{"nr", nr}},
 	).Decode(&data)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return structs.Gebaeude{}, err
 	}
 
@@ -53,6 +57,8 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 		},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
@@ -76,6 +82,8 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	case structs.IDEnergieversorgungKaelte: // Kaelte
 		referenzname = "kaelteRef"
 	default:
+		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
+		debug.PrintStack()
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
@@ -86,8 +94,9 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 		bson.D{{"$addToSet", // $addToSet verhindert, dass eine Referenz doppelt im Array steht (sollte nicht vorkommen)
 			bson.D{{referenzname, ref}}}},
 	).Decode(&updatedDoc)
-
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
@@ -107,6 +116,8 @@ func GebaeudeAlleNr() ([]int32, error) {
 		options.Find().SetProjection(bson.M{"_id": 0, "nr": 1}),
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
@@ -115,6 +126,8 @@ func GebaeudeAlleNr() ([]int32, error) {
 	}
 	err = cursor.All(ctx, &results)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 

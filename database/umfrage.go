@@ -5,6 +5,8 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
+	"runtime/debug"
 )
 
 // AlleUmfragen gibt alle Umfragen in der Datenbank zurueck.
@@ -19,6 +21,8 @@ func AlleUmfragen() ([]structs.Umfrage, error) {
 		bson.D{},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
@@ -26,6 +30,8 @@ func AlleUmfragen() ([]structs.Umfrage, error) {
 
 	err = cursor.All(ctx, &results)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
@@ -58,6 +64,8 @@ func AlleUmfragenForUser(username string) ([]structs.Umfrage, error) {
 		bson.D{{"_id", bson.M{"$in": umfrageRefs}}},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
@@ -65,6 +73,8 @@ func AlleUmfragenForUser(username string) ([]structs.Umfrage, error) {
 
 	err = cursor.All(ctx, &results)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
@@ -86,6 +96,8 @@ func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 	).Decode(&data)
 
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return structs.Umfrage{}, err
 	}
 
@@ -116,6 +128,8 @@ func UmfrageUpdate(data structs.UpdateUmfrage) (primitive.ObjectID, error) {
 	).Decode(&updatedDoc)
 
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return primitive.NilObjectID, err
 	}
 
@@ -142,11 +156,15 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 			MitarbeiterUmfrageRef: []primitive.ObjectID{},
 		})
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return primitive.NilObjectID, err
 	}
 
 	id, ok := insertedDoc.InsertedID.(primitive.ObjectID)
 	if !ok {
+		log.Println(structs.ErrObjectIDNichtKonvertierbar)
+		debug.PrintStack()
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
@@ -173,6 +191,8 @@ func UmfrageAddMitarbeiterUmfrageRef(idUmfrage primitive.ObjectID, referenz prim
 			bson.D{{"mitarbeiterUmfrageRef", referenz}}}},
 	).Decode(&updatedDoc)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
@@ -187,7 +207,7 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 
 	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
-	//Loesche assoziierte Mitarbeiterumfragen
+	// Loesche assoziierte Mitarbeiterumfragen
 	eintrag, err := UmfrageFind(umfrageID)
 	if err != nil {
 		return err
@@ -203,13 +223,17 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 	// Loesche Eintrag aus Umfragen
 	anzahl, err := collection.DeleteOne(
 		ctx,
-		bson.M{"_id": umfrageID})
-
+		bson.M{"_id": umfrageID},
+	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
 	if anzahl.DeletedCount == 0 {
+		log.Println(structs.ErrObjectIDNichtGefunden)
+		debug.PrintStack()
 		return structs.ErrObjectIDNichtGefunden
 	}
 
@@ -221,7 +245,13 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 		ctx,
 		bson.M{"nutzername": username},
 		bson.D{{"$pull",
-			bson.D{{"umfrageRef", umfrageID}}}}).Decode(&updatedDoc)
+			bson.D{{"umfrageRef", umfrageID}}}},
+		).Decode(&updatedDoc)
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return err
+	}
 
-	return err
+	return nil
 }

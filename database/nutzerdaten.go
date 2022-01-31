@@ -6,6 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
+	"log"
+	"runtime/debug"
 )
 
 // NutzerdatenFind liefert einen Nutzerdaten struct zurueck, der die uebergegebene E-Mail hat,
@@ -22,6 +24,8 @@ func NutzerdatenFind(username string) (structs.Nutzerdaten, error) {
 		bson.D{{"nutzername", username}},
 	).Decode(&data)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return structs.Nutzerdaten{}, err
 	}
 
@@ -43,6 +47,8 @@ func NutzerdatenAddUmfrageref(username string, id primitive.ObjectID) error {
 			bson.D{{"umfrageRef", id}}}},
 	).Decode(&updatedDoc)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
@@ -57,7 +63,6 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
 	// Pruefe, ob bereits ein Eintrag mit diesem Nutzernamen existiert
 	_, err := NutzerdatenFind(anmeldedaten.Username)
-
 	if err == nil {
 		// Eintrag mit diesem Nutzernamen existiert bereits
 		return structs.ErrInsertExistingAccount
@@ -66,8 +71,11 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 
 	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err // Bcrypt hashing error
 	}
+
 	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
 		Nutzername: anmeldedaten.Username,
 		Passwort:   string(passwordhash),
@@ -76,6 +84,8 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
 		UmfrageRef: []primitive.ObjectID{},
 	})
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err // DB Error
 	}
 

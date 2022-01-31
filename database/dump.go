@@ -2,7 +2,9 @@ package database
 
 import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
+	"log"
 	"os/exec"
+	"runtime/debug"
 	"time"
 )
 
@@ -18,6 +20,8 @@ func CreateDump(directoryName string) (string, error) {
 
 	err := cmd.Run()
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return "", err
 	}
 
@@ -32,6 +36,8 @@ func RestoreDump(directoryName string) error {
 
 	err := cmd.Run()
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
@@ -43,6 +49,8 @@ func RemoveDump(directoryName string) error {
 
 	err := cmd.Run()
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
