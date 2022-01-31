@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/sethvargo/go-password/password"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
@@ -35,6 +36,8 @@ func RouteAuthentication() chi.Router {
 	r.Post("/pruefeSession", PostPruefeSession)
 	r.Post("/pruefeNutzerRolle", PostPruefeNutzerRolle)
 	r.Post("/emailBestaetigung", PostEmailBestaetigung)
+	r.Post("/passwortVergessen", PostPasswortVergessen)
+
 	r.Delete("/abmeldung", DeleteAbmeldung)
 
 	return r
@@ -208,6 +211,67 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		Message:      "Nutzer authentifiziert",
 		Sessiontoken: token,
 	}, http.StatusOK)
+}
+
+func PostPasswortVergessen(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	pwVergessen := structs.PasswortVergessenReq{}
+	err = json.Unmarshal(s, &pwVergessen)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	nutzer, err := database.NutzerdatenFind(pwVergessen.Username)
+	if err != nil {
+		sendResponse(res, true, nil, 200)
+	}
+
+	passwort, err := password.Generate(10, 3, 3, false, false)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+	}
+
+	passwordhash, err := bcrypt.GenerateFromPassword([]byte(passwort), bcrypt.DefaultCost)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostAddFaktor")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	nutzer.Passwort = string(passwordhash)
+
+	// SendMail
+	err = database.NutzerdatenUpdate(nutzer)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	/*	err = SendePasswortVergessenMail(nutzer.Nutzername, passwort)
+
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+		}*/
+
+	// Generiere Cookie Token
+	sendResponse(res, true, nil, http.StatusCreated)
 }
 
 // PostRegistrierung liefert einen HTTP Response zurueck, welcher den neuen Nutzer authentifiziert,
