@@ -368,6 +368,7 @@ func TestUmfrageInsert(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
+			AuswertungFreigegeben: 0,
 			Revision:              1,
 			MitarbeiterUmfrageRef: []primitive.ObjectID{},
 		}) // Ueberpruefung des geaenderten Elementes
