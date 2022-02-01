@@ -155,6 +155,12 @@ type AuthReq struct { // wird fuer Anmeldung und Registrierung verwendet
 	Passwort string `json:"password"`
 }
 
+type PasswortAendernReq struct { // wird fuer Anmeldung und Registrierung verwendet
+	Auth          AuthToken `json:"authToken"`
+	Passwort      string    `json:"passwort"`
+	NeuesPasswort string    `json:"neuesPasswort"`
+}
+
 type PasswortVergessenReq struct {
 	Username string `json:"username"`
 }
