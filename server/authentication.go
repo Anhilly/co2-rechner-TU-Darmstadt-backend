@@ -34,7 +34,6 @@ func RouteAuthentication() chi.Router {
 	r.Post("/anmeldung", PostAnmeldung)
 	r.Post("/registrierung", PostRegistrierung)
 	r.Post("/pruefeSession", PostPruefeSession)
-	r.Post("/pruefeNutzerRolle", PostPruefeNutzerRolle)
 	r.Post("/emailBestaetigung", PostEmailBestaetigung)
 	r.Post("/passwortVergessen", PostPasswortVergessen)
 	r.Post("/passwortAendern", PostPasswortAendern)
@@ -373,37 +372,6 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, structs.RegistrierungRes{
 		Message: "Der neue Nutzeraccount wurde erstellt, bitte bestätigen Sie noch ihre E-Mail",
 	}, http.StatusCreated)
-}
-
-// PostPruefeNutzerRolle ueberprueft die Nutzerrolle (Admin, User) eines authentifizierten Nutzers
-// und liefert die Rolle des Nutzers zurueck (0 User, 1 Admin)
-func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error --> 400
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	sessionReq := structs.PruefeSessionReq{}
-	err = json.Unmarshal(s, &sessionReq)
-	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error --> 400
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	// Falls kein valider Session Token vorhanden.
-	if !AuthWithResponse(res, sessionReq.Username, sessionReq.Sessiontoken) {
-		return
-	}
-
-	nutzer, err := database.NutzerdatenFind(sessionReq.Username)
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-	}
-	// Falls ein valider Session Token vorhanden ist
-	sendResponse(res, true, nutzer.Rolle, http.StatusOK)
 }
 
 // DeleteAbmeldung liefert einen HTTP Response zurueck, welcher den Nutzer abmeldet, sonst Fehler
