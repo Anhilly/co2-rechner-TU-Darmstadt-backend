@@ -310,16 +310,19 @@ func PostPasswortVergessen(res http.ResponseWriter, req *http.Request) {
 	nutzer, err := database.NutzerdatenFind(pwVergessen.Username)
 	if err != nil {
 		sendResponse(res, true, nil, 200)
+		return
 	}
 
 	passwort, err := password.Generate(10, 3, 0, false, false)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
+		return
 	}
 
 	passwordhash, err := bcrypt.GenerateFromPassword([]byte(passwort), bcrypt.DefaultCost)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
+		return
 	}
 
 	// Datenverarbeitung
