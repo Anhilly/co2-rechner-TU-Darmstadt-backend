@@ -124,10 +124,20 @@ func PostEmailBestaetigung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	ordner, err := database.CreateDump("PostEmailBestaetigung")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
 	err = database.NutzerdatenUpdateMailBestaetigung(data.UserID, structs.IDEmailBestaetigt)
 
 	if err != nil {
-		errorResponse(res, err, http.StatusNotFound)
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -313,7 +323,7 @@ func PostPasswortVergessen(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Datenverarbeitung
-	ordner, err := database.CreateDump("PostAddFaktor")
+	ordner, err := database.CreateDump("PostPasswortVergessen")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
