@@ -44,12 +44,12 @@ func SendePasswortVergessenMail(username string, passwort string) error {
 		mailjet.InfoMessagesV31{
 			From: &mailjet.RecipientV31{
 				Email: "anton.hillmann@stud.tu-darmstadt.de",
-				Name:  "Mail",
+				Name:  "CO2-Rechner",
 			},
 			To: &mailjet.RecipientsV31{
 				mailjet.RecipientV31{
 					Email: username,
-					Name:  "passenger 1",
+					Name:  "",
 				},
 			},
 			TemplateID:       3535931,
