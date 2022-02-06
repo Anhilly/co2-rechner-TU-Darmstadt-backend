@@ -287,7 +287,7 @@ func PostPasswortVergessen(res http.ResponseWriter, req *http.Request) {
 		sendResponse(res, true, nil, 200)
 	}
 
-	passwort, err := password.Generate(10, 3, 3, false, false)
+	passwort, err := password.Generate(10, 3, 0, false, false)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 	}
@@ -370,9 +370,7 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Generiere Cookie Token
-	sendResponse(res, true, structs.RegistrierungRes{
-		Message: "Der neue Nutzeraccount wurde erstellt, bitte bestätigen Sie noch ihre E-Mail",
-	}, http.StatusCreated)
+	sendResponse(res, true, nil, http.StatusCreated)
 }
 
 // PostPruefeNutzerRolle ueberprueft die Nutzerrolle (Admin, User) eines authentifizierten Nutzers
