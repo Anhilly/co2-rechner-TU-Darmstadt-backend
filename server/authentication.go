@@ -210,7 +210,23 @@ func PostPasswortAendern(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	nutzerdaten.Passwort = string(passworthash)
-	database.NutzerdatenUpdate(nutzerdaten)
+
+	ordner, err := database.CreateDump("PostPasswortAendern")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.NutzerdatenUpdate(nutzerdaten)
+
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
 	sendResponse(res, true, nil, http.StatusOK)
 }
