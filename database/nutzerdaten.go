@@ -166,23 +166,11 @@ func NutzerdatenDelete(username string) error {
 
 	// Loesche assoziierte Umfragen
 	for _, umfrageID := range nutzerdaten.UmfrageRef {
-
-		umfrage, err := UmfrageFind(umfrageID)
-		if err != nil {
-			return err
-		}
-
-		// Loesche assoziierte Mitarbeiterumfragen pro Umfrage
-		for _, mitarbeiterumfrage := range umfrage.MitarbeiterUmfrageRef {
-			err = UmfrageDeleteMitarbeiterUmfrage(mitarbeiterumfrage)
-			if err != nil {
-				return err
-			}
-		}
-
 		// loesche Umfrage nun selbst
 		err = UmfrageDelete(username, umfrageID)
 		if err != nil {
+			log.Println(err)
+			debug.PrintStack()
 			return err
 		}
 	}
@@ -190,15 +178,19 @@ func NutzerdatenDelete(username string) error {
 	// Loesche Nutzerdaten
 	anzahl, err := collection.DeleteOne(
 		ctx,
-		bson.M{"nutzername": username})
-
+		bson.M{"nutzername": username},
+	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
 	if anzahl.DeletedCount == 0 {
-		return structs.ErrUsernameNichtGefunden
+		log.Println(structs.ErrUsernameLoeschenFehlgeschlagen)
+		debug.PrintStack()
+		return structs.ErrUsernameLoeschenFehlgeschlagen
 	}
 
-	return err
+	return nil
 }

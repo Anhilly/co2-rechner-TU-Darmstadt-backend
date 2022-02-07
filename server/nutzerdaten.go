@@ -38,24 +38,25 @@ func PostNutzerdatenDelete(res http.ResponseWriter, req *http.Request) {
 	if !AuthWithResponse(res, deleteNutzerdatenReq.Auth.Username, deleteNutzerdatenReq.Auth.Sessiontoken) {
 		return
 	}
-
-	ordner, err := database.CreateDump("PostDeleteNutzerdaten")
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
 	// check if user is admin if they do not want to delete themselves
 	if deleteNutzerdatenReq.Username != deleteNutzerdatenReq.Auth.Username {
-		nutzer, err := database.NutzerdatenFind(deleteNutzerdatenReq.Auth.Username)
+		nutzer, err := database.NutzerdatenFind(deleteNutzerdatenReq.Username)
 		if err != nil {
 			errorResponse(res, err, http.StatusInternalServerError)
+			return
 		}
 
 		// if user is not an admin, return unauthorized error
 		if nutzer.Rolle != structs.IDRolleAdmin {
 			errorResponse(res, err, http.StatusUnauthorized)
+			return
 		}
+	}
+
+	ordner, err := database.CreateDump("PostDeleteNutzerdaten")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
 	}
 
 	// delete user
@@ -64,10 +65,20 @@ func PostNutzerdatenDelete(res http.ResponseWriter, req *http.Request) {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
 			log.Println(err2)
+		} else {
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
-	sendResponse(res, true, deleteNutzerdatenReq.Auth.Username, http.StatusOK)
+	err = database.RemoveDump(ordner)
+	if err != nil {
+		log.Println(err)
+	}
+
+	sendResponse(res, true, deleteNutzerdatenReq.Username, http.StatusOK)
 }

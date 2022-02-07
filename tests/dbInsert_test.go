@@ -533,13 +533,14 @@ func TestNutzerdatenInsert(t *testing.T) {
 			Username: username,
 			Passwort: "verysecurepassword",
 		}
-		err := database.NutzerdatenInsert(testData)
+		id, err := database.NutzerdatenInsert(testData)
 		is.NoErr(err) // Kein Fehler wird geworfen
 
 		daten, err := database.NutzerdatenFind(username)
 		is.NoErr(err) // Kein Fehler seitens der Datenbank
 		// Eintrag wurde korrekt hinzugefuegt
 		is.Equal(daten.Nutzername, username)
+		is.Equal(daten.NutzerID, id)
 		is.NoErr(bcrypt.CompareHashAndPassword([]byte(daten.Passwort), []byte(testData.Passwort)))
 	})
 
@@ -550,7 +551,7 @@ func TestNutzerdatenInsert(t *testing.T) {
 			Username: "anton@tobi.com",
 			Passwort: "verysecurepassword",
 		}
-		err := database.NutzerdatenInsert(testData)
+		_, err := database.NutzerdatenInsert(testData)
 		is.Equal(err, structs.ErrInsertExistingAccount) // Dateneintrag existiert bereits
 	})
 }
