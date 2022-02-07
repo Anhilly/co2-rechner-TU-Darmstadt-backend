@@ -384,11 +384,13 @@ func TestUmfrageInsert(t *testing.T) {
 		updatedDoc, err := database.NutzerdatenFind(data.Auth.Username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
-			NutzerID:   objID,
-			Nutzername: username,
-			Passwort:   password,
-			Revision:   1,
-			UmfrageRef: []primitive.ObjectID{idVorhanden, id},
+			NutzerID:        objID,
+			Nutzername:      username,
+			Passwort:        password,
+			Rolle:           0,
+			EmailBestaetigt: 1,
+			Revision:        1,
+			UmfrageRef:      []primitive.ObjectID{idVorhanden, id},
 		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 

@@ -788,12 +788,13 @@ func TestNutzerdatenFind(t *testing.T) {
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data,
 			structs.Nutzerdaten{
-				NutzerID:   objID,
-				Nutzername: "anton@tobi.com",
-				Passwort:   "test_pw",
-				Rolle:      0,
-				Revision:   1,
-				UmfrageRef: []primitive.ObjectID{idUmfrage},
+				NutzerID:        objID,
+				Nutzername:      "anton@tobi.com",
+				Passwort:        "test_pw",
+				Rolle:           0,
+				EmailBestaetigt: 1,
+				Revision:        1,
+				UmfrageRef:      []primitive.ObjectID{idUmfrage},
 			}) // Überprüfung des zurückgelieferten Elements
 	})
 

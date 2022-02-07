@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TestComputationsSubfunctions(t *testing.T) {
+func TestAuthenticationSubfunctions(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	err := database.ConnectDatabase()
