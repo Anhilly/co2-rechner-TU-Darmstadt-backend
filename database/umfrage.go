@@ -247,7 +247,7 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 		bson.M{"nutzername": username},
 		bson.D{{"$pull",
 			bson.D{{"umfrageRef", umfrageID}}}},
-		).Decode(&updatedDoc)
+	).Decode(&updatedDoc)
 	if err != nil {
 		log.Println(err)
 		debug.PrintStack()
@@ -277,8 +277,9 @@ func UmfrageUpdateLinkShare(setValue int32, umfrageID primitive.ObjectID) (primi
 			},
 		}},
 	).Decode(&updatedDoc)
-
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return primitive.NilObjectID, err
 	}
 
