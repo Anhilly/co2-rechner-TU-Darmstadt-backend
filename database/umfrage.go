@@ -154,6 +154,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 			ITGeraete:             data.ITGeraete,
 			Revision:              1,
 			MitarbeiterUmfrageRef: []primitive.ObjectID{},
+			AuswertungFreigegeben: 0,
 		})
 	if err != nil {
 		log.Println(err)
@@ -254,4 +255,32 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 	}
 
 	return nil
+}
+
+// UmfrageUpdateLinkShare setzt den auswertungFreigegeben Wert der Umfrage mit der gegebenen umfrageID
+// auf den uebergebenen setValue Wert. Dieser ist entweder 0 oder 1.
+// Der Wert steuert ob die Auswertung der Umfrage geteilt werden darf.
+func UmfrageUpdateLinkShare(setValue int32, umfrageID primitive.ObjectID) (primitive.ObjectID, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	var updatedDoc structs.Umfrage
+
+	err := collection.FindOneAndUpdate(
+		ctx,
+		bson.D{{"_id", umfrageID}},
+		bson.D{{"$set",
+			bson.D{
+				{"auswertungFreigegeben", setValue},
+			},
+		}},
+	).Decode(&updatedDoc)
+
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	return updatedDoc.ID, nil
 }

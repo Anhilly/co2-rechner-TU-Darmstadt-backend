@@ -25,6 +25,7 @@ func RouteUmfrage() chi.Router {
 
 	// Get
 	r.Get("/GetUmfrageYear", GetUmfrageYear)
+	r.Get("/GetSharedResults", GetSharedResults)
 
 	// Delete
 	r.Delete("/deleteUmfrage", DeleteUmfrage)
@@ -347,4 +348,29 @@ func GetUmfrageYear(res http.ResponseWriter, req *http.Request) {
 	umfrageJahrRes.Jahr = umfrage.Jahr
 
 	sendResponse(res, true, umfrageJahrRes, http.StatusOK)
+}
+
+// GetSharedResults sendet zurueck ob die Auswertung der Umfrage mit der ID im GET Parameter UmfrageID zum teilen
+// freigegeben ist.
+// Diese Funktion muss ohne Authentifizierung funktionieren, da sie von beliebigen unregistrierten Nutzern aufgerufen wird.
+func GetSharedResults(res http.ResponseWriter, req *http.Request) {
+	var requestedUmfrageID primitive.ObjectID
+	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	umfrageSharedRes := structs.UmfrageSharedResultsRes{}
+
+	// hole Umfrage aus der Datenbank
+	umfrage, err := database.UmfrageFind(requestedUmfrageID)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	umfrageSharedRes.Freigegeben = umfrage.AuswertungFreigegeben
+
+	sendResponse(res, true, umfrageSharedRes, http.StatusOK)
 }

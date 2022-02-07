@@ -32,6 +32,7 @@ func TestUpdate(t *testing.T) {
 	}(dir)
 
 	t.Run("TestUmfrageUpdate", TestUmfrageUpdate)
+	t.Run("TestUmfrageShareUpdate", TestUmfrageShareUpdate)
 }
 
 func TestUmfrageUpdate(t *testing.T) {
@@ -134,5 +135,66 @@ func TestUmfrageUpdate(t *testing.T) {
 		idOfUpdatedUmfrage, err := database.UmfrageUpdate(updateData)
 		is.Equal(err, mongo.ErrNoDocuments) // ErrNoDocuments error
 		is.Equal(idOfUpdatedUmfrage, primitive.NilObjectID)
+	})
+}
+
+func TestUmfrageShareUpdate(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("LinkShareUpdate: Update von LinkSharewerten", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		username := "anton@tobi.com"
+		token := server.GeneriereSessionToken(username)
+
+		data := structs.InsertUmfrage{
+			Bezeichnung:       "TestUmfrageUpdated",
+			Mitarbeiteranzahl: 42,
+			Jahr:              3442,
+			Gebaeude: []structs.UmfrageGebaeude{
+				{GebaeudeNr: 1103, Nutzflaeche: 200},
+				{GebaeudeNr: 1105, Nutzflaeche: 200},
+			},
+			ITGeraete: []structs.UmfrageITGeraete{
+				{IDITGeraete: 6, Anzahl: 30},
+			},
+			Auth: structs.AuthToken{
+				Username:     username,
+				Sessiontoken: token,
+			},
+		}
+
+		oid, err := database.UmfrageInsert(data)
+		is.NoErr(err)
+
+		refOid, err := database.UmfrageUpdateLinkShare(0, oid)
+		is.Equal(refOid, oid)
+		is.NoErr(err)
+
+		umfrage, err := database.UmfrageFind(refOid)
+		is.NoErr(err)
+
+		is.Equal(umfrage.AuswertungFreigegeben, int32(0))
+
+		//Pruefe ob alle anderen Felder gleich geblieben sind
+		is.Equal(umfrage.Bezeichnung, data.Bezeichnung)
+		is.Equal(umfrage.Mitarbeiteranzahl, data.Mitarbeiteranzahl)
+		is.Equal(umfrage.Jahr, data.Jahr)
+		is.Equal(umfrage.Gebaeude, data.Gebaeude)
+		is.Equal(umfrage.ITGeraete, data.ITGeraete)
+	})
+
+	//Errorfall
+	t.Run("LinkShareUpdate: ungueltige UmfrageID", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var id primitive.ObjectID
+		err := id.UnmarshalText([]byte("aaaaaaaaaaaaaaaaaaaaaaaa"))
+		is.NoErr(err)
+
+		oid, err := database.UmfrageUpdateLinkShare(1, id)
+		is.Equal(err, mongo.ErrNoDocuments)
+		is.Equal(oid, primitive.NilObjectID)
 	})
 }

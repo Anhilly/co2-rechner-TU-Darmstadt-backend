@@ -118,6 +118,7 @@ type Umfrage struct {
 	Jahr                  int32                `json:"jahr" bson:"jahr"`
 	Gebaeude              []UmfrageGebaeude    `json:"gebaeude" bson:"gebaeude"`
 	ITGeraete             []UmfrageITGeraete   `json:"itGeraete" bson:"itGeraete"`
+	AuswertungFreigegeben int32                `json:"auswertungFreigegeben" bson:"auswertungFreigegeben"`
 	Revision              int32                `json:"revision" bson:"revision"`
 	MitarbeiterUmfrageRef []primitive.ObjectID `json:"mitarbeiterUmfrageRef" bson:"mitarbeiterUmfrageRef"`
 }

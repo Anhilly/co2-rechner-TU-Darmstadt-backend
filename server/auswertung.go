@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/pkg/errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -16,7 +17,7 @@ func RouteAuswertung() chi.Router {
 	r := chi.NewRouter()
 
 	r.Post("/", PostAuswertung)
-
+	r.Post("/updateSetLinkShare", UpdateSetLinkShare)
 	return r
 }
 
@@ -36,15 +37,6 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
-	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, auswertungReq.UmfrageID) {
-		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
-		return
-	}
-
 	var umfrageID = auswertungReq.UmfrageID
 
 	// hole Umfragen aus der Datenbank
@@ -52,6 +44,19 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
+	}
+
+	// Wenn Auswertung nicht fuers teilen freigegeben muss Nutzer authoritaet geprueft werden
+	if umfrage.AuswertungFreigegeben == 0 {
+		// Authentifizierung
+		if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
+			return
+		}
+		nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
+		if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, auswertungReq.UmfrageID) {
+			errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
+			return
+		}
 	}
 
 	mitarbeiterumfragen, err := database.MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
@@ -72,6 +77,7 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	if auswertung.Mitarbeiteranzahl > 0 {
 		auswertung.Umfragenanteil = float64(auswertung.Umfragenanzahl) / float64(auswertung.Mitarbeiteranzahl)
 	}
+	auswertung.AuswertungFreigeben = umfrage.AuswertungFreigegeben
 
 	auswertung.EmissionenWaerme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)
 	if err != nil {
@@ -157,4 +163,56 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.Vergleich4PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch4PersonenHaushalt
 
 	sendResponse(res, true, auswertung, http.StatusOK)
+}
+
+// UpdateSetLinkShare empfaengt ein POST Update Request und setzt den LinkSharing Status auf den empfangenen Wert.
+// 0 = Link Share deaktiviert, 1 = aktiviert.
+// Kann nicht durch einen Administrator geaendert werden, nur durch besitzenden Nutzer.
+func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	linkshareReq := structs.RequestLinkShare{}
+	err = json.Unmarshal(s, &linkshareReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	// Pruefe ob uebermittelter LinkShare Value korrekt ist, d.h. 0 oder 1
+	if linkshareReq.LinkShare != 0 && linkshareReq.LinkShare != 1 {
+		var err = errors.New("Anfrage ungueltig")
+		errorResponse(res, err, http.StatusBadRequest)
+	}
+
+	// Authentifizierung
+	if !AuthWithResponse(res, linkshareReq.Auth.Username, linkshareReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(linkshareReq.Auth.Username)
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, linkshareReq.UmfrageID) {
+		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostUpdateActivateLinkShare")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	_, err = database.UmfrageUpdateLinkShare(linkshareReq.LinkShare, linkshareReq.UmfrageID)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	sendResponse(res, true, nil, http.StatusOK)
 }
