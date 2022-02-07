@@ -485,6 +485,7 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 
 		username := "anton@tobi.com"
 		id := primitive.NewObjectID()
+		objID, _ := primitive.ObjectIDFromHex("61b1ceb3dfb93b34b1305b70")
 
 		var idVorhanden primitive.ObjectID
 		err := idVorhanden.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
@@ -496,6 +497,7 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 		updatedDoc, err := database.NutzerdatenFind(username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
+			NutzerID:   objID,
 			Nutzername: "anton@tobi.com",
 			Passwort:   "test_pw",
 			Revision:   1,

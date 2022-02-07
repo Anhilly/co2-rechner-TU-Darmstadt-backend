@@ -376,9 +376,12 @@ func TestUmfrageInsert(t *testing.T) {
 		err = idVorhanden.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
 		is.NoErr(err)
 
+		objID, _ := primitive.ObjectIDFromHex("61b1ceb3dfb93b34b1305b70")
+
 		updatedDoc, err := database.NutzerdatenFind(data.Auth.Username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
+			NutzerID:   objID,
 			Nutzername: username,
 			Passwort:   password,
 			Revision:   1,

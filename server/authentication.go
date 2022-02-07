@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/sethvargo/go-password/password"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
@@ -33,7 +34,10 @@ func RouteAuthentication() chi.Router {
 	r.Post("/anmeldung", PostAnmeldung)
 	r.Post("/registrierung", PostRegistrierung)
 	r.Post("/pruefeSession", PostPruefeSession)
-	r.Post("/pruefeNutzerRolle", PostPruefeNutzerRolle)
+	r.Post("/emailBestaetigung", PostEmailBestaetigung)
+	r.Post("/passwortVergessen", PostPasswortVergessen)
+	r.Post("/passwortAendern", PostPasswortAendern)
+
 	r.Delete("/abmeldung", DeleteAbmeldung)
 
 	return r
@@ -103,6 +107,43 @@ func AuthWithResponse(res http.ResponseWriter, username string, token string) bo
 	return true
 }
 
+// PostEmailBestaetigung setzt die E-Mail auf bestaetigt(1)
+func PostEmailBestaetigung(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	data := structs.EmailBestaetigung{}
+	err = json.Unmarshal(s, &data)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	ordner, err := database.CreateDump("PostEmailBestaetigung")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.NutzerdatenUpdateMailBestaetigung(data.UserID, structs.IDEmailBestaetigt)
+
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	sendResponse(res, true, nil, http.StatusOK)
+}
+
 // PostPruefeSession prueft ob ein gueltiger Sessiontoken registriert ist und prueft diesen mit dem Request ab
 func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
@@ -125,7 +166,78 @@ func PostPruefeSession(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	nutzer, _ := database.NutzerdatenFind(sessionReq.Username)
+
+	data := structs.PruefeSessionRes{Rolle: nutzer.Rolle, EmailBestaetigt: nutzer.EmailBestaetigt}
+
 	// Falls ein valider Session Token vorhanden ist
+	sendResponse(res, true, data, http.StatusOK)
+}
+
+func PostPasswortAendern(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	passwortReq := structs.PasswortAendernReq{}
+	err = json.Unmarshal(s, &passwortReq)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	// Authentifiziere Nutzer
+	if !AuthWithResponse(res, passwortReq.Auth.Username, passwortReq.Auth.Sessiontoken) {
+		return
+	}
+
+	nutzerdaten, err := database.NutzerdatenFind(passwortReq.Auth.Username)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		// Es existiert kein Account mit diesem username
+		// Sende genauere Fehlermeldung zurueck, statt ErrNoDocuments
+		errorResponse(res, structs.ErrFalschesPasswortError, http.StatusUnauthorized)
+		return
+	} else if err != nil {
+		errorResponse(res, err, http.StatusUnauthorized)
+		return
+	}
+
+	// Vergleiche Passwort mit gespeichertem Hash
+	evaluationError := bcrypt.CompareHashAndPassword([]byte(nutzerdaten.Passwort), []byte(passwortReq.Passwort))
+	if evaluationError != nil {
+		// Falsches Passwort
+		errorResponse(res, structs.ErrFalschesPasswortError, http.StatusUnauthorized)
+		return
+	}
+
+	passworthash, err := bcrypt.GenerateFromPassword([]byte(passwortReq.NeuesPasswort), bcrypt.DefaultCost)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	nutzerdaten.Passwort = string(passworthash)
+
+	ordner, err := database.CreateDump("PostPasswortAendern")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.NutzerdatenUpdate(nutzerdaten)
+
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
@@ -157,6 +269,11 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if nutzerdaten.EmailBestaetigt == structs.IDEmailNichtBestaetigt {
+		errorResponse(res, structs.ErrNutzerUnbestaetigteMail, http.StatusUnauthorized)
+		return
+	}
+
 	// Vergleiche Passwort mit gespeichertem Hash
 	evaluationError := bcrypt.CompareHashAndPassword([]byte(nutzerdaten.Passwort), []byte(anmeldeReq.Passwort))
 	if evaluationError != nil {
@@ -172,6 +289,70 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 		Message:      "Nutzer authentifiziert",
 		Sessiontoken: token,
 	}, http.StatusOK)
+}
+
+func PostPasswortVergessen(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	pwVergessen := structs.PasswortVergessenReq{}
+	err = json.Unmarshal(s, &pwVergessen)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	nutzer, err := database.NutzerdatenFind(pwVergessen.Username)
+	if err != nil {
+		sendResponse(res, true, nil, 200)
+		return
+	}
+
+	passwort, err := password.Generate(10, 3, 0, false, false)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	passwordhash, err := bcrypt.GenerateFromPassword([]byte(passwort), bcrypt.DefaultCost)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostPasswortVergessen")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	nutzer.Passwort = string(passwordhash)
+
+	// SendMail
+	err = database.NutzerdatenUpdate(nutzer)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = SendePasswortVergessenMail(nutzer.Nutzername, passwort)
+
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+	}
+
+	// Generiere Cookie Token
+	sendResponse(res, true, nil, http.StatusCreated)
 }
 
 // PostRegistrierung liefert einen HTTP Response zurueck, welcher den neuen Nutzer authentifiziert,
@@ -198,7 +379,7 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = database.NutzerdatenInsert(registrierungReq)
+	id, err := database.NutzerdatenInsert(registrierungReq)
 	if err != nil {
 		err2 := database.RestoreDump(restorepath)
 		if err2 != nil {
@@ -210,43 +391,14 @@ func PostRegistrierung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Generiere Cookie Token
-	token := GeneriereSessionToken(registrierungReq.Username)
-	sendResponse(res, true, structs.AuthRes{
-		Message:      "Der neue Nutzeraccount wurde erstellt",
-		Sessiontoken: token,
-	}, http.StatusCreated)
-}
+	err = SendeBestaetigungsMail(id, registrierungReq.Username)
 
-// PostPruefeNutzerRolle ueberprueft die Nutzerrolle (Admin, User) eines authentifizierten Nutzers
-// und liefert die Rolle des Nutzers zurueck (0 User, 1 Admin)
-func PostPruefeNutzerRolle(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error --> 400
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	sessionReq := structs.PruefeSessionReq{}
-	err = json.Unmarshal(s, &sessionReq)
-	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error --> 400
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	// Falls kein valider Session Token vorhanden.
-	if !AuthWithResponse(res, sessionReq.Username, sessionReq.Sessiontoken) {
-		return
-	}
-
-	nutzer, err := database.NutzerdatenFind(sessionReq.Username)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 	}
-	// Falls ein valider Session Token vorhanden ist
-	sendResponse(res, true, nutzer.Rolle, http.StatusOK)
+
+	// Generiere Cookie Token
+	sendResponse(res, true, nil, http.StatusCreated)
 }
 
 // DeleteAbmeldung liefert einen HTTP Response zurueck, welcher den Nutzer abmeldet, sonst Fehler

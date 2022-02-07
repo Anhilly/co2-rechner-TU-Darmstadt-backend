@@ -155,6 +155,20 @@ type AuthReq struct { // wird fuer Anmeldung und Registrierung verwendet
 	Passwort string `json:"password"`
 }
 
+type PasswortAendernReq struct { // wird fuer Anmeldung und Registrierung verwendet
+	Auth          AuthToken `json:"authToken"`
+	Passwort      string    `json:"passwort"`
+	NeuesPasswort string    `json:"neuesPasswort"`
+}
+
+type PasswortVergessenReq struct {
+	Username string `json:"username"`
+}
+
+type EmailBestaetigung struct {
+	UserID primitive.ObjectID `json:"nutzerID"`
+}
+
 type AbmeldungReq struct {
 	Username string `json:"username"`
 }
@@ -162,6 +176,11 @@ type AbmeldungReq struct {
 type PruefeSessionReq struct {
 	Username     string `json:"username"`
 	Sessiontoken string `json:"sessiontoken"`
+}
+
+type PruefeSessionRes struct {
+	Rolle           int32 `json:"rolle"`
+	EmailBestaetigt int32 `json:"emailBestaetigt"`
 }
 
 // Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
@@ -172,6 +191,10 @@ type Response struct {
 }
 
 type AbmeldeRes struct {
+	Message string `json:"message"`
+}
+
+type RegistrierungRes struct {
 	Message string `json:"message"`
 }
 

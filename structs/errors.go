@@ -95,4 +95,7 @@ var ( // Fehler die bei der Authentifizierung auftreten
 
 	// Nutzer nicht berechtigt oder kein Admin
 	ErrNutzerHatKeineBerechtigung = errors.New("Der Nutzer hat nicht die passende Berechtigung")
+
+	// Nutzer hat Mail nicht bestaetigt
+	ErrNutzerUnbestaetigteMail = errors.New("Bitte bestätigen Sie ihre E-Mail Adresse!")
 )

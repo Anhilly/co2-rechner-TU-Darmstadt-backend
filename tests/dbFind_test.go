@@ -779,12 +779,13 @@ func TestNutzerdatenFind(t *testing.T) {
 		var idUmfrage primitive.ObjectID
 		err := idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
 		is.NoErr(err)
-
+		objID, _ := primitive.ObjectIDFromHex("61b1ceb3dfb93b34b1305b70")
 		data, err := database.NutzerdatenFind(username)
 
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data,
 			structs.Nutzerdaten{
+				NutzerID:   objID,
 				Nutzername: "anton@tobi.com",
 				Passwort:   "test_pw",
 				Rolle:      0,
