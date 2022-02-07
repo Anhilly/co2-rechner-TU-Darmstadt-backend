@@ -3,10 +3,11 @@ package database
 import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
-	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
+	"log"
+	"runtime/debug"
 )
 
 // NutzerdatenFind liefert einen Nutzerdaten struct zurueck, der die uebergegebene E-Mail hat,
@@ -23,6 +24,8 @@ func NutzerdatenFind(username string) (structs.Nutzerdaten, error) {
 		bson.D{{"nutzername", username}},
 	).Decode(&data)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return structs.Nutzerdaten{}, err
 	}
 
@@ -93,6 +96,8 @@ func NutzerdatenAddUmfrageref(username string, id primitive.ObjectID) error {
 			bson.D{{"umfrageRef", id}}}},
 	).Decode(&updatedDoc)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
@@ -107,7 +112,6 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) (primitive.ObjectID, error)
 	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
 	// Pruefe, ob bereits ein Eintrag mit diesem Nutzernamen existiert
 	_, err := NutzerdatenFind(anmeldedaten.Username)
-
 	if err == nil {
 		// Eintrag mit diesem Nutzernamen existiert bereits
 		return primitive.NilObjectID, structs.ErrInsertExistingAccount
@@ -116,6 +120,8 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) (primitive.ObjectID, error)
 
 	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return primitive.NilObjectID, err // Bcrypt hashing error
 	}
 	result, err := collection.InsertOne(ctx, structs.Nutzerdaten{
@@ -128,13 +134,17 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) (primitive.ObjectID, error)
 		UmfrageRef:      []primitive.ObjectID{},
 	})
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return primitive.NilObjectID, err // DB Error
 	}
 
 	id, ok := result.InsertedID.(primitive.ObjectID)
 
 	if !ok {
-		return primitive.NilObjectID, errors.New("Casten der ObjectID ist fehlgeschlagen")
+		log.Println(structs.ErrObjectIDNichtKonvertierbar)
+		debug.PrintStack()
+		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
 	return id, nil

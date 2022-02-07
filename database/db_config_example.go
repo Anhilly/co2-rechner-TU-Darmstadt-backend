@@ -8,5 +8,6 @@ const (
 	username = "username"
 	password = "password"
 	dbName = "dbName"
+	containerName = "mongodb"
 )
 */

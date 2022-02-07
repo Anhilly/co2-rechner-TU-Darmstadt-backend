@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"log"
+	"runtime/debug"
 )
 
 // EnergieversorgungFind liefert einen Energieversorgung struct mit idEnergieversorgung gleich dem Parameter.
@@ -19,6 +21,8 @@ func EnergieversorgungFind(idEnergieversorgung int32) (structs.Energieversorgung
 		bson.D{{"idEnergieversorgung", idEnergieversorgung}},
 	).Decode(&data)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return structs.Energieversorgung{}, err
 	}
 
@@ -42,6 +46,8 @@ func EnergieversorgungAddFaktor(data structs.AddCO2Faktor) error {
 	// Ueberpruefung, ob schon Wert zu angegebenen Jahr existiert
 	for _, co2Faktor := range currentDoc.CO2Faktor {
 		if co2Faktor.Jahr == data.Jahr {
+			log.Println(structs.ErrJahrVorhanden)
+			debug.PrintStack()
 			return structs.ErrJahrVorhanden
 		}
 	}
@@ -55,6 +61,8 @@ func EnergieversorgungAddFaktor(data structs.AddCO2Faktor) error {
 				bson.D{{"wert", data.Wert}, {"jahr", data.Jahr}}}}}},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 

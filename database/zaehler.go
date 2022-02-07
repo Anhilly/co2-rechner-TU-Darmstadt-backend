@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"log"
+	"runtime/debug"
 	"time"
 )
 
@@ -26,6 +28,8 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 		collectionname = structs.KaeltezaehlerCol
 		zaehlertyp = structs.ZaehlertypKaelte
 	default:
+		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
+		debug.PrintStack()
 		return structs.Zaehler{}, structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
@@ -37,6 +41,8 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 		bson.D{{"pkEnergie", pkEnergie}},
 	).Decode(&data)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return structs.Zaehler{}, err
 	}
 
@@ -61,6 +67,8 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	case structs.IDEnergieversorgungKaelte: // Kaelte
 		collectionname = structs.KaeltezaehlerCol
 	default:
+		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
+		debug.PrintStack()
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
@@ -69,12 +77,16 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	// Ueberpruefung, ob PK in Datenbank vorhanden
 	currentDoc, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
 	// Ueberpruefung, ob schon Wert zu angegebenen Jahr existiert
 	for _, zaehlerdatum := range currentDoc.Zaehlerdaten {
 		if int32(zaehlerdatum.Zeitstempel.Year()) == data.Jahr {
+			log.Println(structs.ErrJahrVorhanden)
+			debug.PrintStack()
 			return structs.ErrJahrVorhanden
 		}
 	}
@@ -91,6 +103,8 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 				bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
@@ -114,16 +128,22 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	case structs.IDEnergieversorgungKaelte: // Kaelte
 		collectionname = structs.KaeltezaehlerCol
 	default:
+		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
+		debug.PrintStack()
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 	collection := client.Database(dbName).Collection(collectionname)
 
 	if len(data.GebaeudeRef) == 0 {
+		log.Println(structs.ErrFehlendeGebaeuderef)
+		debug.PrintStack()
 		return structs.ErrFehlendeGebaeuderef
 	}
 
 	_, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
 	if err == nil { // kein Error = Nr schon vorhanden
+		log.Println(err)
+		debug.PrintStack()
 		return structs.ErrZaehlerVorhanden
 	}
 
@@ -140,12 +160,16 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
 	for _, referenz := range data.GebaeudeRef {
 		err := GebaeudeAddZaehlerref(referenz, data.PKEnergie, data.IDEnergieversorgung)
 		if err != nil {
+			log.Println(err)
+			debug.PrintStack()
 			return err
 		}
 	}
