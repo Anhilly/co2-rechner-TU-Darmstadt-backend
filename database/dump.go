@@ -2,39 +2,55 @@ package database
 
 import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
+	"log"
 	"os/exec"
+	"runtime/debug"
 	"time"
 )
 
-/**
-Funktion erstellt ein Dump der Abbildung mit mongodump im Verzeichnis "DumpPath + directoryName + timestamp".
-Zurueckgeliefert wird der Ordnername mit Timestamp.
-*/
+// CreateDump erstellt ein Dump der Abbildung mit mongodump im Verzeichnis "DumpPath + timestamp + directoryName".
+// Zurueckgeliefert wird der Ordnername mit Timestamp.
+// Beim Ausfuehren unter Linux Systemen muss Docker per default Sudo Rechte besitzen, da der Befehl Sudo Rechte benoetigt.
 func CreateDump(directoryName string) (string, error) {
-	dirTimestamp := directoryName + time.Now().Format("20060102150405") // Format: yyyyMMddHHmmss
+	dirTimestamp := time.Now().Format("20060102150405") + directoryName // Format: yyyyMMddHHmmss
 
-	cmd := exec.Command("docker", "exec", "-i", "mongodb", "/usr/bin/mongodump",
+	cmd := exec.Command("docker", "exec", "-i", containerName, "/usr/bin/mongodump",
 		"--username", username, "--password", password, "--authenticationDatabase", "admin",
 		"--db", dbName, "--out", structs.DumpPath+dirTimestamp)
 
 	err := cmd.Run()
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return "", err
 	}
 
 	return dirTimestamp, nil
 }
 
-/**
-Funktion spielt einen Dump, der in "DumpPath + directoryName" liegt, wieder in die Datenbank ein mittels mongorestore.
-*/
+// RestoreDump spielt einen Dump, der in "DumpPath + directoryName" liegt, wieder in die Datenbank ein mittels mongorestore.
 func RestoreDump(directoryName string) error {
-	cmd := exec.Command("docker", "exec", "-i", "mongodb", "/usr/bin/mongorestore",
+	cmd := exec.Command("docker", "exec", "-i", containerName, "/usr/bin/mongorestore",
 		"--username", username, "--password", password, "--authenticationDatabase", "admin",
 		"--drop", "--db", dbName, structs.DumpPath+directoryName+"/"+dbName)
 
 	err := cmd.Run()
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return err
+	}
+
+	return nil
+}
+
+func RemoveDump(directoryName string) error {
+	cmd := exec.Command("docker", "exec", "-i", containerName, "rm", "-rf", structs.DumpPath+directoryName)
+
+	err := cmd.Run()
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 

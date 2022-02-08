@@ -28,6 +28,8 @@ func TestInsert(t *testing.T) {
 		is.NoErr(err)
 		err = database.RestoreDump(dir)
 		is.NoErr(err)
+		err = database.RemoveDump(dir)
+		is.NoErr(err)
 	}(dir)
 
 	t.Run("TestGebaeudeInsert", TestGebaeudeInsert)
@@ -330,9 +332,9 @@ func TestUmfrageInsert(t *testing.T) {
 	t.Run("UmfrageInsert: ID nach aktueller Zeitstempel", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		email := "anton@tobi.com"
+		username := "anton@tobi.com"
 		password := "test_pw"
-		token := server.GeneriereSessionToken(email)
+		token := server.GeneriereSessionToken(username)
 
 		data := structs.InsertUmfrage{
 			Bezeichnung:       "TestUmfrageInsert",
@@ -345,8 +347,8 @@ func TestUmfrageInsert(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			Hauptverantwortlicher: structs.AuthToken{
-				Username:     email,
+			Auth: structs.AuthToken{
+				Username:     username,
 				Sessiontoken: token,
 			},
 		}
@@ -368,6 +370,7 @@ func TestUmfrageInsert(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
+			AuswertungFreigegeben: 0,
 			Revision:              1,
 			MitarbeiterUmfrageRef: []primitive.ObjectID{},
 		}) // Ueberpruefung des geaenderten Elementes
@@ -376,18 +379,23 @@ func TestUmfrageInsert(t *testing.T) {
 		err = idVorhanden.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
 		is.NoErr(err)
 
-		updatedDoc, err := database.NutzerdatenFind(data.Hauptverantwortlicher.Username)
+		objID, _ := primitive.ObjectIDFromHex("61b1ceb3dfb93b34b1305b70")
+
+		updatedDoc, err := database.NutzerdatenFind(data.Auth.Username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
-			Email:      email,
-			Passwort:   password,
-			Revision:   1,
-			UmfrageRef: []primitive.ObjectID{idVorhanden, id},
+			NutzerID:        objID,
+			Nutzername:      username,
+			Passwort:        password,
+			Rolle:           0,
+			EmailBestaetigt: 1,
+			Revision:        1,
+			UmfrageRef:      []primitive.ObjectID{idVorhanden, id},
 		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
 	// Errortest
-	t.Run("UmfrageInsert: ungueltige NutzerEmail", func(t *testing.T) {
+	t.Run("UmfrageInsert: ungueltiger Username", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.InsertUmfrage{
@@ -395,7 +403,7 @@ func TestUmfrageInsert(t *testing.T) {
 			Jahr:              3442,
 			Gebaeude:          []structs.UmfrageGebaeude{},
 			ITGeraete:         []structs.UmfrageITGeraete{},
-			Hauptverantwortlicher: structs.AuthToken{
+			Auth: structs.AuthToken{
 				Username:     "0123",
 				Sessiontoken: "012345",
 			},
@@ -469,6 +477,7 @@ func TestMitarbeiterUmfrageInsert(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 5, Anzahl: 10},
 			},
+			AuswertungFreigegeben: 0,
 			Revision:              1,
 			MitarbeiterUmfrageRef: []primitive.ObjectID{idVorhanden, idMitarbeiterumfrage},
 		}) // Ueberpruefung des zurueckgelieferten Elements
@@ -492,37 +501,59 @@ func TestMitarbeiterUmfrageInsert(t *testing.T) {
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(id, primitive.NilObjectID) // im Fehlerfall wird NilObjectID zurueckgegeben
 	})
+
+	t.Run("MitarbeiterUmfrageInsert: Umfrage vollstaendig", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var idUmfrage primitive.ObjectID
+		err := idUmfrage.UnmarshalText([]byte("61dc0c543e48998484eefaeb"))
+
+		data := structs.InsertMitarbeiterUmfrage{
+			Pendelweg: []structs.UmfragePendelweg{
+				{IDPendelweg: 2, Strecke: 20},
+			},
+			TageImBuero: 4,
+			Dienstreise: []structs.UmfrageDienstreise{},
+			ITGeraete:   []structs.UmfrageITGeraete{},
+			IDUmfrage:   idUmfrage,
+		}
+
+		id, err := database.MitarbeiterUmfrageInsert(data)
+		is.Equal(err, structs.ErrUmfrageVollstaendig) // Datenbank wirft ErrUmfrageVollstaendig
+		is.Equal(id, primitive.NilObjectID)           // im Fehlerfall wird NilObjectID zurueckgegeben
+	})
 }
 
 func TestNutzerdatenInsert(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("NutzerdatenInsert: {email = 'testingEmailPlsDontUse' password='verysecurepassword'} (nicht vorhanden)", func(t *testing.T) {
+	t.Run("NutzerdatenInsert: {username = 'testingUserPlsDontUse' password='verysecurepassword'} (nicht vorhanden)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
-		var email = "testingEmailPlsDontUse"
+		var username = "testingUserPlsDontUse"
 		testData := structs.AuthReq{
-			Username: email,
+			Username: username,
 			Passwort: "verysecurepassword",
 		}
-		err := database.NutzerdatenInsert(testData)
+		id, err := database.NutzerdatenInsert(testData)
 		is.NoErr(err) // Kein Fehler wird geworfen
 
-		daten, err := database.NutzerdatenFind(email)
+		daten, err := database.NutzerdatenFind(username)
 		is.NoErr(err) // Kein Fehler seitens der Datenbank
 		// Eintrag wurde korrekt hinzugefuegt
-		is.Equal(daten.Email, email)
+		is.Equal(daten.Nutzername, username)
+		is.Equal(daten.NutzerID, id)
 		is.NoErr(bcrypt.CompareHashAndPassword([]byte(daten.Passwort), []byte(testData.Passwort)))
 	})
 
 	// Errorfall
-	t.Run("NutzerdatenInsert: {email = 'anton@tobi.com' password='verysecurepassword'} (vorhanden)", func(t *testing.T) {
+	t.Run("NutzerdatenInsert: {username = 'anton@tobi.com' password='verysecurepassword'} (vorhanden)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 		testData := structs.AuthReq{
 			Username: "anton@tobi.com",
 			Passwort: "verysecurepassword",
 		}
-		err := database.NutzerdatenInsert(testData)
+		_, err := database.NutzerdatenInsert(testData)
 		is.Equal(err, structs.ErrInsertExistingAccount) // Dateneintrag existiert bereits
 	})
 }

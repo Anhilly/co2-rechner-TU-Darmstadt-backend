@@ -7,31 +7,56 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io/ioutil"
+	"log"
 	"net/http"
 )
 
+// RouteAuswertung mounted alle aufrufbaren API Endpunkte unter */auswertung
 func RouteAuswertung() chi.Router {
 	r := chi.NewRouter()
 
-	r.Get("/", GetAuswertung)
-
+	r.Post("/", PostAuswertung)
+	r.Post("/updateSetLinkShare", UpdateSetLinkShare)
 	return r
 }
 
-func GetAuswertung(res http.ResponseWriter, req *http.Request) {
-	var umfrageID primitive.ObjectID
-	err := umfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
+// PostAuswertung fuehrt die CO2-Emissionen Berechnung fuer die uebertragene Umfrage durch und sendet einen
+// structs.AuswertungRes zurueck.
+func PostAuswertung(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
+
+	auswertungReq := structs.RequestUmfrage{}
+	err = json.Unmarshal(s, &auswertungReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	var umfrageID = auswertungReq.UmfrageID
 
 	// hole Umfragen aus der Datenbank
 	umfrage, err := database.UmfrageFind(umfrageID)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
+	}
+
+	// Wenn Auswertung nicht fuers teilen freigegeben muss Nutzer authoritaet geprueft werden
+	if umfrage.AuswertungFreigegeben == 0 {
+		// Authentifizierung
+		if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
+			return
+		}
+		nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
+		if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, auswertungReq.UmfrageID) {
+			errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
+			return
+		}
 	}
 
 	mitarbeiterumfragen, err := database.MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
@@ -52,6 +77,7 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 	if auswertung.Mitarbeiteranzahl > 0 {
 		auswertung.Umfragenanteil = float64(auswertung.Umfragenanzahl) / float64(auswertung.Mitarbeiteranzahl)
 	}
+	auswertung.AuswertungFreigeben = umfrage.AuswertungFreigegeben
 
 	auswertung.EmissionenWaerme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)
 	if err != nil {
@@ -136,17 +162,67 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.Vergleich2PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch2PersonenHaushalt
 	auswertung.Vergleich4PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch4PersonenHaushalt
 
-	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   auswertung,
-		Error:  nil,
-	})
+	sendResponse(res, true, auswertung, http.StatusOK)
+}
+
+// UpdateSetLinkShare empfaengt ein POST Update Request und setzt den LinkSharing Status auf den empfangenen Wert.
+// 0 = Link Share deaktiviert, 1 = aktiviert.
+// Kann nicht durch einen Administrator geaendert werden, nur durch besitzenden Nutzer.
+func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	linkshareReq := structs.RequestLinkShare{}
+	err = json.Unmarshal(s, &linkshareReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	// Pruefe ob uebermittelter LinkShare Value korrekt ist, d.h. 0 oder 1
+	if linkshareReq.LinkShare != 0 && linkshareReq.LinkShare != 1 {
+		var err = errors.New("Anfrage ungueltig")
+		errorResponse(res, err, http.StatusBadRequest)
+	}
+
+	// Authentifizierung
+	if !AuthWithResponse(res, linkshareReq.Auth.Username, linkshareReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(linkshareReq.Auth.Username)
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, linkshareReq.UmfrageID) {
+		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostUpdateActivateLinkShare")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
+	_, err = database.UmfrageUpdateLinkShare(linkshareReq.LinkShare, linkshareReq.UmfrageID)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		} else {
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
 
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	err = database.RemoveDump(ordner)
+	if err != nil {
+		log.Println(err)
+	}
+
+	sendResponse(res, true, nil, http.StatusOK)
 }

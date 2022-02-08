@@ -5,11 +5,11 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
+	"runtime/debug"
 )
 
-/**
-Funktion gibt alle Umfragen in der Datenbank zurueck.
-*/
+// AlleUmfragen gibt alle Umfragen in der Datenbank zurueck.
 func AlleUmfragen() ([]structs.Umfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -21,6 +21,8 @@ func AlleUmfragen() ([]structs.Umfrage, error) {
 		bson.D{},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
@@ -28,30 +30,30 @@ func AlleUmfragen() ([]structs.Umfrage, error) {
 
 	err = cursor.All(ctx, &results)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
 	return results, nil
 }
 
-/**
-Funktion gibt alle Umfragen in der Datenbank zurueck, die mit gegebenem User assoziiert sind.
-*/
-func AlleUmfragenForUser(email string) ([]structs.Umfrage, error) {
+// AlleUmfragenForUser gibt alle Umfragen in der Datenbank zurueck, die mit gegebenem User assoziiert sind.
+func AlleUmfragenForUser(username string) ([]structs.Umfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	// find umfrage for given id
-	nutzerdaten, err := NutzerdatenFind(email)
+	// Finde Nutzerdaten fuer den gegeben Usernamen
+	nutzerdaten, err := NutzerdatenFind(username)
 	if err != nil {
 		return nil, err
 	}
 
-	// get ref ids from umfrage
+	// Hole mit Nutzer assoziierten UmfrageIDs
 	umfrageRefs := nutzerdaten.UmfrageRef
 
-	// return empty list if umfrageRefs are nil
-	if umfrageRefs == nil {
+	// liefere leere Liste zurueck, falls keine assoziierten Umfragen gefunden wurden
+	if umfrageRefs == nil || len(umfrageRefs) == 0 {
 		return []structs.Umfrage{}, nil
 	}
 
@@ -62,6 +64,8 @@ func AlleUmfragenForUser(email string) ([]structs.Umfrage, error) {
 		bson.D{{"_id", bson.M{"$in": umfrageRefs}}},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
@@ -69,16 +73,16 @@ func AlleUmfragenForUser(email string) ([]structs.Umfrage, error) {
 
 	err = cursor.All(ctx, &results)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return nil, err
 	}
 
 	return results, nil
 }
 
-/**
-Die Funktion liefert einen Umfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
-falls ein Document vorhanden ist.
-*/
+// UmfrageFind liefert einen Umfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
+// falls ein Document vorhanden ist.
 func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -92,6 +96,8 @@ func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 	).Decode(&data)
 
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return structs.Umfrage{}, err
 	}
 
@@ -122,6 +128,8 @@ func UmfrageUpdate(data structs.UpdateUmfrage) (primitive.ObjectID, error) {
 	).Decode(&updatedDoc)
 
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return primitive.NilObjectID, err
 	}
 
@@ -146,17 +154,22 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 			ITGeraete:             data.ITGeraete,
 			Revision:              1,
 			MitarbeiterUmfrageRef: []primitive.ObjectID{},
+			AuswertungFreigegeben: 0,
 		})
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return primitive.NilObjectID, err
 	}
 
 	id, ok := insertedDoc.InsertedID.(primitive.ObjectID)
 	if !ok {
+		log.Println(structs.ErrObjectIDNichtKonvertierbar)
+		debug.PrintStack()
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
-	err = NutzerdatenAddUmfrageref(data.Hauptverantwortlicher.Username, id)
+	err = NutzerdatenAddUmfrageref(data.Auth.Username, id)
 	if err != nil {
 		return primitive.NilObjectID, err
 	}
@@ -164,9 +177,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 	return id, nil
 }
 
-/**
-Die Funktion fuegt eine Referenz an eine Umfrage an.
-*/
+// UmfrageAddMitarbeiterUmfrageRef haengt eine Mitarbeiterumfrage Referenz an eine Umfrage an.
 func UmfrageAddMitarbeiterUmfrageRef(idUmfrage primitive.ObjectID, referenz primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -181,23 +192,23 @@ func UmfrageAddMitarbeiterUmfrageRef(idUmfrage primitive.ObjectID, referenz prim
 			bson.D{{"mitarbeiterUmfrageRef", referenz}}}},
 	).Decode(&updatedDoc)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
 	return nil
 }
 
-/**
-Die Funktion loescht eine Umfrage mit der ObjectID und alle assoziierten Mitarbeiterumfragen aus der Datenbank,
-falls der Eintrag existiert, liefert Fehler oder nil zurueck
-*/
-func UmfrageDelete(hauptverantwortlicher string, umfrageID primitive.ObjectID) error {
+// UmfrageDelete loescht eine Umfrage mit der ObjectID und alle assoziierten Mitarbeiterumfragen aus der Datenbank,
+// falls der Eintrag existiert, liefert Fehler oder nil zurueck
+func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
-	//Loesche assoziierte Mitarbeiterumfragen
+	// Loesche assoziierte Mitarbeiterumfragen
 	eintrag, err := UmfrageFind(umfrageID)
 	if err != nil {
 		return err
@@ -213,13 +224,17 @@ func UmfrageDelete(hauptverantwortlicher string, umfrageID primitive.ObjectID) e
 	// Loesche Eintrag aus Umfragen
 	anzahl, err := collection.DeleteOne(
 		ctx,
-		bson.M{"_id": umfrageID})
-
+		bson.M{"_id": umfrageID},
+	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
 	if anzahl.DeletedCount == 0 {
+		log.Println(structs.ErrObjectIDNichtGefunden)
+		debug.PrintStack()
 		return structs.ErrObjectIDNichtGefunden
 	}
 
@@ -229,28 +244,44 @@ func UmfrageDelete(hauptverantwortlicher string, umfrageID primitive.ObjectID) e
 	var updatedDoc structs.Nutzerdaten
 	err = collection.FindOneAndUpdate(
 		ctx,
-		bson.M{"email": hauptverantwortlicher},
+		bson.M{"nutzername": username},
 		bson.D{{"$pull",
-			bson.D{{"umfrageRef", umfrageID}}}}).Decode(&updatedDoc)
+			bson.D{{"umfrageRef", umfrageID}}}},
+	).Decode(&updatedDoc)
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return err
+	}
 
-	return err
+	return nil
 }
 
-/**
-Die Funktion loescht eine Mitarbeiterumfrage mit der UmfrageID
-*/
-func UmfrageDeleteMitarbeiterUmfrage(umfrageID primitive.ObjectID) error {
+// UmfrageUpdateLinkShare setzt den auswertungFreigegeben Wert der Umfrage mit der gegebenen umfrageID
+// auf den uebergebenen setValue Wert. Dieser ist entweder 0 oder 1.
+// Der Wert steuert ob die Auswertung der Umfrage geteilt werden darf.
+func UmfrageUpdateLinkShare(setValue int32, umfrageID primitive.ObjectID) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
-	anzahl, err := collection.DeleteOne(
+	var updatedDoc structs.Umfrage
+
+	err := collection.FindOneAndUpdate(
 		ctx,
-		bson.M{"_id": umfrageID})
-
-	if anzahl.DeletedCount == 0 {
-		return structs.ErrObjectIDNichtGefunden
+		bson.D{{"_id", umfrageID}},
+		bson.D{{"$set",
+			bson.D{
+				{"auswertungFreigegeben", setValue},
+			},
+		}},
+	).Decode(&updatedDoc)
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return primitive.NilObjectID, err
 	}
-	return err
+
+	return updatedDoc.ID, nil
 }

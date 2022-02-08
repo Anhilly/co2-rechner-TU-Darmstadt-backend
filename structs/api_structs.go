@@ -6,20 +6,6 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 In dieser Daten sind Request und Response JSON für die API als structs aufgelistet.
 */
 
-// For testing:
-//type UmfrageMitarbeiterReq struct {
-//	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
-//	TageImBuero int32                `json:"tageImBuero"`
-//	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
-//	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
-//}
-//
-//type UmfrageMitarbeiterRes struct {
-//	PendelwegeEmissionen   float64 `json:"pendelwegeEmissionen"`
-//	DienstreisenEmissionen float64 `json:"dienstreisenEmissionen"`
-//	ITGeraeteEmissionen    float64 `json:"itGeraeteEmissionen"`
-//}
-
 // Struct zum Abfragen aller Gebaeudedaten
 type AllGebaeudeRes struct {
 	Gebaeude []int32 `json:"gebaeude"`
@@ -64,12 +50,12 @@ type InsertGebaeude struct {
 }
 
 type InsertUmfrage struct {
-	Bezeichnung           string             `json:"bezeichnung"`
-	Mitarbeiteranzahl     int32              `json:"mitarbeiteranzahl"`
-	Jahr                  int32              `json:"jahr"`
-	Gebaeude              []UmfrageGebaeude  `json:"gebaeude"`
-	ITGeraete             []UmfrageITGeraete `json:"itGeraete"`
-	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
+	Bezeichnung       string             `json:"bezeichnung"`
+	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
+	Jahr              int32              `json:"jahr"`
+	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
+	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
+	Auth              AuthToken          `json:"authToken"`
 }
 
 type AlleUmfragen struct {
@@ -86,15 +72,6 @@ type AuthToken struct {
 	Sessiontoken string `json:"sessiontoken"`
 }
 
-// TODO wird das noch benötigt?
-//type InsertUmfrageRes struct {
-//	UmfrageID           string  `json:"umfrageID"`
-//	KaelteEmissionen    float64 `json:"kaelteEmissionen"`
-//	WaermeEmissionen    float64 `json:"waermeEmissionen"`
-//	StromEmissionen     float64 `json:"stromEmissionen"`
-//	ITGeraeteEmissionen float64 `json:"itGeraeteEmissionen"`
-//}
-
 type UpdateUmfrage struct {
 	Auth              AuthToken          `json:"authToken"`
 	UmfrageID         primitive.ObjectID `json:"umfrageID"`
@@ -106,6 +83,7 @@ type UpdateUmfrage struct {
 }
 
 type UpdateMitarbeiterUmfrage struct {
+	Auth        AuthToken            `json:"authToken"`
 	UmfrageID   primitive.ObjectID   `json:"umfrageID"`
 	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`
@@ -122,18 +100,22 @@ type InsertMitarbeiterUmfrage struct {
 }
 
 type UmfrageExistsRes struct {
-	UmfrageID string `json:"umfrageID"`
+	UmfrageID   string `json:"umfrageID"`
 	Bezeichnung string `json:"bezeichnung"`
-	Complete  bool   `json:"complete"`
+	Complete    bool   `json:"complete"`
 }
 
 type UmfrageYearRes struct {
 	Jahr int32 `json:"jahr"`
 }
 
+type UmfrageSharedResultsRes struct {
+	Freigegeben int32 `json:"freigegeben"`
+}
+
 type DeleteUmfrage struct {
-	UmfrageID             primitive.ObjectID `json:"umfrageID"`
-	Hauptverantwortlicher AuthToken          `json:"hauptverantwortlicher"`
+	UmfrageID primitive.ObjectID `json:"umfrageID"`
+	Auth      AuthToken          `json:"authToken"`
 }
 
 type RequestUmfrage struct {
@@ -141,19 +123,25 @@ type RequestUmfrage struct {
 	Auth      AuthToken          `json:"authToken"`
 }
 
-// Request fuer Umfragenauswertung
-//type AuswertungReq struct {
-//	UmfrageIDTemp primitive.ObjectID `json:"umfrageID"`
-//}
+type RequestLinkShare struct {
+	UmfrageID primitive.ObjectID `json:"umfrageID"`
+	LinkShare int32              `json:"linkShareValue"`
+	Auth      AuthToken          `json:"authToken"`
+}
+
+type RequestAuth struct {
+	Auth AuthToken `json:"authToken"`
+}
 
 type AuswertungRes struct {
 	// Information von Umfrage
-	ID                primitive.ObjectID `json:"id"`
-	Bezeichnung       string             `json:"bezeichnung"`
-	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
-	Jahr              int32              `json:"jahr"`
-	Umfragenanzahl    int32              `json:"umfragenanzahl"`
-	Umfragenanteil    float64            `json:"umfragenanteil"`
+	ID                  primitive.ObjectID `json:"id"`
+	Bezeichnung         string             `json:"bezeichnung"`
+	Mitarbeiteranzahl   int32              `json:"mitarbeiteranzahl"`
+	Jahr                int32              `json:"jahr"`
+	Umfragenanzahl      int32              `json:"umfragenanzahl"`
+	Umfragenanteil      float64            `json:"umfragenanteil"`
+	AuswertungFreigeben int32              `json:"linkShare"`
 
 	// Berechnete Werte fuer Auswertung
 	EmissionenWaerme                         float64 `json:"emissionenWaerme"`
@@ -178,6 +166,20 @@ type AuthReq struct { // wird fuer Anmeldung und Registrierung verwendet
 	Passwort string `json:"password"`
 }
 
+type PasswortAendernReq struct { // wird fuer Anmeldung und Registrierung verwendet
+	Auth          AuthToken `json:"authToken"`
+	Passwort      string    `json:"passwort"`
+	NeuesPasswort string    `json:"neuesPasswort"`
+}
+
+type PasswortVergessenReq struct {
+	Username string `json:"username"`
+}
+
+type EmailBestaetigung struct {
+	UserID primitive.ObjectID `json:"nutzerID"`
+}
+
 type AbmeldungReq struct {
 	Username string `json:"username"`
 }
@@ -185,6 +187,11 @@ type AbmeldungReq struct {
 type PruefeSessionReq struct {
 	Username     string `json:"username"`
 	Sessiontoken string `json:"sessiontoken"`
+}
+
+type PruefeSessionRes struct {
+	Rolle           int32 `json:"rolle"`
+	EmailBestaetigt int32 `json:"emailBestaetigt"`
 }
 
 // Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
@@ -198,9 +205,18 @@ type AbmeldeRes struct {
 	Message string `json:"message"`
 }
 
+type RegistrierungRes struct {
+	Message string `json:"message"`
+}
+
 type AuthRes struct {
 	Message      string `json:"message"`
 	Sessiontoken string `json:"sessiontoken"`
+}
+
+type DeleteNutzerdatenReq struct {
+	Auth     AuthToken `json:"authToken"`
+	Username string    `json:"username"`
 }
 
 type Error struct {

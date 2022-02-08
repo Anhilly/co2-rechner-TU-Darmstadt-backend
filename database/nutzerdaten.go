@@ -6,13 +6,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
+	"log"
+	"runtime/debug"
 )
 
-/**
-Die Funktion liefert einen Nutzerdaten struct zurueck, der die uebergegebene E-Mail hat, falls ein solches Dokument in der
-Datenbank vorhanden ist.
-*/
-func NutzerdatenFind(email string) (structs.Nutzerdaten, error) {
+// NutzerdatenFind liefert einen Nutzerdaten struct zurueck, der die uebergegebene E-Mail hat,
+// falls ein solches Dokument in der Datenbank vorhanden ist.
+func NutzerdatenFind(username string) (structs.Nutzerdaten, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -21,19 +21,68 @@ func NutzerdatenFind(email string) (structs.Nutzerdaten, error) {
 	var data structs.Nutzerdaten
 	err := collection.FindOne(
 		ctx,
-		bson.D{{"email", email}},
+		bson.D{{"nutzername", username}},
 	).Decode(&data)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return structs.Nutzerdaten{}, err
 	}
 
 	return data, nil
 }
 
-/**
-Die Funktion fuegt einem Nutzer eine ObjectID einer Umfrage hinzu, falls der Nutzer vorhanden sind.
-*/
-func NutzerdatenAddUmfrageref(email string, id primitive.ObjectID) error {
+func NutzerdatenUpdate(nutzer structs.Nutzerdaten) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+
+	// Update des Eintrages
+	_, err := collection.UpdateOne(
+		ctx,
+		bson.M{"_id": nutzer.NutzerID},
+		bson.D{
+			{"$set",
+				bson.D{
+					{"nutzername", nutzer.Nutzername},
+					{"passwort", nutzer.Passwort},
+					{"rolle", nutzer.Rolle},
+					{"emailBestaetigt", nutzer.EmailBestaetigt},
+				}},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// NutzerdatenUpdateMailBestaetigung updatet den emailBestaetigt Eintrag von angegeben Nutzer in der Datenbank
+func NutzerdatenUpdateMailBestaetigung(id primitive.ObjectID, value int32) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+
+	// Update des Eintrages
+	_, err := collection.UpdateOne(
+		ctx,
+		bson.M{"_id": id},
+		bson.D{
+			{"$set", bson.D{{"emailBestaetigt", value}}},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// NutzerdatenAddUmfrageref fuegt einem Nutzer eine ObjectID einer Umfrage hinzu, falls der Nutzer vorhanden sind.
+func NutzerdatenAddUmfrageref(username string, id primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -42,47 +91,105 @@ func NutzerdatenAddUmfrageref(email string, id primitive.ObjectID) error {
 	var updatedDoc structs.Nutzerdaten
 	err := collection.FindOneAndUpdate(
 		ctx,
-		bson.D{{"email", email}},
+		bson.D{{"nutzername", username}},
 		bson.D{{"$addToSet",
 			bson.D{{"umfrageRef", id}}}},
 	).Decode(&updatedDoc)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return err
 	}
 
 	return nil
 }
 
-/**
-Fuegt einen Datenbankeintrag in Form des Nutzerdaten structs ein, dabei wird das Passwort gehashed
-*/
-func NutzerdatenInsert(anmeldedaten structs.AuthReq) error {
+// NutzerdatenInsert fuegt einen Datenbankeintrag in Form des Nutzerdaten structs ein, dabei wird das Passwort gehashed.
+func NutzerdatenInsert(anmeldedaten structs.AuthReq) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
 	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
-	// Pruefe ob bereits ein Eintrag mit dieser Email existiert
+	// Pruefe, ob bereits ein Eintrag mit diesem Nutzernamen existiert
 	_, err := NutzerdatenFind(anmeldedaten.Username)
-
 	if err == nil {
-		// Eintrag mit dieser Email existiert bereits
-		return structs.ErrInsertExistingAccount
+		// Eintrag mit diesem Nutzernamen existiert bereits
+		return primitive.NilObjectID, structs.ErrInsertExistingAccount
 	}
 	// Kein Eintrag vorhanden
 
 	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
 	if err != nil {
-		return err // Bcrypt hashing error
+		log.Println(err)
+		debug.PrintStack()
+		return primitive.NilObjectID, err // Bcrypt hashing error
 	}
-	_, err = collection.InsertOne(ctx, structs.Nutzerdaten{
-		Email:    anmeldedaten.Username,
-		Passwort: string(passwordhash),
-		Rolle:    structs.IDRolleNutzer,
-		Revision: 1,
-		UmfrageRef: []primitive.ObjectID{},
+	result, err := collection.InsertOne(ctx, structs.Nutzerdaten{
+		NutzerID:        primitive.NewObjectID(),
+		Nutzername:      anmeldedaten.Username,
+		Passwort:        string(passwordhash),
+		Rolle:           structs.IDRolleNutzer,
+		EmailBestaetigt: structs.IDEmailNichtBestaetigt,
+		Revision:        1,
+		UmfrageRef:      []primitive.ObjectID{},
 	})
 	if err != nil {
-		return err // DB Error
+		log.Println(err)
+		debug.PrintStack()
+		return primitive.NilObjectID, err // DB Error
+	}
+
+	id, ok := result.InsertedID.(primitive.ObjectID)
+
+	if !ok {
+		log.Println(structs.ErrObjectIDNichtKonvertierbar)
+		debug.PrintStack()
+		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
+	}
+
+	return id, nil
+}
+
+// NutzerdatenDelete loescht einen Nutzer mit dem gegebenen username und alle assoziierten Umfragen aus der Datenbank.
+// falls der Eintrag nicht existiert, wird ein Fehler bzw nil zurückgeliefert
+func NutzerdatenDelete(username string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+
+	// finde nutzerdaten
+	nutzerdaten, err := NutzerdatenFind(username)
+	if err != nil {
+		return err
+	}
+
+	// Loesche assoziierte Umfragen
+	for _, umfrageID := range nutzerdaten.UmfrageRef {
+		// loesche Umfrage nun selbst
+		err = UmfrageDelete(username, umfrageID)
+		if err != nil {
+			log.Println(err)
+			debug.PrintStack()
+			return err
+		}
+	}
+
+	// Loesche Nutzerdaten
+	anzahl, err := collection.DeleteOne(
+		ctx,
+		bson.M{"nutzername": username},
+	)
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return err
+	}
+
+	if anzahl.DeletedCount == 0 {
+		log.Println(structs.ErrUsernameLoeschenFehlgeschlagen)
+		debug.PrintStack()
+		return structs.ErrUsernameLoeschenFehlgeschlagen
 	}
 
 	return nil

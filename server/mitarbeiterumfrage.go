@@ -11,38 +11,44 @@ import (
 	"net/http"
 )
 
+// RouteMitarbeiterUmfrage mounted alle aufrufbaren API Endpunkte unter */mitarbeiterUmfrage
 func RouteMitarbeiterUmfrage() chi.Router {
 	r := chi.NewRouter()
 
 	// POST
 	r.Post("/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
-	r.Post("/updateMitarbeiterUmfrage", PostUpdateMitarbeiterUmfrage)
+	//r.Post("/updateMitarbeiterUmfrage", PostUpdateMitarbeiterUmfrage)
+	r.Post("/mitarbeiterUmfrageForUmfrage", PostMitarbeiterUmfrageForUmfrage)
 
 	// GET
 	r.Get("/exists", GetUmfrageExists)
-	r.Get("/mitarbeiterUmfrageForUmfrage", GetMitarbeiterUmfrageForUmfrage)
 
 	return r
 }
 
-// PostUpdateMitarbeiterUmfrage updates an mitarbeiterUmfrage with received values
-func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
+/*
+// PostUpdateMitarbeiterUmfrage updated eine Mitarbeiterumfrage mit den empfangenen Daten
+  func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+ 	}
+
+	umfrageReq := structs.UpdateMitarbeiterUmfrage{}
+	umfrageRes := structs.UmfrageID{}
+	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
-	umfrageReq := structs.UpdateMitarbeiterUmfrage{}
-	umfrageRes := structs.UmfrageID{}
-
-	err = json.Unmarshal(s, &umfrageReq)
-	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error -> 400
-		sendResponse(res, false, structs.Error{
-			Code:    http.StatusBadRequest,
-			Message: err.Error(),
-		}, http.StatusBadRequest)
+	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
 
@@ -53,23 +59,24 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// TODO authentication does not work here? says email would not have a valid session token?
-	//err = Authenticate(umfrageReq.Hauptverantwortlicher.Username, umfrageReq.Hauptverantwortlicher.Sessiontoken)
-	//if err != nil {
-	//	sendResponse(res, false, structs.Error{
-	//		Code:    http.StatusUnauthorized,
-	//		Message: "Ungueltige Anmeldedaten",
-	//	}, http.StatusUnauthorized)
-	//}
-
 	umfrageID, err := database.MitarbeiterUmfrageUpdate(umfrageReq)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatalln(err2)
+			log.Println(err2)
+		} else{
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
+	}
+
+	err = database.RemoveDump(ordner)
+	if err != nil {
+		log.Println(err)
 	}
 
 	// return empty umfrage string if umfrageID is invalid
@@ -80,35 +87,39 @@ func PostUpdateMitarbeiterUmfrage(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfrageRes,
-		Error:  nil,
-	})
+	sendResponse(res, true, umfrageRes, http.StatusOK)
+	}
+}
+*/
+
+// PostMitarbeiterUmfrageForUmfrage liefert alle Mitarbeiterumfragen,
+// welche mit der Umfrage mit der ID UmfrageID assoziiert sind, zurueck.
+func PostMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
+
+	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
-}
-
-// GetMitarbeiterUmfrageForUmfrage returns all MitarbeiterUmfragen belonging to a certain given umfrageID
-func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
-	var requestedUmfrageID primitive.ObjectID
-	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
+	auswertungReq := structs.RequestUmfrage{}
+	err = json.Unmarshal(s, &auswertungReq)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+	requestedUmfrageID := auswertungReq.UmfrageID
+
+	if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
 
 	mitarbeiterUmfragenRes := structs.AlleMitarbeiterUmfragenForUmfrage{}
-
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
 
 	mitarbeiterUmfragenRes.MitarbeiterUmfragen, err = database.MitarbeiterUmfrageFindForUmfrage(requestedUmfrageID)
 	if err != nil {
@@ -116,21 +127,12 @@ func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   mitarbeiterUmfragenRes,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, mitarbeiterUmfragenRes, http.StatusOK)
 }
 
-// GetUmfrageExists returns the umfrageID if the umfrage exists and whether it is already complete or not.
+// GetUmfrageExists liefert einen structs.UmfrageExistsRes zurueck, falls die Umfrage existiert,
+// dabei wird auch zurueck geliefert, ob die Umfrage durch alle Mitarbeiter ausgefuellt wurde.
+// Diese Funktion hat keine Authentifizierung, da sie fuer die Mitarbeiterumfrage benoetigt wird.
 func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
@@ -151,20 +153,8 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	if umfrage.ID == primitive.NilObjectID {
 		umfrageExistsRes.UmfrageID = ""
 
-		response, err := json.Marshal(structs.Response{
-			Status: structs.ResponseSuccess,
-			Data:   umfrageExistsRes,
-			Error:  nil,
-		})
-		if err != nil {
-			errorResponse(res, err, http.StatusInternalServerError)
-			return
-		}
-
-		res.WriteHeader(http.StatusOK)
-		_, _ = res.Write(response)
+		sendResponse(res, true, umfrageExistsRes, http.StatusOK)
 		return
-
 	} else {
 		umfrageExistsRes.UmfrageID = umfrage.ID.Hex()
 		umfrageExistsRes.Bezeichnung = umfrage.Bezeichnung
@@ -185,22 +175,11 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	} else {
 		umfrageExistsRes.Complete = true
 	}
-
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfrageExistsRes,
-		Error:  nil,
-	})
-	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
-	}
-
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, umfrageExistsRes, http.StatusOK)
 }
 
-// PostMitarbeiterUmfrageInsert inserts the received Umfrage and returns the ID of the inserted Umfrage-Entry.
+// PostMitarbeiterUmfrageInsert fuegt die empfangene Mitarbeiterumfrage in die DB ein und
+// sendet null zurueck, wenn das Einfuegen erfolgreich war.
 func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -209,7 +188,6 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 	}
 
 	umfrageExistsReq := structs.InsertMitarbeiterUmfrage{}
-	umfrageExistsRes := structs.UmfrageID{}
 
 	err = json.Unmarshal(s, &umfrageExistsReq)
 	if err != nil {
@@ -223,34 +201,25 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
-	umfrageID, err := database.MitarbeiterUmfrageInsert(umfrageExistsReq)
+	_, err = database.MitarbeiterUmfrageInsert(umfrageExistsReq)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
-			log.Fatalln(err2)
+			log.Println(err2)
+		} else {
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
-	// return empty string if id is nil
-	if umfrageID == primitive.NilObjectID {
-		umfrageExistsRes.UmfrageID = ""
-	} else {
-		umfrageExistsRes.UmfrageID = umfrageID.Hex()
-	}
-
-	// Response
-	response, err := json.Marshal(structs.Response{
-		Status: structs.ResponseSuccess,
-		Data:   umfrageExistsRes,
-		Error:  nil,
-	})
+	err = database.RemoveDump(ordner)
 	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
+		log.Println(err)
 	}
 
-	res.WriteHeader(http.StatusOK)
-	_, _ = res.Write(response)
+	sendResponse(res, true, nil, http.StatusOK)
 }

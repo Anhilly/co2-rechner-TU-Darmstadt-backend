@@ -5,77 +5,12 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
+	"runtime/debug"
 )
 
-// MitarbeiterUmfrageUpdate Updates a umfrage with value given in data and returns the ID of the updated Umfrage
-func MitarbeiterUmfrageUpdate(data structs.UpdateMitarbeiterUmfrage) (primitive.ObjectID, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
-	defer cancel()
-
-	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
-
-	var updatedDoc structs.Umfrage
-
-	err := collection.FindOneAndUpdate(
-		ctx,
-		bson.D{{"_id", data.UmfrageID}},
-		bson.D{{"$set",
-			bson.D{
-				{"pendelweg", data.Pendelweg},
-				{"tageImBuero", data.TageImBuero},
-				{"dienstreise", data.Dienstreise},
-				{"itGeraete", data.ITGeraete},
-			},
-		}},
-	).Decode(&updatedDoc)
-
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-
-	return updatedDoc.ID, nil
-}
-
-/**
-Die Funktion liefert einen Array aus Umfrage structs aus der Datenbank zurueck, die mit der gegebenen Umfrage(ID) assoziiert sind.
-*/
-func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.MitarbeiterUmfrage, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
-	defer cancel()
-
-	// find umfrage for given id
-	umfrage, err := UmfrageFind(umfrageID)
-	if err != nil {
-		return nil, err
-	}
-
-	// get ref ids from umfrage
-	umfrageRefs := umfrage.MitarbeiterUmfrageRef
-
-	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
-
-	cursor, err := collection.Find(
-		ctx,
-		bson.D{{"_id", bson.M{"$in": umfrageRefs}}},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	var results []structs.MitarbeiterUmfrage
-
-	err = cursor.All(ctx, &results)
-	if err != nil {
-		return nil, err
-	}
-
-	return results, nil
-}
-
-/**
-Die Funktion liefert einen Umfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
-falls ein Document vorhanden ist.
-*/
+// MitarbeiterUmfrageFind liefert einen Mitarbeiterumfrage struct aus der Datenbank zurueck mit ObjectID gleich dem Parameter,
+// falls ein Document vorhanden ist.
 func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -88,12 +23,87 @@ func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, 
 		bson.D{{"_id", id}},
 	).Decode(&data)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return structs.MitarbeiterUmfrage{}, err
 	}
 
 	return data, nil
 }
 
+//// MitarbeiterUmfrageUpdate updated eine Mitarbeiterumfrage mit den in data uebergebenen Werten und
+//// gibt die ID der aktualisierten Umfrage zurueck.
+//func MitarbeiterUmfrageUpdate(data structs.UpdateMitarbeiterUmfrage) (primitive.ObjectID, error) {
+//	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+//	defer cancel()
+//
+//	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
+//
+//	var updatedDoc structs.Umfrage
+//
+//	err := collection.FindOneAndUpdate(
+//		ctx,
+//		bson.D{{"_id", data.UmfrageID}},
+//		bson.D{{"$set",
+//			bson.D{
+//				{"pendelweg", data.Pendelweg},
+//				{"tageImBuero", data.TageImBuero},
+//				{"dienstreise", data.Dienstreise},
+//				{"itGeraete", data.ITGeraete},
+//			},
+//		}},
+//	).Decode(&updatedDoc)
+//
+//	if err != nil {
+//		log.Println(err)
+//		debug.PrintStack()
+//		return primitive.NilObjectID, err
+//	}
+//
+//	return updatedDoc.ID, nil
+//}
+
+// MitarbeiterUmfrageFindForUmfrage liefert einen Array aus Mitarbeiterumfrage structs aus der Datenbank zurueck,
+// die mit der gegebenen Umfrage(ID) assoziiert sind.
+func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.MitarbeiterUmfrage, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	// suche Umfrage mit der gegebenen umfrageID
+	umfrage, err := UmfrageFind(umfrageID)
+	if err != nil {
+		return nil, err
+	}
+
+	// hole die IDs der assoziierten Mitarbeiterumfragen
+	umfrageRefs := umfrage.MitarbeiterUmfrageRef
+
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{{"_id", bson.M{"$in": umfrageRefs}}},
+	)
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return nil, err
+	}
+
+	var results []structs.MitarbeiterUmfrage
+
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return nil, err
+	}
+
+	return results, nil
+}
+
+// MitarbeiterUmfrageFindMany liefert ein Array aus allen Mitarbeiterumfragen zurueck, deren ID in ids liegt.
+// Wenn nicht alle IDs in ids in der DB gefunden wurden, wird der Fehler structs.ErrDokumenteNichtGefunden zurueckgegeben.
 func MitarbeiterUmfrageFindMany(ids []primitive.ObjectID) ([]structs.MitarbeiterUmfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -106,25 +116,29 @@ func MitarbeiterUmfrageFindMany(ids []primitive.ObjectID) ([]structs.Mitarbeiter
 			bson.D{{"$in", ids}}}},
 	)
 	if err != nil {
-		return nil, err
+		log.Println(err)
+		debug.PrintStack()
+		return []structs.MitarbeiterUmfrage{}, err
 	}
 
 	var data []structs.MitarbeiterUmfrage
 	err = cursor.All(ctx, &data)
 	if err != nil {
-		return nil, err
+		log.Println(err)
+		debug.PrintStack()
+		return []structs.MitarbeiterUmfrage{}, err
 	}
 
 	if len(ids) != len(data) {
+		log.Println(structs.ErrDokumenteNichtGefunden)
+		debug.PrintStack()
 		return nil, structs.ErrDokumenteNichtGefunden
 	}
 
 	return data, nil
 }
 
-/**
-Die Funktion fügt eine neue Mitarbeiterumfrage in die Datenbank ein und liefert die ObjectId mit.
-*/
+// MitarbeiterUmfrageInsert fügt eine neue Mitarbeiterumfrage in die Datenbank ein und liefert die ObjectId zurueck.
 func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
@@ -149,6 +163,8 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 	umfragenFilled := int32(len(mitarbeiterumfragen))
 
 	if umfragenFilled >= mitarbeiterMax {
+		log.Println(structs.ErrUmfrageVollstaendig)
+		debug.PrintStack()
 		return primitive.NilObjectID, structs.ErrUmfrageVollstaendig
 	}
 
@@ -164,11 +180,15 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 		},
 	)
 	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
 		return primitive.NilObjectID, err
 	}
 
 	id, ok := insertedDoc.InsertedID.(primitive.ObjectID)
 	if !ok {
+		log.Println(structs.ErrObjectIDNichtKonvertierbar)
+		debug.PrintStack()
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
@@ -178,4 +198,47 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 	}
 
 	return id, nil
+}
+
+// UmfrageDeleteMitarbeiterUmfrage loescht eine Mitarbeiterumfrage mit der gegebenen UmfrageID
+func UmfrageDeleteMitarbeiterUmfrage(mitarbeiterUmfrageID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
+
+	anzahl, err := collection.DeleteOne(
+		ctx,
+		bson.M{"_id": mitarbeiterUmfrageID})
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return err
+	}
+
+	if anzahl.DeletedCount == 0 {
+		log.Println(structs.ErrObjectIDNichtGefunden)
+		debug.PrintStack()
+		return structs.ErrObjectIDNichtGefunden
+	}
+	
+	// remove MitarbeiterUmfrage from Refs in Umfrage
+	umfrageCollection := client.Database(dbName).Collection(structs.UmfrageCol)
+
+	var updatedDocument structs.Umfrage
+
+	err = umfrageCollection.FindOneAndUpdate(
+		ctx,
+		bson.M{"mitarbeiterUmfrageRef": mitarbeiterUmfrageID},
+		bson.D{{"$pull",
+			bson.D{{"mitarbeiterUmfrageRef", mitarbeiterUmfrageID}}}},
+	).Decode(&updatedDocument)
+
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return err
+	}
+
+	return err
 }

@@ -14,7 +14,7 @@ import (
 func TestFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	dir, err := database.CreateDump("TestAdd")
+	dir, err := database.CreateDump("TestFind")
 	is.NoErr(err)
 
 	fmt.Println(dir)
@@ -26,6 +26,8 @@ func TestFind(t *testing.T) {
 		err := database.DisconnectDatabase()
 		is.NoErr(err)
 		err = database.RestoreDump(dir)
+		is.NoErr(err)
+		err = database.RemoveDump(dir)
 		is.NoErr(err)
 	}()
 
@@ -40,6 +42,7 @@ func TestFind(t *testing.T) {
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
 	t.Run("TestMitarbeiterUmfrageFindMany", TestMitarbeiterUmfrageFindMany)
 	t.Run("TestMitarbeiterUmfageForUmfrage", TestMitarbeiterUmfageForUmfrage)
+	t.Run("TestAlleUmfragen", TestAlleUmfragen)
 	t.Run("TestAlleUmfragenForUser", TestAlleUmfragenForUser)
 
 }
@@ -615,6 +618,7 @@ func TestUmfrageFind(t *testing.T) {
 				ITGeraete: []structs.UmfrageITGeraete{
 					{IDITGeraete: 5, Anzahl: 10},
 				},
+				AuswertungFreigegeben: 0,
 				Revision:              1,
 				MitarbeiterUmfrageRef: []primitive.ObjectID{idMitarbeiterumfrage},
 			}) // Überprüfung des zurückgelieferten Elements
@@ -713,11 +717,8 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 	t.Run("MitarbeiterUmfrageFindMany: mehrere IDs", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		dir, err := database.CreateDump("MitarbeiterUmfrageFindMany")
-		is.NoErr(err)
-
 		var id primitive.ObjectID
-		err = id.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
+		err := id.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
 		is.NoErr(err)
 
 		var idUmfrage primitive.ObjectID
@@ -755,13 +756,10 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 				Revision:    1,
 			},
 		}) // Überprüfung des zurückgelieferten Elements
-
-		err = database.RestoreDump(dir)
-		is.NoErr(err)
 	})
 
 	// Errortests
-	t.Run("MitarbeiterUmfrageFind: zu wenige Dokumente", func(t *testing.T) {
+	t.Run("MitarbeiterUmfrageFindMany: zu wenige Dokumente", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
@@ -777,34 +775,36 @@ func TestNutzerdatenFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("NutzerdatenFind: EMail = anton@tobi.com", func(t *testing.T) {
+	t.Run("NutzerdatenFind: username = anton@tobi.com", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		email := "anton@tobi.com"
+		username := "anton@tobi.com"
 		var idUmfrage primitive.ObjectID
 		err := idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
 		is.NoErr(err)
-
-		data, err := database.NutzerdatenFind(email)
+		objID, _ := primitive.ObjectIDFromHex("61b1ceb3dfb93b34b1305b70")
+		data, err := database.NutzerdatenFind(username)
 
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data,
 			structs.Nutzerdaten{
-				Email:      "anton@tobi.com",
-				Passwort:   "test_pw",
-				Rolle:      0,
-				Revision:   1,
-				UmfrageRef: []primitive.ObjectID{idUmfrage},
+				NutzerID:        objID,
+				Nutzername:      "anton@tobi.com",
+				Passwort:        "test_pw",
+				Rolle:           0,
+				EmailBestaetigt: 1,
+				Revision:        1,
+				UmfrageRef:      []primitive.ObjectID{idUmfrage},
 			}) // Überprüfung des zurückgelieferten Elements
 	})
 
 	// Errortests
-	t.Run("MitarbeiterUmfrageFind: EMail = 0 nicht vorhanden", func(t *testing.T) {
+	t.Run("MitarbeiterUmfrageFind: username = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		email := "0"
+		username := "0"
 
-		data, err := database.NutzerdatenFind(email)
+		data, err := database.NutzerdatenFind(username)
 
 		is.Equal(err, mongo.ErrNoDocuments)   // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Nutzerdaten{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
@@ -903,8 +903,8 @@ func TestAlleUmfragen(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		alleUmfragen, err := database.AlleUmfragen()
-		is.NoErr(err)                         // kein Error seitens der Datenbank
-		is.Equal(len(alleUmfragen) > 0, true) // Slice ist nicht leer
+		is.NoErr(err)                          // kein Error seitens der Datenbank
+		is.Equal(len(alleUmfragen) == 5, true) // Slice ist nicht leer
 	})
 }
 
@@ -931,7 +931,7 @@ func TestAlleUmfragenForUser(t *testing.T) {
 		userMail := "lorem_ipsum_mustermann"
 		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
 		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(alleUmfragen, nil)
+		is.Equal(alleUmfragen, []structs.Umfrage{})
 	})
 
 	// Errorfaelle

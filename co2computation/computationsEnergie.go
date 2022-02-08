@@ -7,11 +7,9 @@ import (
 	"math"
 )
 
-/**
-Die Funktion berechnet für die gegeben Gebaeude, Flaechenanteile und Jahr die entsprechenden Emissionen hinsichtlich der
-übergebenen ID fuer die entsprechende Energie (Waerme = 1, Strom = 2, Kaelte = 3).
-Ergebniseinheit: g
-*/
+// BerechneEnergieverbrauch berechnet für die gegeben Gebaeude, Flaechenanteile und Jahr die entsprechenden Emissionen
+// hinsichtlich der uebergebenen ID fuer die entsprechende Energie (Waerme = 1, Strom = 2, Kaelte = 3).
+// Ergebniseinheit: g
 func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.UmfrageGebaeude, jahr int32, idEnergieversorgung int32) (float64, error) {
 	var gesamtemissionen float64
 
@@ -43,10 +41,8 @@ func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.UmfrageGebaeude, ja
 	return math.Round(gesamtemissionen*100) / 100, nil // Ergebnisrundung auf 2 Nachkommastellen
 }
 
-/**
-Funktion liefert den CO2 Faktor für das gegebene Jahr und Energieform zurück.
-Ergebniseinheit: g/kWh
-*/
+// getEnergieCO2Faktor liefert den CO2 Faktor für das gegebene Jahr und Energieform zurück.
+// Ergebniseinheit: g/kWh
 func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
 	var co2Faktor int32 = -1
 
@@ -70,10 +66,8 @@ func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
 	return co2Faktor, nil
 }
 
-/**
-Die Funktion bildet den Normalfall für die Emissionsberechnungen eines Gebaeudes und dem Flaechenanteil.
-Ergebniseinheit: g
-*/
+// gebaeudeNormalfall bildet den Normalfall für die Emissionsberechnungen eines Gebaeudes und dem Flaechenanteil.
+// Ergebniseinheit: g
 func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergieversorgung int32, jahr int32, flaechenanteil int32) (float64, error) {
 	var gesamtverbrauch float64                  // Einheit: kWh
 	var gesamtNGF float64 = gebaeude.Flaeche.NGF // Einheit: m^2
@@ -141,10 +135,8 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 	return emissionen, nil
 }
 
-/**
-Funktion stellt den Normalfall zur Bestimmung des Verbrauchs und zugehöriger Gebaeudeflaeche dar.
-Ergebniseinheit: kWh, m^2
-*/
+// zaehlerNormalfall stellt den Normalfall zur Bestimmung des Verbrauchs und zugehöriger Gebaeudeflaeche dar.
+// Ergebniseinheit: kWh, m^2
 func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaeudeNr int32) (float64, float64, error) {
 	var ngf float64
 
@@ -190,11 +182,9 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaeudeNr int32) (f
 	return verbrauch, ngf, nil
 }
 
-/**
-Die Funktion stellt den Spezialfall 2 und 3 für die Kaeltezaehler 3621 und 3622 dar. Es ist eine abgewandelte Version
-des Normalfalls und genau auf diese Zaehler zugeschnitten.
-Ergebniseinheit: kWh
-*/
+// zaehlerSpezialfall stellt den Spezialfall 2 und 3 für die Kaeltezaehler 3621 und 3622 dar.
+// Es ist eine abgewandelte Version des Normalfalls und genau auf diese Zaehler zugeschnitten.
+// Ergebniseinheit: kWh
 func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andereZaehlerID int32) (float64, error) {
 	var verbrauch float64 = -1 // Verbrauch des Gruppenzaehlers
 	for _, zaehlerstand := range zaehler.Zaehlerdaten {
