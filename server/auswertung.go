@@ -92,7 +92,7 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.EmissionenStrom, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungStrom)
 	if err != nil {
 		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
-			auswertung.EmissionenWaerme = -1
+			auswertung.EmissionenStrom = -1
 		} else {
 			errorResponse(res, err, http.StatusInternalServerError)
 			return
@@ -102,7 +102,7 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.EmissionenKaelte, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungKaelte)
 	if err != nil {
 		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
-			auswertung.EmissionenWaerme = -1
+			auswertung.EmissionenKaelte = -1
 		} else {
 			errorResponse(res, err, http.StatusInternalServerError)
 			return
