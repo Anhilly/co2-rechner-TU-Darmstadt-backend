@@ -77,7 +77,7 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	if auswertung.Mitarbeiteranzahl > 0 {
 		auswertung.Umfragenanteil = float64(auswertung.Umfragenanzahl) / float64(auswertung.Mitarbeiteranzahl)
 	}
-	auswertung.AuswertungFreigeben = umfrage.AuswertungFreigegeben
+	auswertung.AuswertungFreigegeben = umfrage.AuswertungFreigegeben
 
 	auswertung.EmissionenWaerme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)
 	if err != nil {
@@ -182,8 +182,8 @@ func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Pruefe ob uebermittelter LinkShare Value korrekt ist, d.h. 0 oder 1
-	if linkshareReq.LinkShare != 0 && linkshareReq.LinkShare != 1 {
+	// Pruefe ob uebermittelter Freigabewert korrekt ist, d.h. 0 oder 1
+	if linkshareReq.Freigabewert != 0 && linkshareReq.Freigabewert != 1 {
 		var err = errors.New("Anfrage ungueltig")
 		errorResponse(res, err, http.StatusBadRequest)
 	}
@@ -193,7 +193,7 @@ func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	nutzer, _ := database.NutzerdatenFind(linkshareReq.Auth.Username)
-	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, linkshareReq.UmfrageID) {
+	if nutzer.Rolle != structs.IDRolleAdmin && !isOwnerOfUmfrage(nutzer.UmfrageRef, linkshareReq.UmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
@@ -204,7 +204,7 @@ func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
-	_, err = database.UmfrageUpdateLinkShare(linkshareReq.LinkShare, linkshareReq.UmfrageID)
+	_, err = database.UmfrageUpdateLinkShare(linkshareReq.Freigabewert, linkshareReq.UmfrageID)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
