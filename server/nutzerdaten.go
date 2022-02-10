@@ -14,14 +14,14 @@ import (
 func RouteNutzerdaten() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/deleteNutzerdaten", PostNutzerdatenDelete)
+	r.Delete("/deleteNutzerdaten", DeleteNutzerdaten)
 
 	return r
 }
 
 // PostNutzerdatenDelete loescht den Nutzer, der die Loeschung angefragt hat.
 // Gibt auftretende Errors zurück, bspw. interne Berechnungsfehler oder unauthorized access.
-func PostNutzerdatenDelete(res http.ResponseWriter, req *http.Request) {
+func DeleteNutzerdaten(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
