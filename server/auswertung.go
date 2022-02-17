@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 )
 
@@ -75,7 +76,7 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.Mitarbeiteranzahl = umfrage.Mitarbeiteranzahl
 	auswertung.Umfragenanzahl = int32(len(mitarbeiterumfragen))
 	if auswertung.Mitarbeiteranzahl > 0 {
-		auswertung.Umfragenanteil = float64(auswertung.Umfragenanzahl) / float64(auswertung.Mitarbeiteranzahl)
+		auswertung.Umfragenanteil = math.Round(float64(auswertung.Umfragenanzahl)/float64(auswertung.Mitarbeiteranzahl)*1000) / 1000
 	}
 	auswertung.AuswertungFreigegeben = umfrage.AuswertungFreigegeben
 
@@ -146,9 +147,9 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	if auswertung.Umfragenanzahl != 0 { // Hochrechnung nur falls Mitarbeiterumfragen vorhanden
 		factor := (float64(auswertung.Mitarbeiteranzahl) / float64(auswertung.Umfragenanzahl))
 
-		auswertung.EmissionenITGeraeteMitarbeiter *= factor
-		auswertung.EmissionenPendelwege *= factor
-		auswertung.EmissionenDienstreisen *= factor
+		auswertung.EmissionenITGeraeteMitarbeiter = math.Round(auswertung.EmissionenITGeraeteMitarbeiter*factor*100) / 100 // Rundung auf 2 Nachkommastellen
+		auswertung.EmissionenPendelwege = math.Round(auswertung.EmissionenPendelwege*factor*100) / 100
+		auswertung.EmissionenDienstreisen = math.Round(auswertung.EmissionenDienstreisen*factor*100) / 100
 	}
 
 	auswertung.EmissionenITGeraete = auswertung.EmissionenITGeraeteMitarbeiter + auswertung.EmissionenITGeraeteHauptverantwortlicher
@@ -156,11 +157,11 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.EmissionenGesamt = auswertung.EmissionenPendelwege + auswertung.EmissionenITGeraete + auswertung.EmissionenDienstreisen + auswertung.EmissionenEnergie
 
 	if auswertung.Mitarbeiteranzahl > 0 {
-		auswertung.EmissionenProMitarbeiter = auswertung.EmissionenGesamt / float64(auswertung.Mitarbeiteranzahl)
+		auswertung.EmissionenProMitarbeiter = math.Round(auswertung.EmissionenGesamt/float64(auswertung.Mitarbeiteranzahl)*100) / 100
 	}
 
-	auswertung.Vergleich2PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch2PersonenHaushalt
-	auswertung.Vergleich4PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch4PersonenHaushalt
+	auswertung.Vergleich2PersonenHaushalt = math.Round(auswertung.EmissionenGesamt/structs.Verbrauch2PersonenHaushalt*100) / 100
+	auswertung.Vergleich4PersonenHaushalt = math.Round(auswertung.EmissionenGesamt/structs.Verbrauch4PersonenHaushalt*100) / 100
 
 	sendResponse(res, true, auswertung, http.StatusOK)
 }
