@@ -2,7 +2,7 @@ package server
 
 /*
 const (
-	publicAPIKey  = ""
-	privateAPIKey = ""
+	smtpServer  = ""
+	smtpPort = ""
 )
 */
