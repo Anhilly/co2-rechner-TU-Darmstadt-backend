@@ -3,6 +3,8 @@ package server
 /*
 const (
 	smtpServer  = ""
-	smtpPort = ""
+	smtpPort = 0
+	webserverAdresse = ""
+	absender = ""
 )
 */
