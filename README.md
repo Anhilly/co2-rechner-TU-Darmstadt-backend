@@ -39,4 +39,6 @@ Als Vorlage dient die Datei database/db_config_example.go, aus der die Datei dat
 Die MongoDB soll in einem Docker Container laufen. Auf Linux ist es wichtig, dass Docker Commands ohne sudo ausgeführt werden können.
 Zur Verwendung einer lokalen Installation muss das Projekt angepasst werden.
 
-Desweiteren existiert eine Konfiguartions-Datei für den Mailversand. Hierfür wird ein externer Mail-Server benötigt, der über SMTP ansprechbar ist.
+Desweiteren muss eine weiter Konfiguartions-Datei für den Mailversand erstellt werden. 
+Als Vorlage dient die Datei server/mail_config_example.go, aus der die Datei server/mail_config.go erstellt werden muss. 
+Hierfür wird ein externer Mail-Server benötigt, der über SMTP ansprechbar ist.
