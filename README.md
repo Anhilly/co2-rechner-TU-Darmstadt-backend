@@ -14,7 +14,7 @@ Dieses Projekt ermöglicht eine Erfassung von CO2 Emissionen von TU Einheiten un
 
 Das Backend kann nicht unabhängig betrieben werden.
 
-Das Frontend, welches eine webbasierte Interaktionsseite bietet, ist hier einsehbar: [Github](https://github.com/Lithium-1Hauptgruppe/CO2-Rechner-TU-Darmstadt-Frontend).  
+Das Frontend, welches eine webbasierte Interaktionsseite bietet, ist hier einsehbar: [Github](https://github.com/Lithium-1Hauptgruppe/CO2-Rechner-TU-Darmstadt-Frontend)  
 Die Interaktionen zwischen Frontend und Backend sind in einer REST artigen API definiert, welche hier eingesehen werden kann: [Github](https://github.com/Anhilly/CO2-Rechner-api)
 
 ## Abhängigkeiten
@@ -23,7 +23,7 @@ Das Projekt ist in der Sprache Go geschrieben.
 Der CO2 Rechner verwendet folgende direkte Abhängigkeiten um die Funktionalität bereitzustellen:
 
 - [Go Lang Version 1.17](https://go.dev/) - Go Entwicklungssprache
-- [go chi Version 5.0.7](github.com/go-chi/chi) - Go Router für HTTP Dienste 
+- [go chi Version 5.0.7](github.com/go-chi/chi) - Go Router für HTTP Dienste
 - [UUID Version 1.3.0](github.com/google/uuid) - Eindeutige ID Generierung
 - [is Version 1.4.0](github.com/matryer/is) - Test Framework
 - [errors Version 0.9.1](github.com/pkg/errors) - Vereinfachte Fehlerbehandlung
@@ -35,10 +35,10 @@ Der CO2 Rechner verwendet folgende direkte Abhängigkeiten um die Funktionalitä
 ## Entwicklungssetup
 
 Nach Download des Repositorys muss eine neue Datei mit Datenbankinformationen der MongoDB angelegt werden.
-Als Vorlage dient die Datei database/db_config_example.go, aus der die Datei database/db_config.go erstellt werden muss. 
+Als Vorlage dient die Datei database/db_config_example.go, aus der die Datei database/db_config.go erstellt werden muss.
 Die MongoDB soll in einem Docker Container laufen. Auf Linux ist es wichtig, dass Docker Commands ohne sudo ausgeführt werden können.
 Zur Verwendung einer lokalen Installation muss das Projekt angepasst werden.
 
-Desweiteren muss eine weiter Konfiguartions-Datei für den Mailversand erstellt werden. 
-Als Vorlage dient die Datei server/mail_config_example.go, aus der die Datei server/mail_config.go erstellt werden muss. 
+Des Weiteren muss eine weiter Konfiguartions-Datei für den Mailversand erstellt werden.
+Als Vorlage dient die Datei server/mail_config_example.go, aus der die Datei server/mail_config.go erstellt werden muss.
 Hierfür wird ein externer Mail-Server benötigt, der über SMTP ansprechbar ist.
