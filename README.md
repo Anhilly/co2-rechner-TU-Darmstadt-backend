@@ -14,7 +14,7 @@ Dieses Projekt ermöglicht eine Erfassung von CO2 Emissionen von TU Einheiten un
 
 Das Backend kann nicht unabhängig betrieben werden.
 
-Das Frontend, welches eine webbasierte Interaktionsseite bietet, ist hier einsehbar: [Github](https://github.com/Lithium-1Hauptgruppe/CO2-Rechner-TU-Darmstadt-Frontend)
+Das Frontend, welches eine webbasierte Interaktionsseite bietet, ist hier einsehbar: [Github](https://github.com/Lithium-1Hauptgruppe/CO2-Rechner-TU-Darmstadt-Frontend).  
 Die Interaktionen zwischen Frontend und Backend sind in einer REST artigen API definiert, welche hier eingesehen werden kann: [Github](https://github.com/Anhilly/CO2-Rechner-api)
 
 ## Abhängigkeiten
