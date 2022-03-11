@@ -212,6 +212,7 @@ type RegistrierungRes struct {
 type AuthRes struct {
 	Message      string `json:"message"`
 	Sessiontoken string `json:"sessiontoken"`
+	Rolle        int32  `json:"rolle"`
 }
 
 type DeleteNutzerdatenReq struct {
