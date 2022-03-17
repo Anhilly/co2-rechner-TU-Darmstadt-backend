@@ -68,14 +68,14 @@ func getEnergieCO2Faktor(id int32, jahr int32) (int32, error) {
 
 // gebaeudeNormalfall bildet den Normalfall für die Emissionsberechnungen eines Gebaeudes und dem Flaechenanteil.
 // Ergebniseinheit: g
-func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergieversorgung int32, jahr int32, flaechenanteil int32) (float64, error) {
+func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergieversorgung int32, jahr int32, nutzflaeche int32) (float64, error) {
 	var gesamtverbrauch float64                  // Einheit: kWh
 	var gesamtNGF float64 = gebaeude.Flaeche.NGF // Einheit: m^2
 	var refGebaeude []int32
 
-	if flaechenanteil == 0 {
+	if nutzflaeche == 0 {
 		return 0, nil
-	} else if flaechenanteil < 0 {
+	} else if nutzflaeche < 0 {
 		return 0, structs.ErrFlaecheNegativ
 	}
 
@@ -129,7 +129,7 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 	if gesamtNGF <= 0 {
 		emissionen = 0
 	} else {
-		emissionen = float64(co2Faktor) * gesamtverbrauch * float64(flaechenanteil) / gesamtNGF
+		emissionen = float64(co2Faktor) * gesamtverbrauch * float64(nutzflaeche) / gesamtNGF
 	}
 
 	return emissionen, nil
@@ -212,7 +212,7 @@ func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andereZaehlerID int
 
 	differenz := verbrauch - subtraktionsverbrauch
 	if differenz > 0 { // Wert wird auf 0 gesetzt, falls er negativ ist, um Berechnungen nicht zu verfaelschen
-		differenz *= 1000
+		differenz *= 1000 // Konvertierung MWh in KWh; da beide Spezialfaelle in MWh messen
 	} else {
 		differenz = 0
 	}

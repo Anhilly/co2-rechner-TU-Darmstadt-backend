@@ -124,9 +124,9 @@ type RequestUmfrage struct {
 }
 
 type RequestLinkShare struct {
-	UmfrageID primitive.ObjectID `json:"umfrageID"`
-	LinkShare int32              `json:"linkShareValue"`
-	Auth      AuthToken          `json:"authToken"`
+	UmfrageID    primitive.ObjectID `json:"umfrageID"`
+	Freigabewert int32              `json:"freigabewert"`
+	Auth         AuthToken          `json:"authToken"`
 }
 
 type RequestAuth struct {
@@ -135,13 +135,13 @@ type RequestAuth struct {
 
 type AuswertungRes struct {
 	// Information von Umfrage
-	ID                  primitive.ObjectID `json:"id"`
-	Bezeichnung         string             `json:"bezeichnung"`
-	Mitarbeiteranzahl   int32              `json:"mitarbeiteranzahl"`
-	Jahr                int32              `json:"jahr"`
-	Umfragenanzahl      int32              `json:"umfragenanzahl"`
-	Umfragenanteil      float64            `json:"umfragenanteil"`
-	AuswertungFreigeben int32              `json:"linkShare"`
+	ID                    primitive.ObjectID `json:"id"`
+	Bezeichnung           string             `json:"bezeichnung"`
+	Mitarbeiteranzahl     int32              `json:"mitarbeiteranzahl"`
+	Jahr                  int32              `json:"jahr"`
+	Umfragenanzahl        int32              `json:"umfragenanzahl"`
+	Umfragenanteil        float64            `json:"umfragenanteil"`
+	AuswertungFreigegeben int32              `json:"auswertungFreigegeben"`
 
 	// Berechnete Werte fuer Auswertung
 	EmissionenWaerme                         float64 `json:"emissionenWaerme"`
@@ -212,6 +212,7 @@ type RegistrierungRes struct {
 type AuthRes struct {
 	Message      string `json:"message"`
 	Sessiontoken string `json:"sessiontoken"`
+	Rolle        int32  `json:"rolle"`
 }
 
 type DeleteNutzerdatenReq struct {

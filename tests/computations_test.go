@@ -209,6 +209,20 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 		is.Equal(emissionen, 3680.0) // erwartetes Ergebnis: 3680.0
 	})
 
+	t.Run("BerechnePendelweg: Fussgaenger", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		pendelwegDaten := []structs.UmfragePendelweg{
+			{IDPendelweg: 12, Strecke: 20, Personenanzahl: 1},
+		}
+		var tageImBuero int32 = 3
+
+		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+
+		is.NoErr(err)             //Normalfall wirft keinen Error
+		is.Equal(emissionen, 0.0) // erwartet Ergebnis 0, da Fussgaenger
+	})
+
 	t.Run("BerechnePendelweg: Eingabe mit Weg == 0", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 

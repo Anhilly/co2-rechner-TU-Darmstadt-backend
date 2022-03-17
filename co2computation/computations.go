@@ -59,7 +59,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 		}
 	}
 
-	return emissionen, nil
+	return math.Round(emissionen*100) / 100, nil
 }
 
 // BerechnePendelweg berechnet die Gesamtemissionen auf Basis der gegebenen Pendelwege und der Tage im Büro.
@@ -128,5 +128,5 @@ func BerechneITGeraete(itGeraeteDaten []structs.UmfrageITGeraete) (float64, erro
 		}
 	}
 
-	return emissionen, nil
+	return math.Round(emissionen*100) / 100, nil
 }

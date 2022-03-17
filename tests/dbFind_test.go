@@ -47,19 +47,6 @@ func TestFind(t *testing.T) {
 
 }
 
-func TestTester(t *testing.T) {
-	is := is.NewRelaxed(t)
-
-	err := database.ConnectDatabase()
-	is.NoErr(err)
-	defer func() {
-		err := database.DisconnectDatabase()
-		is.NoErr(err)
-	}()
-
-	t.Run("TestMitarbeiterUmfrageFindMany", TestMitarbeiterUmfrageFindMany)
-}
-
 func TestITGeraeteFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
@@ -93,6 +80,7 @@ func TestITGeraeteFind(t *testing.T) {
 func TestDienstreisenFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
+	//Normalfall
 	t.Run("DienstreisenFind: ID = 1", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -109,6 +97,7 @@ func TestDienstreisenFind(t *testing.T) {
 			}) // Überprüfung des zurückgelieferten Elements
 	})
 
+	// Errorfall
 	t.Run("DienstreisenFind: ID = 0", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 

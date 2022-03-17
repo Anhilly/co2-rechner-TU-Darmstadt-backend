@@ -194,3 +194,32 @@ func NutzerdatenDelete(username string) error {
 
 	return nil
 }
+
+// AlleNutzerdaten holt alle in der Datenbank gespeicherten Nutzer und gibt diese zurueck
+func AlleNutzerdaten() ([]structs.Nutzerdaten, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{},
+	)
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return nil, err
+	}
+
+	var results []structs.Nutzerdaten
+
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		log.Println(err)
+		debug.PrintStack()
+		return nil, err
+	}
+
+	return results, nil
+}

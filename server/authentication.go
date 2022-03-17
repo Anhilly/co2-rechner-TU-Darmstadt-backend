@@ -308,6 +308,7 @@ func PostAnmeldung(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, structs.AuthRes{
 		Message:      "Nutzer authentifiziert",
 		Sessiontoken: token,
+		Rolle:        nutzerdaten.Rolle,
 	}, http.StatusOK)
 }
 

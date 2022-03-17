@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 )
 
@@ -75,14 +76,14 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.Mitarbeiteranzahl = umfrage.Mitarbeiteranzahl
 	auswertung.Umfragenanzahl = int32(len(mitarbeiterumfragen))
 	if auswertung.Mitarbeiteranzahl > 0 {
-		auswertung.Umfragenanteil = float64(auswertung.Umfragenanzahl) / float64(auswertung.Mitarbeiteranzahl)
+		auswertung.Umfragenanteil = math.Round(float64(auswertung.Umfragenanzahl)/float64(auswertung.Mitarbeiteranzahl)*1000) / 1000
 	}
-	auswertung.AuswertungFreigeben = umfrage.AuswertungFreigegeben
+	auswertung.AuswertungFreigegeben = umfrage.AuswertungFreigegeben
 
 	auswertung.EmissionenWaerme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)
 	if err != nil {
 		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
-			auswertung.EmissionenWaerme = -1
+			auswertung.EmissionenWaerme = -1 // Fuer Frontend zum Hinweis, dass keine Auswertung fuer Jahr moeglich
 		} else {
 			errorResponse(res, err, http.StatusInternalServerError)
 			return
@@ -92,7 +93,7 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.EmissionenStrom, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungStrom)
 	if err != nil {
 		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
-			auswertung.EmissionenWaerme = -1
+			auswertung.EmissionenStrom = -1 // Fuer Frontend zum Hinweis, dass keine Auswertung fuer Jahr moeglich
 		} else {
 			errorResponse(res, err, http.StatusInternalServerError)
 			return
@@ -102,7 +103,7 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.EmissionenKaelte, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungKaelte)
 	if err != nil {
 		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
-			auswertung.EmissionenWaerme = -1
+			auswertung.EmissionenKaelte = -1 // Fuer Frontend zum Hinweis, dass keine Auswertung fuer Jahr moeglich
 		} else {
 			errorResponse(res, err, http.StatusInternalServerError)
 			return
@@ -146,9 +147,9 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	if auswertung.Umfragenanzahl != 0 { // Hochrechnung nur falls Mitarbeiterumfragen vorhanden
 		factor := (float64(auswertung.Mitarbeiteranzahl) / float64(auswertung.Umfragenanzahl))
 
-		auswertung.EmissionenITGeraeteMitarbeiter *= factor
-		auswertung.EmissionenPendelwege *= factor
-		auswertung.EmissionenDienstreisen *= factor
+		auswertung.EmissionenITGeraeteMitarbeiter = math.Round(auswertung.EmissionenITGeraeteMitarbeiter*factor*100) / 100 // Rundung auf 2 Nachkommastellen
+		auswertung.EmissionenPendelwege = math.Round(auswertung.EmissionenPendelwege*factor*100) / 100
+		auswertung.EmissionenDienstreisen = math.Round(auswertung.EmissionenDienstreisen*factor*100) / 100
 	}
 
 	auswertung.EmissionenITGeraete = auswertung.EmissionenITGeraeteMitarbeiter + auswertung.EmissionenITGeraeteHauptverantwortlicher
@@ -156,11 +157,11 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.EmissionenGesamt = auswertung.EmissionenPendelwege + auswertung.EmissionenITGeraete + auswertung.EmissionenDienstreisen + auswertung.EmissionenEnergie
 
 	if auswertung.Mitarbeiteranzahl > 0 {
-		auswertung.EmissionenProMitarbeiter = auswertung.EmissionenGesamt / float64(auswertung.Mitarbeiteranzahl)
+		auswertung.EmissionenProMitarbeiter = math.Round(auswertung.EmissionenGesamt/float64(auswertung.Mitarbeiteranzahl)*100) / 100
 	}
 
-	auswertung.Vergleich2PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch2PersonenHaushalt
-	auswertung.Vergleich4PersonenHaushalt = auswertung.EmissionenGesamt / structs.Verbrauch4PersonenHaushalt
+	auswertung.Vergleich2PersonenHaushalt = math.Round(auswertung.EmissionenGesamt/structs.Verbrauch2PersonenHaushalt*100) / 100
+	auswertung.Vergleich4PersonenHaushalt = math.Round(auswertung.EmissionenGesamt/structs.Verbrauch4PersonenHaushalt*100) / 100
 
 	sendResponse(res, true, auswertung, http.StatusOK)
 }
@@ -182,8 +183,8 @@ func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Pruefe ob uebermittelter LinkShare Value korrekt ist, d.h. 0 oder 1
-	if linkshareReq.LinkShare != 0 && linkshareReq.LinkShare != 1 {
+	// Pruefe ob uebermittelter Freigabewert korrekt ist, d.h. 0 oder 1
+	if linkshareReq.Freigabewert != 0 && linkshareReq.Freigabewert != 1 {
 		var err = errors.New("Anfrage ungueltig")
 		errorResponse(res, err, http.StatusBadRequest)
 	}
@@ -193,7 +194,7 @@ func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	nutzer, _ := database.NutzerdatenFind(linkshareReq.Auth.Username)
-	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, linkshareReq.UmfrageID) {
+	if nutzer.Rolle != structs.IDRolleAdmin && !isOwnerOfUmfrage(nutzer.UmfrageRef, linkshareReq.UmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
@@ -204,7 +205,7 @@ func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
-	_, err = database.UmfrageUpdateLinkShare(linkshareReq.LinkShare, linkshareReq.UmfrageID)
+	_, err = database.UmfrageUpdateLinkShare(linkshareReq.Freigabewert, linkshareReq.UmfrageID)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {

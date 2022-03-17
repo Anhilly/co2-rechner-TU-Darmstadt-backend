@@ -241,6 +241,33 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 	// Loesche Umfrage aus RefListe des Nutzers
 	collection = client.Database(dbName).Collection(structs.NutzerdatenCol)
 
+	// Falls Nutzer Admin ist, finde Nutzer dem die Umfrage gehoert, um aus seiner Reflist zu loeschen
+	nutzer, err := NutzerdatenFind(username)
+	if err != nil {
+		return err
+	}
+
+	if nutzer.Rolle == 1 {
+		alleNutzer, err := AlleNutzerdaten()
+		if err != nil {
+			return err
+		}
+
+		username = ""
+		for _, nutzer = range alleNutzer {
+			for _, nutzerUmfrageID := range nutzer.UmfrageRef {
+				if nutzerUmfrageID == umfrageID {
+					username = nutzer.Nutzername
+					break
+				}
+			}
+			// Abbruch der aeusseren Schleife, falls Eintrage frueher gefunden wurde
+			if username != "" {
+				break
+			}
+		}
+	}
+
 	var updatedDoc structs.Nutzerdaten
 	err = collection.FindOneAndUpdate(
 		ctx,
