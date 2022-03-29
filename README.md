@@ -23,14 +23,14 @@ Das Projekt ist in der Sprache Go geschrieben.
 Der CO2 Rechner verwendet folgende direkte Abhängigkeiten um die Funktionalität bereitzustellen:
 
 - [Go Lang Version 1.17](https://go.dev/) - Go Entwicklungssprache
-- [go chi Version 5.0.7](github.com/go-chi/chi) - Go Router für HTTP Dienste
-- [UUID Version 1.3.0](github.com/google/uuid) - Eindeutige ID Generierung
-- [is Version 1.4.0](github.com/matryer/is) - Test Framework
-- [errors Version 0.9.1](github.com/pkg/errors) - Vereinfachte Fehlerbehandlung
-- [mongo-driver Version 1.8.0](go.mongodb.org/mongo-driver) - Mongodb Treiber für Go
-- [crypto Version 0.0.0-20201216223049-8b5274cf687f](golang.org/x/crypto) - Verschlüsselungsalgorithmen
-- [gomail Version 2.0.0-20160411212932-81ebce5c23df](gopkg.in/gomail.v2) - Versand von E-Mails
-- [go password Version 0.2.0](github.com/sethvargo/go-password) - Generierung von zufälligen Passwörtern
+- [go chi Version 5.0.7](https://github.com/go-chi/chi) - Go Router für HTTP Dienste
+- [UUID Version 1.3.0](https://github.com/google/uuid) - Eindeutige ID Generierung
+- [is Version 1.4.0](https://github.com/matryer/is) - Test Framework
+- [errors Version 0.9.1](https://github.com/pkg/errors) - Vereinfachte Fehlerbehandlung
+- [mongo-driver Version 1.8.0](https://go.mongodb.org/mongo-driver) - Mongodb Treiber für Go
+- [crypto Version 0.0.0-20201216223049-8b5274cf687f](https://golang.org/x/crypto) - Verschlüsselungsalgorithmen
+- [gomail Version 2.0.0-20160411212932-81ebce5c23df](https://gopkg.in/gomail.v2) - Versand von E-Mails
+- [go password Version 0.2.0](https://github.com/sethvargo/go-password) - Generierung von zufälligen Passwörtern
 
 ## Entwicklungssetup
 
