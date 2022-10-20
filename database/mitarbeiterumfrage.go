@@ -24,7 +24,7 @@ func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, 
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.MitarbeiterUmfrage{}, err
 	}
 
@@ -56,7 +56,7 @@ func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, 
 //
 //	if err != nil {
 //		log.Println(err)
-//		debug.PrintStack()
+//		log.Println(string(debug.Stack()))
 //		return primitive.NilObjectID, err
 //	}
 //
@@ -86,7 +86,7 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, err
 	}
 
@@ -95,7 +95,7 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 	err = cursor.All(ctx, &results)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, err
 	}
 
@@ -117,7 +117,7 @@ func MitarbeiterUmfrageFindMany(ids []primitive.ObjectID) ([]structs.Mitarbeiter
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return []structs.MitarbeiterUmfrage{}, err
 	}
 
@@ -125,13 +125,13 @@ func MitarbeiterUmfrageFindMany(ids []primitive.ObjectID) ([]structs.Mitarbeiter
 	err = cursor.All(ctx, &data)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(debug.Stack())
 		return []structs.MitarbeiterUmfrage{}, err
 	}
 
 	if len(ids) != len(data) {
 		log.Println(structs.ErrDokumenteNichtGefunden)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, structs.ErrDokumenteNichtGefunden
 	}
 
@@ -164,7 +164,7 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 
 	if umfragenFilled >= mitarbeiterMax {
 		log.Println(structs.ErrUmfrageVollstaendig)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return primitive.NilObjectID, structs.ErrUmfrageVollstaendig
 	}
 
@@ -181,14 +181,14 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return primitive.NilObjectID, err
 	}
 
 	id, ok := insertedDoc.InsertedID.(primitive.ObjectID)
 	if !ok {
 		log.Println(structs.ErrObjectIDNichtKonvertierbar)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
@@ -212,16 +212,16 @@ func UmfrageDeleteMitarbeiterUmfrage(mitarbeiterUmfrageID primitive.ObjectID) er
 		bson.M{"_id": mitarbeiterUmfrageID})
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
 	if anzahl.DeletedCount == 0 {
 		log.Println(structs.ErrObjectIDNichtGefunden)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrObjectIDNichtGefunden
 	}
-	
+
 	// remove MitarbeiterUmfrage from Refs in Umfrage
 	umfrageCollection := client.Database(dbName).Collection(structs.UmfrageCol)
 
@@ -236,7 +236,7 @@ func UmfrageDeleteMitarbeiterUmfrage(mitarbeiterUmfrageID primitive.ObjectID) er
 
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 

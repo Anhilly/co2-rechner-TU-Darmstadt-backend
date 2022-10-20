@@ -29,7 +29,7 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 		zaehlertyp = structs.ZaehlertypKaelte
 	default:
 		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.Zaehler{}, structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
@@ -42,7 +42,7 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.Zaehler{}, err
 	}
 
@@ -68,7 +68,7 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 		collectionname = structs.KaeltezaehlerCol
 	default:
 		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
@@ -78,7 +78,7 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	currentDoc, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
@@ -86,7 +86,7 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	for _, zaehlerdatum := range currentDoc.Zaehlerdaten {
 		if int32(zaehlerdatum.Zeitstempel.Year()) == data.Jahr {
 			log.Println(structs.ErrJahrVorhanden)
-			debug.PrintStack()
+			log.Println(string(debug.Stack()))
 			return structs.ErrJahrVorhanden
 		}
 	}
@@ -104,7 +104,7 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
@@ -129,21 +129,21 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		collectionname = structs.KaeltezaehlerCol
 	default:
 		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 	collection := client.Database(dbName).Collection(collectionname)
 
 	if len(data.GebaeudeRef) == 0 {
 		log.Println(structs.ErrFehlendeGebaeuderef)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrFehlendeGebaeuderef
 	}
 
 	_, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
 	if err == nil { // kein Error = Nr schon vorhanden
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrZaehlerVorhanden
 	}
 
@@ -161,7 +161,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
@@ -169,7 +169,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		err := GebaeudeAddZaehlerref(referenz, data.PKEnergie, data.IDEnergieversorgung)
 		if err != nil {
 			log.Println(err)
-			debug.PrintStack()
+			log.Println(string(debug.Stack()))
 			return err
 		}
 	}

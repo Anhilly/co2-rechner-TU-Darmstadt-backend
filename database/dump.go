@@ -21,7 +21,7 @@ func CreateDump(directoryName string) (string, error) {
 	err := cmd.Run()
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return "", err
 	}
 
@@ -37,7 +37,7 @@ func RestoreDump(directoryName string) error {
 	err := cmd.Run()
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
@@ -50,7 +50,7 @@ func RemoveDump(directoryName string) error {
 	err := cmd.Run()
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 

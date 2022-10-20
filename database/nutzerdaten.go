@@ -25,7 +25,7 @@ func NutzerdatenFind(username string) (structs.Nutzerdaten, error) {
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.Nutzerdaten{}, err
 	}
 
@@ -97,7 +97,7 @@ func NutzerdatenAddUmfrageref(username string, id primitive.ObjectID) error {
 	).Decode(&updatedDoc)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
@@ -121,7 +121,7 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) (primitive.ObjectID, error)
 	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return primitive.NilObjectID, err // Bcrypt hashing error
 	}
 	result, err := collection.InsertOne(ctx, structs.Nutzerdaten{
@@ -135,7 +135,7 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) (primitive.ObjectID, error)
 	})
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return primitive.NilObjectID, err // DB Error
 	}
 
@@ -143,7 +143,7 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) (primitive.ObjectID, error)
 
 	if !ok {
 		log.Println(structs.ErrObjectIDNichtKonvertierbar)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
@@ -170,7 +170,7 @@ func NutzerdatenDelete(username string) error {
 		err = UmfrageDelete(username, umfrageID)
 		if err != nil {
 			log.Println(err)
-			debug.PrintStack()
+			log.Println(string(debug.Stack()))
 			return err
 		}
 	}
@@ -182,13 +182,13 @@ func NutzerdatenDelete(username string) error {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
 	if anzahl.DeletedCount == 0 {
 		log.Println(structs.ErrUsernameLoeschenFehlgeschlagen)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrUsernameLoeschenFehlgeschlagen
 	}
 
@@ -208,7 +208,7 @@ func AlleNutzerdaten() ([]structs.Nutzerdaten, error) {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, err
 	}
 
@@ -217,7 +217,7 @@ func AlleNutzerdaten() ([]structs.Nutzerdaten, error) {
 	err = cursor.All(ctx, &results)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, err
 	}
 

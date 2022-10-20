@@ -22,7 +22,7 @@ func PendelwegFind(idPendelweg int32) (structs.Pendelweg, error) {
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.Pendelweg{}, err
 	}
 

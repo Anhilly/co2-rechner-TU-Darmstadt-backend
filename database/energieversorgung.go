@@ -22,7 +22,7 @@ func EnergieversorgungFind(idEnergieversorgung int32) (structs.Energieversorgung
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.Energieversorgung{}, err
 	}
 
@@ -47,7 +47,7 @@ func EnergieversorgungAddFaktor(data structs.AddCO2Faktor) error {
 	for _, co2Faktor := range currentDoc.CO2Faktor {
 		if co2Faktor.Jahr == data.Jahr {
 			log.Println(structs.ErrJahrVorhanden)
-			debug.PrintStack()
+			log.Println(string(debug.Stack()))
 			return structs.ErrJahrVorhanden
 		}
 	}
@@ -62,7 +62,7 @@ func EnergieversorgungAddFaktor(data structs.AddCO2Faktor) error {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 

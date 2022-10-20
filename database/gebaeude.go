@@ -23,7 +23,7 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.Gebaeude{}, err
 	}
 
@@ -58,7 +58,7 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
@@ -83,7 +83,7 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 		referenzname = "kaelteRef"
 	default:
 		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
@@ -96,7 +96,7 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	).Decode(&updatedDoc)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
@@ -117,7 +117,7 @@ func GebaeudeAlleNr() ([]int32, error) {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, err
 	}
 
@@ -127,7 +127,7 @@ func GebaeudeAlleNr() ([]int32, error) {
 	err = cursor.All(ctx, &results)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, err
 	}
 
