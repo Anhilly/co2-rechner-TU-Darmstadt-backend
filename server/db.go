@@ -16,6 +16,7 @@ func RouteDB() chi.Router {
 
 	r.Post("/addFaktor", PostAddFaktor)
 	r.Post("/addZaehlerdaten", PostAddZaehlerdaten)
+	r.Post("/addZaehlerdatenCSV", PostAddZaehlerdatenCSV)
 	r.Post("/insertZaehler", PostInsertZaehler)
 	r.Post("/insertGebaeude", PostInsertGebaeude)
 
@@ -128,6 +129,61 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+
+	sendResponse(res, true, nil, http.StatusOK)
+}
+
+func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	data := structs.AddZaehlerdatenCSV{}
+	err = json.Unmarshal(s, &data)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	log.Println(data)
+
+	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, err, http.StatusUnauthorized)
+		return
+	}
+
+	// Datenverarbeitung
+	//ordner, err := database.CreateDump("PostAddZaehlerdaten")
+	//if err != nil {
+	//	errorResponse(res, err, http.StatusInternalServerError)
+	//	return
+	//}
+	//
+	//err = database.ZaehlerAddZaehlerdaten(data)
+	//if err != nil {
+	//	err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+	//	if err2 != nil {
+	//		log.Println(err2)
+	//	} else {
+	//		err := database.RemoveDump(ordner)
+	//		if err != nil {
+	//			log.Println(err)
+	//		}
+	//	}
+	//	errorResponse(res, err, http.StatusInternalServerError)
+	//	return
+	//}
+	//
+	//err = database.RemoveDump(ordner)
+	//if err != nil {
+	//	log.Println(err)
+	//}
 
 	sendResponse(res, true, nil, http.StatusOK)
 }
