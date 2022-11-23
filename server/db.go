@@ -2,6 +2,8 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
@@ -133,6 +135,8 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
+// PostAddZaehlerdaten fuegt Zaehlerdaten fuer einen Liste an Zaehler in die DB ein,
+// sofern der Nutzer authentifizierter Admin ist und sendet eine Response mit null zurueck.
 func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -147,7 +151,7 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Println(data)
+	//log.Println(data)
 
 	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
 		return
@@ -158,15 +162,33 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Datenverarbeitung
-	//ordner, err := database.CreateDump("PostAddZaehlerdaten")
+	//ordner, err := database.CreateDump("PostAddZaehlerdatenCSV")
 	//if err != nil {
 	//	errorResponse(res, err, http.StatusInternalServerError)
 	//	return
 	//}
 	//
-	//err = database.ZaehlerAddZaehlerdaten(data)
-	//if err != nil {
+	//combined_error := "Folgende Fehler sind aufgetreten:"
+	//error_encountered := false
+	//
+	//for i := 0; i < len(data.PKEnergie); i++ { // rufe für jeden uebergebenen Wert die Hinzufuegefunktion einzeln auf
+	//	log.Printf("PK: %d, Type: %d, Value: %f\n", data.PKEnergie[i], data.IDEnergieversorgung[i], data.Wert[i])
+	//
+	//	eachValue := structs.AddZaehlerdaten{
+	//		PKEnergie:           data.PKEnergie[i],
+	//		IDEnergieversorgung: data.IDEnergieversorgung[i],
+	//		Jahr:                data.Jahr,
+	//		Wert:                data.Wert[i],
+	//	}
+	//
+	//	err = database.ZaehlerAddZaehlerdaten(eachValue)
+	//	if err != nil { // im Fehlerfall speichere Error mit PK für Response
+	//		error_encountered = true
+	//		combined_error += fmt.Sprintf("\n\t-Zähler %d: %s", data.PKEnergie[i], err.Error())
+	//	}
+	//}
+	//
+	//if error_encountered {
 	//	err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 	//	if err2 != nil {
 	//		log.Println(err2)
@@ -176,7 +198,7 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 	//			log.Println(err)
 	//		}
 	//	}
-	//	errorResponse(res, err, http.StatusInternalServerError)
+	//	errorResponse(res, errors.New(combined_error), http.StatusInternalServerError)
 	//	return
 	//}
 	//
@@ -184,6 +206,50 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 	//if err != nil {
 	//	log.Println(err)
 	//}
+
+	combined_error := "Folgende Fehler sind aufgetreten:"
+	error_encountered := false
+
+	for i := 0; i < len(data.PKEnergie); i++ { // rufe für jeden uebergebenen Wert die Hinzufuegefunktion einzeln auf
+		ordner, err := database.CreateDump("PostAddZaehlerdatenCSV")
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
+
+		log.Printf("PK: %d, Type: %d, Value: %f\n", data.PKEnergie[i], data.IDEnergieversorgung[i], data.Wert[i])
+
+		eachValue := structs.AddZaehlerdaten{
+			PKEnergie:           data.PKEnergie[i],
+			IDEnergieversorgung: data.IDEnergieversorgung[i],
+			Jahr:                data.Jahr,
+			Wert:                data.Wert[i],
+		}
+
+		err = database.ZaehlerAddZaehlerdaten(eachValue)
+
+		if err != nil {
+			error_encountered = true
+			combined_error += fmt.Sprintf("\n\t-Zähler %d: %s", data.PKEnergie[i], err.Error())
+
+			err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+			if err2 != nil {
+				log.Println(err2)
+				errorResponse(res, err2, http.StatusInternalServerError)
+				return
+			}
+		}
+
+		err = database.RemoveDump(ordner)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	if error_encountered {
+		errorResponse(res, errors.New(combined_error), http.StatusInternalServerError)
+		return
+	}
 
 	sendResponse(res, true, nil, http.StatusOK)
 }
