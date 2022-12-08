@@ -123,6 +123,11 @@ type RequestUmfrage struct {
 	Auth      AuthToken          `json:"authToken"`
 }
 
+type DuplicateUmfrage struct {
+	UmfrageID primitive.ObjectID `json:"umfrageID"`
+	Auth      AuthToken          `json:"authToken"`
+}
+
 type RequestLinkShare struct {
 	UmfrageID    primitive.ObjectID `json:"umfrageID"`
 	Freigabewert int32              `json:"freigabewert"`
