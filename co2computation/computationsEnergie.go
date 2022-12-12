@@ -104,7 +104,7 @@ func gebaeudeNormalfall(co2Faktor int32, gebaeude structs.Gebaeude, idEnergiever
 
 			gesamtverbrauch += verbrauch
 			gesamtNGF += ngf
-		case 2: // Spezialfall für Kaeltezaehler 3621 (und 3619)
+		case 2: // Spezialfall für Kaeltezaehler 6691 (und 3619)
 			verbrauch, err := zaehlerSpezialfall(zaehler, jahr, 3619)
 			if err != nil {
 				return 0, err
@@ -182,7 +182,7 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaeudeNr int32) (f
 	return verbrauch, ngf, nil
 }
 
-// zaehlerSpezialfall stellt den Spezialfall 2 und 3 für die Kaeltezaehler 3621 und 3622 dar.
+// zaehlerSpezialfall stellt den Spezialfall 2 und 3 für die Kaeltezaehler 6691 und 3622 dar.
 // Es ist eine abgewandelte Version des Normalfalls und genau auf diese Zaehler zugeschnitten.
 // Ergebniseinheit: kWh
 func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andereZaehlerID int32) (float64, error) {
