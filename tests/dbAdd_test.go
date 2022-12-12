@@ -61,8 +61,9 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 			Kategorie:           "Fernwaerme",
 			Einheit:             "g/kWh",
 			Revision:            1,
-			CO2Faktor:           []structs.CO2Energie{{Wert: 144, Jahr: 2020}, {Wert: 400, Jahr: 2030}},
+			CO2Faktor:           []structs.CO2Energie{{Wert: 144, Jahr: 2020}, {Wert: 125, Jahr: 2021}, {Wert: 400, Jahr: 2030}},
 		}) // Ueberpruefung des geaenderten Elementes
+
 	})
 
 	// Errortests
@@ -162,10 +163,6 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 			Bezeichnung: "2201 Strom Hauptzaehler",
 			Zaehlerdaten: []structs.Zaehlerwerte{
 				{
-					Wert:        126048.9,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
 					Wert:        0.0,
 					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
@@ -209,10 +206,6 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 			PKEnergie:   4023,
 			Bezeichnung: "3101 Kaelte Hauptzaehler",
 			Zaehlerdaten: []structs.Zaehlerwerte{
-				{
-					Wert:        311.06,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
 				{
 					Wert:        414.61,
 					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
@@ -401,7 +394,7 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 			Revision:    1,
 			KaelteRef:   []int32{},
 			WaermeRef:   []int32{2348},
-			StromRef:    []int32{999},
+			StromRef:    []int32{28175, 999},
 		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
@@ -433,7 +426,7 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 			Revision:    1,
 			KaelteRef:   []int32{999},
 			WaermeRef:   []int32{2349, 2350, 2351, 2352, 2353, 2354},
-			StromRef:    []int32{},
+			StromRef:    []int32{28175},
 		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 

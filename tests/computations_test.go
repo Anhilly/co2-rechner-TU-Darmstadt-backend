@@ -478,8 +478,8 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 
 		emissionen, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.Equal(err, structs.ErrBerechnungUnbekannt) // Datenbank wirft ErrNoDocuments
-		is.Equal(emissionen, 0.0)                     // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(emissionen, 0.0)           // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
 	})
 
 	t.Run("BerechneDienstreisen: unbekannte Tankart", func(t *testing.T) {

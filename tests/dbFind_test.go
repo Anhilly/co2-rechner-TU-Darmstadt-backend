@@ -122,7 +122,7 @@ func TestEnergieversorgungFind(t *testing.T) {
 			Kategorie:           "Fernwaerme",
 			Einheit:             "g/kWh",
 			Revision:            1,
-			CO2Faktor:           []structs.CO2Energie{{Wert: 144, Jahr: 2020}},
+			CO2Faktor:           []structs.CO2Energie{{Wert: 144, Jahr: 2020}, {Wert: 125, Jahr: 2021}},
 		}) // Überprüfung des zurückgelieferten Elements
 	})
 
@@ -276,10 +276,6 @@ func TestZaehlerFind(t *testing.T) {
 			Bezeichnung: "3101 Kaelte Hauptzaehler",
 			Zaehlerdaten: []structs.Zaehlerwerte{
 				{
-					Wert:        311.06,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
 					Wert:        414.61,
 					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
@@ -347,10 +343,6 @@ func TestZaehlerFind(t *testing.T) {
 			PKEnergie:   5967,
 			Bezeichnung: "2201 Strom Hauptzaehler",
 			Zaehlerdaten: []structs.Zaehlerwerte{
-				{
-					Wert:        126048.9,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
 				{
 					Wert:        0.0,
 					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
