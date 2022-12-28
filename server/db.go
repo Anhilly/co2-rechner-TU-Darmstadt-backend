@@ -217,7 +217,7 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		log.Printf("PK: %d, Type: %d, Value: %f\n", data.PKEnergie[i], data.IDEnergieversorgung[i], data.Wert[i])
+		log.Printf("PK: %d, Type: %d, Value: %f\n", data.PKEnergie[i], data.IDEnergieversorgung[i], data.Wert[i]) // TODO: remove or change log message
 
 		eachValue := structs.AddZaehlerdaten{
 			PKEnergie:           data.PKEnergie[i],
