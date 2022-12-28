@@ -18,6 +18,10 @@ type Gebaeude struct {
 	Spezialfall int32           `json:"spezialfall" bson:"spezialfall"`
 	Revision    int32           `json:"revision" bson:"revision"`
 
+	Stromversorger  []Vetrag `json:"stromversorger" bson:"stromversorger"`
+	Waermeversorger []Vetrag `json:"waermeversorger" bson:"waermeversorger"`
+	Kaelteversorger []Vetrag `json:"kaelteversorger" bson:"kaelteversorger"`
+
 	KaelteRef []int32 `json:"kaelteRef" bson:"kaelteRef"` // -> Kaeltezaehler.pkEnergie
 	WaermeRef []int32 `json:"waermeRef" bson:"waermeRef"` // -> Waermezaehler.pkEnergie
 	StromRef  []int32 `json:"stromRef" bson:"stromRef"`   // -> Stromzaehler.pkEnergie
@@ -31,6 +35,11 @@ type GebaeudeFlaeche struct {
 	VF      float64 `json:"vf" bson:"vf"`           // Verkehrsfläche
 	FreiF   float64 `json:"freif" bson:"freif"`     // Freifläche
 	GesamtF float64 `json:"gesamtf" bson:"gesamtf"` // Gesamtfläche
+}
+
+type Vetrag struct {
+	Jahr      int32 `json:"jahr" bson:"jahr"`
+	IDVertrag int32 `json:"idVertrag" bson:"idVertrag"`
 }
 
 // Uebertyp fuer Kaeltezaehler, Waermezaehler und Stromzaehler
@@ -61,8 +70,13 @@ type Energieversorgung struct {
 }
 
 type CO2Energie struct {
-	Wert int32 `json:"wert" bson:"wert"`
-	Jahr int32 `json:"jahr" bson:"jahr"`
+	Jahr      int32             `json:"jahr" bson:"jahr"`
+	Vertraege []CO2FaktorVetrag `json:"vertraege" bson:"vertraege"`
+}
+
+type CO2FaktorVetrag struct {
+	Wert      int32 `json:"wert" bson:"wert"`
+	IDVertrag int32 `json:"idVertrag" bson:"idVertrag"`
 }
 
 // Collection itGeraete
