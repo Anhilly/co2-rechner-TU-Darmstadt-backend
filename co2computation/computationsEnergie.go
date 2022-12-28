@@ -64,8 +64,8 @@ func getEnergieCO2Faktor(id int32, jahr int32) (map[int32]int32, error) {
 		return nil, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "getCO2FaktorEnergie", energiewerte.Einheit)
 	}
 
-	for _, faktor := range co2FaktorVertraege { // Array zu Map
-		co2Faktoren[faktor.IDVertrag] = faktor.Wert
+	for _, vertrag := range co2FaktorVertraege { // Array zu Map
+		co2Faktoren[vertrag.IDVertrag] = vertrag.Wert
 	}
 
 	return co2Faktoren, nil
@@ -98,7 +98,7 @@ func gebaeudeNormalfall(co2Faktoren map[int32]int32, gebaeude structs.Gebaeude, 
 		versoger = gebaeude.Kaelteversorger
 	}
 
-	// finde IDVertrag für das angegeben Jahr
+	// finde IDVertrag für das angegebene Jahr
 	for _, vertrag := range versoger {
 		if vertrag.Jahr == jahr {
 			idVertrag = vertrag.IDVertrag
