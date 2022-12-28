@@ -21,6 +21,7 @@ type UmfrageID struct {
 type AddCO2Faktor struct {
 	Auth                AuthToken `json:"authToken"`
 	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
+	IDVertrag           int32     `json:"idVertrag"`
 	Jahr                int32     `json:"jahr"`
 	Wert                int32     `json:"wert"`
 }
