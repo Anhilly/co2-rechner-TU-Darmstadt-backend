@@ -34,6 +34,11 @@ type AddZaehlerdaten struct {
 	Wert                float64   `json:"wert"`
 }
 
+type AddStandardZaehlerdaten struct {
+	Auth AuthToken `json:"authToken"`
+	Jahr int32     `json:"jahr"`
+}
+
 type InsertZaehler struct {
 	Auth                AuthToken `json:"authToken"`
 	PKEnergie           int32     `json:"pkEnergie"`

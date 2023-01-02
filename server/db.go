@@ -16,6 +16,7 @@ func RouteDB() chi.Router {
 
 	r.Post("/addFaktor", PostAddFaktor)
 	r.Post("/addZaehlerdaten", PostAddZaehlerdaten)
+	r.Post("/addStandardZaehlerdaten", PostAddStandardZaehlerdaten)
 	r.Post("/addVersorger", PostAddVersorger)
 	r.Post("/addStandardVersorger", PostAddStandardVersorger)
 	r.Post("/insertZaehler", PostInsertZaehler)
@@ -134,6 +135,59 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
+func PostAddStandardZaehlerdaten(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	data := structs.AddStandardZaehlerdaten{}
+	err = json.Unmarshal(s, &data)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, err, http.StatusUnauthorized)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostAddStandardZaehlerdaten")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.ZaehlerAddStandardZaehlerdaten(data)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		} else {
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.RemoveDump(ordner)
+	if err != nil {
+		log.Println(err)
+	}
+
+	sendResponse(res, true, nil, http.StatusOK)
+}
+
 func PostAddVersorger(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -211,7 +265,7 @@ func PostAddStandardVersorger(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Datenverarbeitung
-	ordner, err := database.CreateDump("PostAddVersorger")
+	ordner, err := database.CreateDump("PostAddStandardVersorger")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

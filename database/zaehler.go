@@ -111,6 +111,37 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	return nil
 }
 
+func ZaehlerAddStandardZaehlerdaten(data structs.AddStandardZaehlerdaten) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	// Update aller Zaehler ohne Wert für Zeitstempel
+	location, _ := time.LoadLocation("Etc/GMT")
+	zeitstempel := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
+
+	for _, tmp := range []string{structs.WaermezaehlerCol, structs.StromzaehlerCol, structs.KaeltezaehlerCol} {
+		collection := client.Database(dbName).Collection(tmp)
+
+		_, err := collection.UpdateMany(
+			ctx,
+			bson.D{{"zaehlerdaten",
+				bson.D{{"$not",
+					bson.D{{"$elemMatch",
+						bson.D{{"zeitstempel", zeitstempel}}}}}}}},
+			bson.D{{"$push",
+				bson.D{{"zaehlerdaten",
+					bson.D{{"wert", 0.0}, {"zeitstempel", zeitstempel}}}}}},
+		)
+		if err != nil {
+			log.Println(err)
+			log.Println(string(debug.Stack()))
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ZaehlerInsert fuegt einen Zaehler in die Datenbank ein, falls PK noch nicht vergeben.
 // Außerdem werden die referenzierten Gebaeude um eine Referenz auf diesen Zaehler erweitert.
 // Sollte die Funktion durch einen Fehler beendet werden, kann es zu inkonsistenten Daten in der Datenbank fuehren!
