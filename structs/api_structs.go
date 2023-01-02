@@ -53,6 +53,19 @@ type InsertGebaeude struct {
 	StromVersorgerJahre  []int32         `json:"strom_versorger_jahre"`
 }
 
+type AddVersorger struct {
+	Auth                AuthToken `json:"authToken"`
+	Nr                  int32     `json:"nr"`
+	Jahr                int32     `json:"jahr"`
+	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
+	IDVertrag           int32     `json:"idVertrag"`
+}
+
+type AddStandardVersorger struct {
+	Auth AuthToken `json:"authToken"`
+	Jahr int32     `json:"jahr"`
+}
+
 type InsertUmfrage struct {
 	Bezeichnung       string             `json:"bezeichnung"`
 	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`

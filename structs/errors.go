@@ -16,6 +16,9 @@ var ( // Fehler von Add, Delete und Insert Funktionen
 	ErrGebaeudeVorhanden = errors.New("Ein Gebaeude mit der angegeben Nummer existiert schon in der Datenbank")
 
 	// Fehler durch Nutzereingabe
+	ErrGebaeudeNichtVorhanden = errors.New("Ein Gebaeude mit der angegeben Nummer konnte nicht gefunden werden")
+
+	// Fehler durch Nutzereingabe
 	ErrIDEnergieversorgungNichtVorhanden = errors.New("Die angegebene IDEnergieversorgung ist nicht vorhanden")
 
 	// Fehler bei Erstellung der ObjectID

@@ -94,7 +94,6 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 				IDVertrag: structs.IDVertragTU,
 			})
 		}
-
 	}
 
 	_, err = collection.InsertOne(
@@ -118,6 +117,93 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 		log.Println(err)
 		log.Println(string(debug.Stack()))
 		return err
+	}
+
+	return nil
+}
+
+// Hilfsfunktion, die überprüft, ob ein Jahr in einem Versorger Slice vorkommt
+func jahrInVersorgerSlice(jahr int32, versorger []structs.Versoger) bool {
+	for _, obj := range versorger {
+		if obj.Jahr == jahr {
+			return true
+		}
+	}
+	return false
+}
+
+func GebaeudeAddVersorger(data structs.AddVersorger) error {
+	var versorgername string
+	var versorger []structs.Versoger
+
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+
+	gebaeude, err := GebaeudeFind(data.Nr)
+	if err != nil {
+		return structs.ErrGebaeudeNichtVorhanden
+	}
+
+	switch data.IDEnergieversorgung {
+	case structs.IDEnergieversorgungWaerme: // Waerme
+		versorgername = "waermeversorger"
+		versorger = gebaeude.Waermeversorger
+	case structs.IDEnergieversorgungStrom: // Strom
+		versorgername = "stromversorger"
+		versorger = gebaeude.Stromversorger
+	case structs.IDEnergieversorgungKaelte: // Kaelte
+		versorgername = "kaelteversorger"
+		versorger = gebaeude.Kaelteversorger
+	default:
+		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
+		log.Println(string(debug.Stack()))
+		return structs.ErrIDEnergieversorgungNichtVorhanden
+	}
+
+	if jahrInVersorgerSlice(data.Jahr, versorger) {
+		return structs.ErrJahrVorhanden
+	}
+
+	_, err = collection.UpdateOne(
+		ctx,
+		bson.D{{"nr", data.Nr}},
+		bson.D{{"$push",
+			bson.D{{versorgername,
+				bson.D{{"jahr", data.Jahr}, {"idVertrag", data.IDVertrag}}}}}},
+	)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return err
+	}
+
+	return nil
+}
+
+func GebaeudeAddStandardVersorger(data structs.AddStandardVersorger) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+
+	for _, versorgername := range []string{"waermeversorger", "stromversorger", "kaelteversorger"} {
+		_, err := collection.UpdateMany(
+			ctx,
+			bson.D{{versorgername,
+				bson.D{{"$not",
+					bson.D{{"$elemMatch",
+						bson.D{{"jahr", data.Jahr}}}}}}}},
+			bson.D{{"$push",
+				bson.D{{versorgername,
+					bson.D{{"jahr", data.Jahr}, {"idVertrag", structs.IDVertragTU}}}}}},
+		)
+		if err != nil {
+			log.Println(err)
+			log.Println(string(debug.Stack()))
+			return err
+		}
 	}
 
 	return nil
