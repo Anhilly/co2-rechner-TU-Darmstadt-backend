@@ -77,7 +77,7 @@ func gebaeudeNormalfall(co2Faktoren map[int32]int32, gebaeude structs.Gebaeude, 
 	var gesamtverbrauch float64                  // Einheit: kWh
 	var gesamtNGF float64 = gebaeude.Flaeche.NGF // Einheit: m^2
 	var refGebaeude []int32
-	var versoger []structs.Vetrag
+	var versoger []structs.Versoger
 	var idVertrag int32 = -1
 
 	if nutzflaeche == 0 {

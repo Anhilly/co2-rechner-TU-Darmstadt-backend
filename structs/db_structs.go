@@ -18,9 +18,9 @@ type Gebaeude struct {
 	Spezialfall int32           `json:"spezialfall" bson:"spezialfall"`
 	Revision    int32           `json:"revision" bson:"revision"`
 
-	Stromversorger  []Vetrag `json:"stromversorger" bson:"stromversorger"`
-	Waermeversorger []Vetrag `json:"waermeversorger" bson:"waermeversorger"`
-	Kaelteversorger []Vetrag `json:"kaelteversorger" bson:"kaelteversorger"`
+	Stromversorger  []Versoger `json:"stromversorger" bson:"stromversorger"`
+	Waermeversorger []Versoger `json:"waermeversorger" bson:"waermeversorger"`
+	Kaelteversorger []Versoger `json:"kaelteversorger" bson:"kaelteversorger"`
 
 	KaelteRef []int32 `json:"kaelteRef" bson:"kaelteRef"` // -> Kaeltezaehler.pkEnergie
 	WaermeRef []int32 `json:"waermeRef" bson:"waermeRef"` // -> Waermezaehler.pkEnergie
@@ -37,7 +37,7 @@ type GebaeudeFlaeche struct {
 	GesamtF float64 `json:"gesamtf" bson:"gesamtf"` // Gesamtfläche
 }
 
-type Vetrag struct {
+type Versoger struct {
 	Jahr      int32 `json:"jahr" bson:"jahr"`
 	IDVertrag int32 `json:"idVertrag" bson:"idVertrag"`
 }

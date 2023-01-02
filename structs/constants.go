@@ -66,3 +66,12 @@ const ( // Einheit g CO2 eq.
 	Verbrauch2PersonenHaushalt = 23200000.0
 	Verbrauch4PersonenHaushalt = 46400000.0
 )
+
+const ( // Beginn der Historie für Gebaeudeversoger
+	ErstesJahr = 2018
+)
+
+const (
+	IDVertragTU     = 1
+	IDVertragExtern = 2
+)

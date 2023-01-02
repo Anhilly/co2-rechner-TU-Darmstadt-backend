@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"runtime/debug"
+	"time"
 )
 
 // GebaeudeFind liefert einen Gebaeude struct mit nr gleich dem Parameter.
@@ -42,18 +43,31 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 		return structs.ErrGebaeudeVorhanden
 	}
 
+	aktuellesJahr := time.Now().Year()
+	var versorger []structs.Versoger
+
+	for i := structs.ErstesJahr; i < aktuellesJahr; i++ {
+		versorger = append(versorger, structs.Versoger{
+			Jahr:      int32(i),
+			IDVertrag: structs.IDVertragTU,
+		})
+	}
+
 	_, err = collection.InsertOne(
 		ctx,
 		structs.Gebaeude{
-			Nr:          data.Nr,
-			Bezeichnung: data.Bezeichnung,
-			Flaeche:     data.Flaeche,
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			KaelteRef:   []int32{},
-			WaermeRef:   []int32{},
-			StromRef:    []int32{},
+			Nr:              data.Nr,
+			Bezeichnung:     data.Bezeichnung,
+			Flaeche:         data.Flaeche,
+			Einheit:         "m^2",
+			Spezialfall:     1,
+			Revision:        1,
+			KaelteRef:       []int32{},
+			WaermeRef:       []int32{},
+			StromRef:        []int32{},
+			Kaelteversorger: versorger,
+			Waermeversorger: versorger,
+			Stromversorger:  versorger,
 		},
 	)
 	if err != nil {
