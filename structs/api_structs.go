@@ -39,6 +39,14 @@ type AddStandardZaehlerdaten struct {
 	Jahr int32     `json:"jahr"`
 }
 
+type AddZaehlerdatenCSV struct {
+	Auth                AuthToken `json:"authToken"`
+	PKEnergie           []int32   `json:"pkEnergie"`
+	IDEnergieversorgung []int32   `json:"idEnergieversorgung"`
+	Jahr                int32     `json:"jahr"`
+	Wert                []float64 `json:"wert"`
+}
+
 type InsertZaehler struct {
 	Auth                AuthToken `json:"authToken"`
 	PKEnergie           int32     `json:"pkEnergie"`
