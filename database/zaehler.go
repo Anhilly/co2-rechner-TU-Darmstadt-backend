@@ -111,6 +111,8 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	return nil
 }
 
+// ZaehlerAddStandardZaehlerdaten updated alle Zaehler in der Datenbank um den Zaehlerwert {jahr, 0.0},
+// falls Jahr noch nicht vorhanden.
 func ZaehlerAddStandardZaehlerdaten(data structs.AddStandardZaehlerdaten) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()

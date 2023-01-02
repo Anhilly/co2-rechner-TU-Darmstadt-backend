@@ -132,6 +132,7 @@ func jahrInVersorgerSlice(jahr int32, versorger []structs.Versoger) bool {
 	return false
 }
 
+// GebaeudeAddVersorger fügt {Jahr, Versorger} zum Gebaeude hinzu, falls Gebaeude in Datenbank und Jahr nicht vorhanden
 func GebaeudeAddVersorger(data structs.AddVersorger) error {
 	var versorgername string
 	var versorger []structs.Versoger
@@ -182,6 +183,7 @@ func GebaeudeAddVersorger(data structs.AddVersorger) error {
 	return nil
 }
 
+// GebaeudeAddVersorger fügt allen Gebaeuden {Jahr, 1} hinzu, falls Jahr nicht vorhanden
 func GebaeudeAddStandardVersorger(data structs.AddStandardVersorger) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()

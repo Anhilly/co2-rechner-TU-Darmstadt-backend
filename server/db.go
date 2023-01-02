@@ -257,6 +257,7 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
+// PostAddStandardZaehlerdaten fuegt alle Zaehlern ohne Zaehlerwert für das gegebene Jahr den Zaehlerwert 0.0 ein
 func PostAddStandardZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -310,6 +311,8 @@ func PostAddStandardZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
+// PostAddVersorger fügt den gegebenem Gebaeude den gegebenen Versorger hinzu, solange kein Versorger fuer
+// das gegebene Jahr vorhanden ist
 func PostAddVersorger(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -363,6 +366,8 @@ func PostAddVersorger(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
+// PostAddStandardVersorger fuegt allen Gebaeuden ohne einen Versorger fuer das gegebene Jahr den
+// Standard-Versorger 1 hinzu
 func PostAddStandardVersorger(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
