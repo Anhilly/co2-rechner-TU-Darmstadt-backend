@@ -31,6 +31,16 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	return data, nil
 }
 
+// Hilfsfunktion, die true zurückgibt, falls a in list
+func intInSlice(a int32, list []int32) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 // GebaeudeInsert fuegt ein Gebaeude in die Datenbank ein, falls die Nr noch nicht vorhanden ist.
 func GebaeudeInsert(data structs.InsertGebaeude) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
@@ -43,14 +53,48 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 		return structs.ErrGebaeudeVorhanden
 	}
 
-	aktuellesJahr := time.Now().Year()
-	var versorger []structs.Versoger
+	aktuellesJahr := int32(time.Now().Year())
+	var waermeversorger []structs.Versoger
+	var kaelteversorger []structs.Versoger
+	var stromversorger []structs.Versoger
 
-	for i := structs.ErstesJahr; i < aktuellesJahr; i++ {
-		versorger = append(versorger, structs.Versoger{
-			Jahr:      int32(i),
-			IDVertrag: structs.IDVertragTU,
-		})
+	for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+		if intInSlice(i, data.WaermeVersorgerJahre) {
+			waermeversorger = append(waermeversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragExtern,
+			})
+		} else {
+			waermeversorger = append(waermeversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragTU,
+			})
+		}
+
+		if intInSlice(i, data.KaelteVersorgerJahre) {
+			kaelteversorger = append(kaelteversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragExtern,
+			})
+		} else {
+			kaelteversorger = append(kaelteversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragTU,
+			})
+		}
+
+		if intInSlice(i, data.StromVersorgerJahre) {
+			stromversorger = append(stromversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragExtern,
+			})
+		} else {
+			stromversorger = append(stromversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragTU,
+			})
+		}
+
 	}
 
 	_, err = collection.InsertOne(
@@ -59,15 +103,15 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 			Nr:              data.Nr,
 			Bezeichnung:     data.Bezeichnung,
 			Flaeche:         data.Flaeche,
-			Einheit:         "m^2",
+			Einheit:         structs.Einheitqm,
 			Spezialfall:     1,
 			Revision:        1,
 			KaelteRef:       []int32{},
 			WaermeRef:       []int32{},
 			StromRef:        []int32{},
-			Kaelteversorger: versorger,
-			Waermeversorger: versorger,
-			Stromversorger:  versorger,
+			Kaelteversorger: kaelteversorger,
+			Waermeversorger: waermeversorger,
+			Stromversorger:  stromversorger,
 		},
 	)
 	if err != nil {

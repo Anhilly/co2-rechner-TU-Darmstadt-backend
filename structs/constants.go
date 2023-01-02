@@ -68,10 +68,10 @@ const ( // Einheit g CO2 eq.
 )
 
 const ( // Beginn der Historie für Gebaeudeversoger
-	ErstesJahr = 2018
+	ErstesJahr int32 = 2018
 )
 
 const (
-	IDVertragTU     = 1
-	IDVertragExtern = 2
+	IDVertragTU     int32 = 1
+	IDVertragExtern int32 = 2
 )

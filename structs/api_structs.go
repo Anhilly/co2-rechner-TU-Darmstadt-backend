@@ -44,10 +44,13 @@ type InsertZaehler struct {
 }
 
 type InsertGebaeude struct {
-	Auth        AuthToken       `json:"authToken"`
-	Nr          int32           `json:"nr"`
-	Bezeichnung string          `json:"bezeichnung"`
-	Flaeche     GebaeudeFlaeche `json:"flaeche"`
+	Auth                 AuthToken       `json:"authToken"`
+	Nr                   int32           `json:"nr"`
+	Bezeichnung          string          `json:"bezeichnung"`
+	Flaeche              GebaeudeFlaeche `json:"flaeche"`
+	WaermeVersorgerJahre []int32         `json:"waerme_versorger_jahre"`
+	KaelteVersorgerJahre []int32         `json:"kaelte_versorger_jahre"`
+	StromVersorgerJahre  []int32         `json:"strom_versorger_jahre"`
 }
 
 type InsertUmfrage struct {
