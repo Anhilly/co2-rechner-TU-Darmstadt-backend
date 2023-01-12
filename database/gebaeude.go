@@ -142,6 +142,11 @@ func GebaeudeAddVersorger(data structs.AddVersorger) error {
 
 	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
 
+	// Ueberpruefung, ob IDVertrag vorhanden
+	if data.IDVertrag != structs.IDVertragTU && data.IDVertrag != structs.IDVertragExtern {
+		return structs.ErrVertragNichtVorhanden
+	}
+
 	gebaeude, err := GebaeudeFind(data.Nr)
 	if err != nil {
 		return structs.ErrGebaeudeNichtVorhanden

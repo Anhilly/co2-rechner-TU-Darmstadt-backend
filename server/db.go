@@ -165,6 +165,7 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	//TODO: clean up
 	//ordner, err := database.CreateDump("PostAddZaehlerdatenCSV")
 	//if err != nil {
 	//	errorResponse(res, err, http.StatusInternalServerError)
