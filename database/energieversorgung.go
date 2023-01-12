@@ -37,6 +37,11 @@ func EnergieversorgungAddFaktor(data structs.AddCO2Faktor) error {
 
 	collection := client.Database(dbName).Collection(structs.EnergieversorgungCol)
 
+	// Ueberpruefung, ob IDVertrag vorhanden
+	if data.IDVertrag != structs.IDVertragTU && data.IDVertrag != structs.IDVertragExtern {
+		return structs.ErrVertragNichtVorhanden
+	}
+
 	// Ueberpruefung, ob ID in Datenbank vorhanden
 	currentDoc, err := EnergieversorgungFind(data.IDEnergieversorgung)
 	if err != nil {

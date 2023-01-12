@@ -47,6 +47,7 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 
 		data := structs.AddCO2Faktor{
 			IDEnergieversorgung: 1,
+			IDVertrag:           1,
 			Wert:                400,
 			Jahr:                2030,
 		}
@@ -61,9 +62,52 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 			Kategorie:           "Fernwaerme",
 			Einheit:             "g/kWh",
 			Revision:            1,
-			CO2Faktor:           []structs.CO2Energie{{Wert: 144, Jahr: 2020}, {Wert: 125, Jahr: 2021}, {Wert: 400, Jahr: 2030}},
+			CO2Faktor: []structs.CO2Energie{
+				{Jahr: 2020, Vertraege: []structs.CO2FaktorVetrag{
+					{IDVertrag: 1, Wert: 144},
+				}},
+				{Jahr: 2021, Vertraege: []structs.CO2FaktorVetrag{
+					{IDVertrag: 1, Wert: 125},
+				}},
+				{Jahr: 2030, Vertraege: []structs.CO2FaktorVetrag{
+					{IDVertrag: 1, Wert: 400},
+				}},
+			},
 		}) // Ueberpruefung des geaenderten Elementes
+	})
 
+	t.Run("EnergieversorgungAddFaktor: IDVertrag = 2", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddCO2Faktor{
+			IDEnergieversorgung: 2,
+			IDVertrag:           2,
+			Wert:                400,
+			Jahr:                2030,
+		}
+
+		err := database.EnergieversorgungAddFaktor(data)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updatedDoc, _ := database.EnergieversorgungFind(data.IDEnergieversorgung)
+
+		is.Equal(updatedDoc, structs.Energieversorgung{
+			IDEnergieversorgung: 2,
+			Kategorie:           "Strom",
+			Einheit:             "g/kWh",
+			Revision:            1,
+			CO2Faktor: []structs.CO2Energie{
+				{Jahr: 2020, Vertraege: []structs.CO2FaktorVetrag{
+					{IDVertrag: 1, Wert: 285},
+				}},
+				{Jahr: 2021, Vertraege: []structs.CO2FaktorVetrag{
+					{IDVertrag: 1, Wert: 357},
+				}},
+				{Jahr: 2030, Vertraege: []structs.CO2FaktorVetrag{
+					{IDVertrag: 2, Wert: 400},
+				}},
+			},
+		}) // Ueberpruefung des geaenderten Elementes
 	})
 
 	// Errortests
@@ -72,6 +116,7 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 
 		data := structs.AddCO2Faktor{
 			IDEnergieversorgung: 0,
+			IDVertrag:           1,
 			Wert:                400,
 			Jahr:                2030,
 		}
@@ -84,13 +129,42 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.AddCO2Faktor{
+			IDEnergieversorgung: 2,
+			IDVertrag:           2,
+			Wert:                400,
+			Jahr:                2030,
+		}
+
+		err := database.EnergieversorgungAddFaktor(data)
+		is.Equal(err, structs.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+	})
+
+	t.Run("EnergieversorgungAddFaktor: Jahr schon vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddCO2Faktor{
 			IDEnergieversorgung: 1,
+			IDVertrag:           1,
 			Wert:                400,
 			Jahr:                2020,
 		}
 
 		err := database.EnergieversorgungAddFaktor(data)
 		is.Equal(err, structs.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+	})
+
+	t.Run("EnergieversorgungAddFaktor: IDVertrag invalid", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddCO2Faktor{
+			IDEnergieversorgung: 1,
+			IDVertrag:           0,
+			Wert:                400,
+			Jahr:                2020,
+		}
+
+		err := database.EnergieversorgungAddFaktor(data)
+		is.Equal(err, structs.ErrVertragNichtVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 }
 
@@ -129,6 +203,10 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 				{
 					Wert:        736.9,
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        859.29,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
 					Wert:        1000.0,
@@ -175,6 +253,10 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
+					Wert:        165.44,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
 					Wert:        1000.0,
 					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
@@ -217,6 +299,10 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 				{
 					Wert:        169.59,
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        380.67,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
 					Wert:        1000.0,
@@ -360,9 +446,30 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 			Einheit:     "m^2",
 			Spezialfall: 1,
 			Revision:    1,
-			KaelteRef:   []int32{},
-			WaermeRef:   []int32{2084, 999},
-			StromRef:    []int32{},
+			Stromversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Waermeversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Kaelteversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			KaelteRef: []int32{},
+			WaermeRef: []int32{2084, 999},
+			StromRef:  []int32{},
 		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
@@ -392,9 +499,30 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 			Einheit:     "m^2",
 			Spezialfall: 1,
 			Revision:    1,
-			KaelteRef:   []int32{},
-			WaermeRef:   []int32{2348},
-			StromRef:    []int32{28175, 999},
+			Stromversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Waermeversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Kaelteversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			KaelteRef: []int32{},
+			WaermeRef: []int32{2348},
+			StromRef:  []int32{28175, 999},
 		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
@@ -424,9 +552,30 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 			Einheit:     "m^2",
 			Spezialfall: 1,
 			Revision:    1,
-			KaelteRef:   []int32{999},
-			WaermeRef:   []int32{2349, 2350, 2351, 2352, 2353, 2354},
-			StromRef:    []int32{28175},
+			Stromversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Waermeversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Kaelteversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			KaelteRef: []int32{999},
+			WaermeRef: []int32{2349, 2350, 2351, 2352, 2353, 2354},
+			StromRef:  []int32{28175},
 		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 

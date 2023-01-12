@@ -87,6 +87,9 @@ var ( // Fehler, die bei Berechnungen auftreten
 
 	// Fehler durch fehlenden Energiefaktor für bestimmtes Jahr und Energieform
 	ErrStrKeinFaktorFuerVertrag = "Für Jahr %d ist kein Faktor für Energie %d und Vertrag %d"
+
+	// Fehler
+	ErrVertragNichtVorhanden = errors.New("Angegeben ID fuer den Vertrag ist nicht vorhanden")
 )
 
 var ( // Fehler die bei der Authentifizierung auftreten
