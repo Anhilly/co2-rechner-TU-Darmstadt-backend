@@ -274,7 +274,7 @@ func TestZaehlerInsert(t *testing.T) {
 			},
 			KaelteRef: []int32{},
 			WaermeRef: []int32{2084, 190},
-			StromRef:  []int32{},
+			StromRef:  []int32{26024, 24799},
 		})
 	})
 
@@ -345,7 +345,7 @@ func TestZaehlerInsert(t *testing.T) {
 			},
 			KaelteRef: []int32{},
 			WaermeRef: []int32{2084, 190},
-			StromRef:  []int32{191},
+			StromRef:  []int32{26024, 24799, 191},
 		})
 	})
 
@@ -416,7 +416,7 @@ func TestZaehlerInsert(t *testing.T) {
 			},
 			KaelteRef: []int32{192},
 			WaermeRef: []int32{2084, 190},
-			StromRef:  []int32{191},
+			StromRef:  []int32{26024, 24799, 191},
 		})
 	})
 

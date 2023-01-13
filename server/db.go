@@ -154,8 +154,6 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//log.Println(data)
-
 	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
 		return
 	}
@@ -164,52 +162,6 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
-
-	//TODO: clean up
-	//ordner, err := database.CreateDump("PostAddZaehlerdatenCSV")
-	//if err != nil {
-	//	errorResponse(res, err, http.StatusInternalServerError)
-	//	return
-	//}
-	//
-	//combined_error := "Folgende Fehler sind aufgetreten:"
-	//error_encountered := false
-	//
-	//for i := 0; i < len(data.PKEnergie); i++ { // rufe für jeden uebergebenen Wert die Hinzufuegefunktion einzeln auf
-	//	log.Printf("PK: %d, Type: %d, Value: %f\n", data.PKEnergie[i], data.IDEnergieversorgung[i], data.Wert[i])
-	//
-	//	eachValue := structs.AddZaehlerdaten{
-	//		PKEnergie:           data.PKEnergie[i],
-	//		IDEnergieversorgung: data.IDEnergieversorgung[i],
-	//		Jahr:                data.Jahr,
-	//		Wert:                data.Wert[i],
-	//	}
-	//
-	//	err = database.ZaehlerAddZaehlerdaten(eachValue)
-	//	if err != nil { // im Fehlerfall speichere Error mit PK für Response
-	//		error_encountered = true
-	//		combined_error += fmt.Sprintf("\n\t-Zähler %d: %s", data.PKEnergie[i], err.Error())
-	//	}
-	//}
-	//
-	//if error_encountered {
-	//	err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
-	//	if err2 != nil {
-	//		log.Println(err2)
-	//	} else {
-	//		err := database.RemoveDump(ordner)
-	//		if err != nil {
-	//			log.Println(err)
-	//		}
-	//	}
-	//	errorResponse(res, errors.New(combined_error), http.StatusInternalServerError)
-	//	return
-	//}
-	//
-	//err = database.RemoveDump(ordner)
-	//if err != nil {
-	//	log.Println(err)
-	//}
 
 	combined_error := "Folgende Fehler sind aufgetreten:"
 	error_encountered := false
@@ -221,7 +173,7 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		log.Printf("PK: %d, Type: %d, Value: %f\n", data.PKEnergie[i], data.IDEnergieversorgung[i], data.Wert[i]) // TODO: remove or change log message
+		log.Printf("PK: %d, Type: %d, Jahr: %d, Wert: %f\n", data.PKEnergie[i], data.IDEnergieversorgung[i], data.Jahr, data.Wert[i])
 
 		eachValue := structs.AddZaehlerdaten{
 			PKEnergie:           data.PKEnergie[i],

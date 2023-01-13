@@ -212,6 +212,10 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
+					Wert:        697.07,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
 					Wert:        1000.0,
 					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
@@ -260,6 +264,10 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
+					Wert:        197.599,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
 					Wert:        1000.0,
 					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
@@ -306,6 +314,10 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 				{
 					Wert:        380.67,
 					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        370.39,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
 					Wert:        1000.0,
@@ -457,6 +469,10 @@ func TestZaehlerAddStandardZaehlerdaten(t *testing.T) {
 					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
+					Wert:        697.07,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
 					Wert:        1000.0,
 					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
@@ -526,7 +542,7 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 			},
 			KaelteRef: []int32{},
 			WaermeRef: []int32{2084, 999},
-			StromRef:  []int32{},
+			StromRef:  []int32{26024, 24799},
 		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
@@ -854,7 +870,7 @@ func TestGebaeudeAddStandardVersorger(t *testing.T) {
 			},
 			KaelteRef: []int32{},
 			WaermeRef: []int32{2084, 999},
-			StromRef:  []int32{},
+			StromRef:  []int32{26024, 24799},
 		}) // Überprüfung des zurückgelieferten Elements
 	})
 }
