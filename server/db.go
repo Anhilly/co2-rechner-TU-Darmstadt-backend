@@ -2,6 +2,8 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
@@ -16,6 +18,10 @@ func RouteDB() chi.Router {
 
 	r.Post("/addFaktor", PostAddFaktor)
 	r.Post("/addZaehlerdaten", PostAddZaehlerdaten)
+	r.Post("/addZaehlerdatenCSV", PostAddZaehlerdatenCSV)
+	r.Post("/addStandardZaehlerdaten", PostAddStandardZaehlerdaten)
+	r.Post("/addVersorger", PostAddVersorger)
+	r.Post("/addStandardVersorger", PostAddStandardVersorger)
 	r.Post("/insertZaehler", PostInsertZaehler)
 	r.Post("/insertGebaeude", PostInsertGebaeude)
 
@@ -110,6 +116,242 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	}
 
 	err = database.ZaehlerAddZaehlerdaten(data)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		} else {
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.RemoveDump(ordner)
+	if err != nil {
+		log.Println(err)
+	}
+
+	sendResponse(res, true, nil, http.StatusOK)
+}
+
+// PostAddZaehlerdaten fuegt Zaehlerdaten fuer einen Liste an Zaehler in die DB ein,
+// sofern der Nutzer authentifizierter Admin ist und sendet eine Response mit null zurueck.
+func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	data := structs.AddZaehlerdatenCSV{}
+	err = json.Unmarshal(s, &data)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, err, http.StatusUnauthorized)
+		return
+	}
+
+	combined_error := "Folgende Fehler sind aufgetreten:"
+	error_encountered := false
+
+	for i := 0; i < len(data.PKEnergie); i++ { // rufe für jeden uebergebenen Wert die Hinzufuegefunktion einzeln auf
+		ordner, err := database.CreateDump("PostAddZaehlerdatenCSV")
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
+
+		log.Printf("PK: %d, Type: %d, Jahr: %d, Wert: %f\n", data.PKEnergie[i], data.IDEnergieversorgung[i], data.Jahr, data.Wert[i])
+
+		eachValue := structs.AddZaehlerdaten{
+			PKEnergie:           data.PKEnergie[i],
+			IDEnergieversorgung: data.IDEnergieversorgung[i],
+			Jahr:                data.Jahr,
+			Wert:                data.Wert[i],
+		}
+
+		err = database.ZaehlerAddZaehlerdaten(eachValue)
+
+		if err != nil {
+			error_encountered = true
+			combined_error += fmt.Sprintf("\n\t-Zähler %d: %s", data.PKEnergie[i], err.Error())
+
+			err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+			if err2 != nil {
+				log.Println(err2)
+				errorResponse(res, err2, http.StatusInternalServerError)
+				return
+			}
+		}
+
+		err = database.RemoveDump(ordner)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	if error_encountered {
+		errorResponse(res, errors.New(combined_error), http.StatusInternalServerError)
+		return
+	}
+
+	sendResponse(res, true, nil, http.StatusOK)
+}
+
+// PostAddStandardZaehlerdaten fuegt alle Zaehlern ohne Zaehlerwert für das gegebene Jahr den Zaehlerwert 0.0 ein
+func PostAddStandardZaehlerdaten(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	data := structs.AddStandardZaehlerdaten{}
+	err = json.Unmarshal(s, &data)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, err, http.StatusUnauthorized)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostAddStandardZaehlerdaten")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.ZaehlerAddStandardZaehlerdaten(data)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		} else {
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.RemoveDump(ordner)
+	if err != nil {
+		log.Println(err)
+	}
+
+	sendResponse(res, true, nil, http.StatusOK)
+}
+
+// PostAddVersorger fügt den gegebenem Gebaeude den gegebenen Versorger hinzu, solange kein Versorger fuer
+// das gegebene Jahr vorhanden ist
+func PostAddVersorger(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	data := structs.AddVersorger{}
+	err = json.Unmarshal(s, &data)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, err, http.StatusUnauthorized)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostAddVersorger")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.GebaeudeAddVersorger(data)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		} else {
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.RemoveDump(ordner)
+	if err != nil {
+		log.Println(err)
+	}
+
+	sendResponse(res, true, nil, http.StatusOK)
+}
+
+// PostAddStandardVersorger fuegt allen Gebaeuden ohne einen Versorger fuer das gegebene Jahr den
+// Standard-Versorger 1 hinzu
+func PostAddStandardVersorger(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	data := structs.AddStandardVersorger{}
+	err = json.Unmarshal(s, &data)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
+	if nutzer.Rolle != 1 {
+		errorResponse(res, err, http.StatusUnauthorized)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostAddStandardVersorger")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.GebaeudeAddStandardVersorger(data)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {

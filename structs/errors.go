@@ -16,6 +16,9 @@ var ( // Fehler von Add, Delete und Insert Funktionen
 	ErrGebaeudeVorhanden = errors.New("Ein Gebaeude mit der angegeben Nummer existiert schon in der Datenbank")
 
 	// Fehler durch Nutzereingabe
+	ErrGebaeudeNichtVorhanden = errors.New("Ein Gebaeude mit der angegeben Nummer konnte nicht gefunden werden")
+
+	// Fehler durch Nutzereingabe
 	ErrIDEnergieversorgungNichtVorhanden = errors.New("Die angegebene IDEnergieversorgung ist nicht vorhanden")
 
 	// Fehler bei Erstellung der ObjectID
@@ -78,6 +81,15 @@ var ( // Fehler, die bei Berechnungen auftreten
 
 	// Fehler durch fehlende Implementierung einer Berechnung
 	ErrBerechnungUnbekannt = errors.New("BerechneDienstreisen: Keine Berechnung fuer angegeben ID vorhanden")
+
+	// Fehler durch fehlende Angabe des Versorgers für Jahr
+	ErrStrKeinVersorger = "gebaeudeNormalfall: Gebaude %d hat keinen Versorger für Jahr %d eingetragen"
+
+	// Fehler durch fehlenden Energiefaktor für bestimmtes Jahr und Energieform
+	ErrStrKeinFaktorFuerVertrag = "Für Jahr %d ist kein Faktor für Energie %d und Vertrag %d"
+
+	// Fehler
+	ErrVertragNichtVorhanden = errors.New("Angegeben ID fuer den Vertrag ist nicht vorhanden")
 )
 
 var ( // Fehler die bei der Authentifizierung auftreten

@@ -21,6 +21,7 @@ type UmfrageID struct {
 type AddCO2Faktor struct {
 	Auth                AuthToken `json:"authToken"`
 	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
+	IDVertrag           int32     `json:"idVertrag"`
 	Jahr                int32     `json:"jahr"`
 	Wert                int32     `json:"wert"`
 }
@@ -33,6 +34,19 @@ type AddZaehlerdaten struct {
 	Wert                float64   `json:"wert"`
 }
 
+type AddStandardZaehlerdaten struct {
+	Auth AuthToken `json:"authToken"`
+	Jahr int32     `json:"jahr"`
+}
+
+type AddZaehlerdatenCSV struct {
+	Auth                AuthToken `json:"authToken"`
+	PKEnergie           []int32   `json:"pkEnergie"`
+	IDEnergieversorgung []int32   `json:"idEnergieversorgung"`
+	Jahr                int32     `json:"jahr"`
+	Wert                []float64 `json:"wert"`
+}
+
 type InsertZaehler struct {
 	Auth                AuthToken `json:"authToken"`
 	PKEnergie           int32     `json:"pkEnergie"`
@@ -43,10 +57,26 @@ type InsertZaehler struct {
 }
 
 type InsertGebaeude struct {
-	Auth        AuthToken       `json:"authToken"`
-	Nr          int32           `json:"nr"`
-	Bezeichnung string          `json:"bezeichnung"`
-	Flaeche     GebaeudeFlaeche `json:"flaeche"`
+	Auth                 AuthToken       `json:"authToken"`
+	Nr                   int32           `json:"nr"`
+	Bezeichnung          string          `json:"bezeichnung"`
+	Flaeche              GebaeudeFlaeche `json:"flaeche"`
+	WaermeVersorgerJahre []int32         `json:"waerme_versorger_jahre"`
+	KaelteVersorgerJahre []int32         `json:"kaelte_versorger_jahre"`
+	StromVersorgerJahre  []int32         `json:"strom_versorger_jahre"`
+}
+
+type AddVersorger struct {
+	Auth                AuthToken `json:"authToken"`
+	Nr                  int32     `json:"nr"`
+	Jahr                int32     `json:"jahr"`
+	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
+	IDVertrag           int32     `json:"idVertrag"`
+}
+
+type AddStandardVersorger struct {
+	Auth AuthToken `json:"authToken"`
+	Jahr int32     `json:"jahr"`
 }
 
 type InsertUmfrage struct {

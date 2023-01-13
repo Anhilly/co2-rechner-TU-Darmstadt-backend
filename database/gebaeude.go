@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"runtime/debug"
+	"time"
 )
 
 // GebaeudeFind liefert einen Gebaeude struct mit nr gleich dem Parameter.
@@ -30,6 +31,16 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	return data, nil
 }
 
+// Hilfsfunktion, die true zurückgibt, falls a in list
+func intInSlice(a int32, list []int32) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 // GebaeudeInsert fuegt ein Gebaeude in die Datenbank ein, falls die Nr noch nicht vorhanden ist.
 func GebaeudeInsert(data structs.InsertGebaeude) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
@@ -42,24 +53,164 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 		return structs.ErrGebaeudeVorhanden
 	}
 
+	aktuellesJahr := int32(time.Now().Year())
+	var waermeversorger []structs.Versoger
+	var kaelteversorger []structs.Versoger
+	var stromversorger []structs.Versoger
+
+	for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+		if intInSlice(i, data.WaermeVersorgerJahre) {
+			waermeversorger = append(waermeversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragExtern,
+			})
+		} else {
+			waermeversorger = append(waermeversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragTU,
+			})
+		}
+
+		if intInSlice(i, data.KaelteVersorgerJahre) {
+			kaelteversorger = append(kaelteversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragExtern,
+			})
+		} else {
+			kaelteversorger = append(kaelteversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragTU,
+			})
+		}
+
+		if intInSlice(i, data.StromVersorgerJahre) {
+			stromversorger = append(stromversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragExtern,
+			})
+		} else {
+			stromversorger = append(stromversorger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragTU,
+			})
+		}
+	}
+
 	_, err = collection.InsertOne(
 		ctx,
 		structs.Gebaeude{
-			Nr:          data.Nr,
-			Bezeichnung: data.Bezeichnung,
-			Flaeche:     data.Flaeche,
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			KaelteRef:   []int32{},
-			WaermeRef:   []int32{},
-			StromRef:    []int32{},
+			Nr:              data.Nr,
+			Bezeichnung:     data.Bezeichnung,
+			Flaeche:         data.Flaeche,
+			Einheit:         structs.Einheitqm,
+			Spezialfall:     1,
+			Revision:        1,
+			KaelteRef:       []int32{},
+			WaermeRef:       []int32{},
+			StromRef:        []int32{},
+			Kaelteversorger: kaelteversorger,
+			Waermeversorger: waermeversorger,
+			Stromversorger:  stromversorger,
 		},
 	)
 	if err != nil {
 		log.Println(err)
 		log.Println(string(debug.Stack()))
 		return err
+	}
+
+	return nil
+}
+
+// Hilfsfunktion, die überprüft, ob ein Jahr in einem Versorger Slice vorkommt
+func jahrInVersorgerSlice(jahr int32, versorger []structs.Versoger) bool {
+	for _, obj := range versorger {
+		if obj.Jahr == jahr {
+			return true
+		}
+	}
+	return false
+}
+
+// GebaeudeAddVersorger fügt {Jahr, Versorger} zum Gebaeude hinzu, falls Gebaeude in Datenbank und Jahr nicht vorhanden
+func GebaeudeAddVersorger(data structs.AddVersorger) error {
+	var versorgername string
+	var versorger []structs.Versoger
+
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+
+	// Ueberpruefung, ob IDVertrag vorhanden
+	if data.IDVertrag != structs.IDVertragTU && data.IDVertrag != structs.IDVertragExtern {
+		return structs.ErrVertragNichtVorhanden
+	}
+
+	gebaeude, err := GebaeudeFind(data.Nr)
+	if err != nil {
+		return structs.ErrGebaeudeNichtVorhanden
+	}
+
+	switch data.IDEnergieversorgung {
+	case structs.IDEnergieversorgungWaerme: // Waerme
+		versorgername = "waermeversorger"
+		versorger = gebaeude.Waermeversorger
+	case structs.IDEnergieversorgungStrom: // Strom
+		versorgername = "stromversorger"
+		versorger = gebaeude.Stromversorger
+	case structs.IDEnergieversorgungKaelte: // Kaelte
+		versorgername = "kaelteversorger"
+		versorger = gebaeude.Kaelteversorger
+	default:
+		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
+		log.Println(string(debug.Stack()))
+		return structs.ErrIDEnergieversorgungNichtVorhanden
+	}
+
+	if jahrInVersorgerSlice(data.Jahr, versorger) {
+		return structs.ErrJahrVorhanden
+	}
+
+	_, err = collection.UpdateOne(
+		ctx,
+		bson.D{{"nr", data.Nr}},
+		bson.D{{"$push",
+			bson.D{{versorgername,
+				bson.D{{"jahr", data.Jahr}, {"idVertrag", data.IDVertrag}}}}}},
+	)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return err
+	}
+
+	return nil
+}
+
+// GebaeudeAddVersorger fügt allen Gebaeuden {Jahr, 1} hinzu, falls Jahr nicht vorhanden
+func GebaeudeAddStandardVersorger(data structs.AddStandardVersorger) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+
+	for _, versorgername := range []string{"waermeversorger", "stromversorger", "kaelteversorger"} {
+		_, err := collection.UpdateMany(
+			ctx,
+			bson.D{{versorgername,
+				bson.D{{"$not",
+					bson.D{{"$elemMatch",
+						bson.D{{"jahr", data.Jahr}}}}}}}},
+			bson.D{{"$push",
+				bson.D{{versorgername,
+					bson.D{{"jahr", data.Jahr}, {"idVertrag", structs.IDVertragTU}}}}}},
+		)
+		if err != nil {
+			log.Println(err)
+			log.Println(string(debug.Stack()))
+			return err
+		}
 	}
 
 	return nil

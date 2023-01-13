@@ -122,7 +122,14 @@ func TestEnergieversorgungFind(t *testing.T) {
 			Kategorie:           "Fernwaerme",
 			Einheit:             "g/kWh",
 			Revision:            1,
-			CO2Faktor:           []structs.CO2Energie{{Wert: 144, Jahr: 2020}, {Wert: 125, Jahr: 2021}},
+			CO2Faktor: []structs.CO2Energie{
+				{Jahr: 2020, Vertraege: []structs.CO2FaktorVetrag{
+					{IDVertrag: 1, Wert: 144},
+				}},
+				{Jahr: 2021, Vertraege: []structs.CO2FaktorVetrag{
+					{IDVertrag: 1, Wert: 125},
+				}},
+			},
 		}) // Überprüfung des zurückgelieferten Elements
 	})
 
@@ -160,9 +167,30 @@ func TestGebaeudeFind(t *testing.T) {
 			Einheit:     "m^2",
 			Spezialfall: 1,
 			Revision:    1,
-			KaelteRef:   []int32{},
-			WaermeRef:   []int32{2084},
-			StromRef:    []int32{},
+			Stromversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Waermeversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Kaelteversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			KaelteRef: []int32{},
+			WaermeRef: []int32{2084},
+			StromRef:  []int32{26024, 24799},
 		}) // Überprüfung des zurückgelieferten Elements
 	})
 
@@ -287,6 +315,14 @@ func TestZaehlerFind(t *testing.T) {
 					Wert:        169.59,
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
+				{
+					Wert:        380.67,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        370.39,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
 			},
 			Einheit:     "MWh",
 			Spezialfall: 1,
@@ -321,6 +357,14 @@ func TestZaehlerFind(t *testing.T) {
 					Wert:        736.9,
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
+				{
+					Wert:        859.29,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        697.07,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
 			},
 			Einheit:     "MWh",
 			Spezialfall: 1,
@@ -354,6 +398,14 @@ func TestZaehlerFind(t *testing.T) {
 				{
 					Wert:        0.0,
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        165.44,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        197.599,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
 			Einheit:     "kWh",
