@@ -583,6 +583,71 @@ func TestZaehlerFind(t *testing.T) {
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
+	// Zaehler soll nicht beachtet werden, Heizgruppe Süd Schloss gesamt + E-Technik gesamt
+	t.Run("ZaehlerFind: Waermezaehler, ID = 3960 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 3960
+		var idEnergieversorgung int32 = 1
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Netz Darmstadt Nord
+	t.Run("ZaehlerFind: Waermezaehler, ID = 6697 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 6697
+		var idEnergieversorgung int32 = 1
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Wärmezähler Lichtwiese Forschungsprojekt
+	t.Run("ZaehlerFind: Waermezaehler, ID = 3789 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 3789
+		var idEnergieversorgung int32 = 1
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Wärme Hauptzähler Tagesverbrauch
+	t.Run("ZaehlerFind: Waermezaehler, ID = 2558 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 2558
+		var idEnergieversorgung int32 = 1
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Wärme Hauptzähler Wochenverbrauch
+	t.Run("ZaehlerFind: Waermezaehler, ID = 2560 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 2560
+		var idEnergieversorgung int32 = 1
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
 	t.Run("ZaehlerFind: Stromzaehler, ID = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
