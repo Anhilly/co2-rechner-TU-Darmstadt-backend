@@ -180,13 +180,23 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		return structs.ErrZaehlerVorhanden
 	}
 
+	location, _ := time.LoadLocation("Etc/GMT")
+	aktuellesJahr := int32(time.Now().Year())
+	var zaehlerdaten []structs.Zaehlerwerte
+	for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+		zaehlerdaten = append(zaehlerdaten, structs.Zaehlerwerte{
+			Wert:        0.0,
+			Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
+		})
+	}
+
 	_, err = collection.InsertOne(
 		ctx,
 		structs.Zaehler{
 			PKEnergie:    data.PKEnergie,
 			Bezeichnung:  data.Bezeichnung,
 			Einheit:      data.Einheit,
-			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Zaehlerdaten: zaehlerdaten,
 			Spezialfall:  1,
 			Revision:     1,
 			GebaeudeRef:  data.GebaeudeRef,
