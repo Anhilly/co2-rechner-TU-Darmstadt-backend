@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"runtime/debug"
 	"time"
@@ -83,8 +84,14 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	}
 
 	// Ueberpruefung, ob schon Wert zu angegebenen Jahr existiert
+	wert_ersetzten := false
+
 	for _, zaehlerdatum := range currentDoc.Zaehlerdaten {
 		if int32(zaehlerdatum.Zeitstempel.Year()) == data.Jahr {
+			if zaehlerdatum.Wert == 0.0 {
+				wert_ersetzten = true
+				break
+			}
 			log.Println(structs.ErrJahrVorhanden)
 			log.Println(string(debug.Stack()))
 			return structs.ErrJahrVorhanden
@@ -95,13 +102,27 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	location, _ := time.LoadLocation("Etc/GMT")
 	zeitstempel := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
 
-	_, err = collection.UpdateOne(
-		ctx,
-		bson.D{{"pkEnergie", data.PKEnergie}},
-		bson.D{{"$push",
-			bson.D{{"zaehlerdaten",
-				bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
-	)
+	if wert_ersetzten {
+		_, err = collection.UpdateOne(
+			ctx,
+			bson.D{{"pkEnergie", data.PKEnergie}},
+			bson.D{{"$set",
+				bson.D{{"zaehlerdaten.$[element]",
+					bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
+			options.Update().SetArrayFilters(options.ArrayFilters{
+				Filters: []interface{}{bson.M{"element.zeitstempel": zeitstempel}},
+			}),
+		)
+
+	} else {
+		_, err = collection.UpdateOne(
+			ctx,
+			bson.D{{"pkEnergie", data.PKEnergie}},
+			bson.D{{"$push",
+				bson.D{{"zaehlerdaten",
+					bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
+		)
+	}
 	if err != nil {
 		log.Println(err)
 		log.Println(string(debug.Stack()))
