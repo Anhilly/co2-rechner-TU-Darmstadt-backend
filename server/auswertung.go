@@ -80,7 +80,7 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	}
 	auswertung.AuswertungFreigegeben = umfrage.AuswertungFreigegeben
 
-	auswertung.EmissionenWaerme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)
+	auswertung.EmissionenWaerme, auswertung.VerbrauchWearme, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungWaerme)
 	if err != nil {
 		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
 			auswertung.EmissionenWaerme = -1 // Fuer Frontend zum Hinweis, dass keine Auswertung fuer Jahr moeglich
@@ -90,7 +90,7 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	auswertung.EmissionenStrom, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungStrom)
+	auswertung.EmissionenStrom, auswertung.VerbrauchStrom, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungStrom)
 	if err != nil {
 		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
 			auswertung.EmissionenStrom = -1 // Fuer Frontend zum Hinweis, dass keine Auswertung fuer Jahr moeglich
@@ -100,7 +100,7 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	auswertung.EmissionenKaelte, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungKaelte)
+	auswertung.EmissionenKaelte, auswertung.VerbrauchKaelte, err = co2computation.BerechneEnergieverbrauch(umfrage.Gebaeude, umfrage.Jahr, structs.IDEnergieversorgungKaelte)
 	if err != nil {
 		if errors.Is(err, structs.ErrJahrNichtVorhanden) {
 			auswertung.EmissionenKaelte = -1 // Fuer Frontend zum Hinweis, dass keine Auswertung fuer Jahr moeglich
@@ -155,6 +155,8 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.EmissionenITGeraete = auswertung.EmissionenITGeraeteMitarbeiter + auswertung.EmissionenITGeraeteHauptverantwortlicher
 	auswertung.EmissionenEnergie = auswertung.EmissionenWaerme + auswertung.EmissionenStrom + auswertung.EmissionenKaelte
 	auswertung.EmissionenGesamt = auswertung.EmissionenPendelwege + auswertung.EmissionenITGeraete + auswertung.EmissionenDienstreisen + auswertung.EmissionenEnergie
+
+	auswertung.VerbrauchEnergie = auswertung.VerbrauchKaelte + auswertung.VerbrauchStrom + auswertung.VerbrauchWearme
 
 	if auswertung.Mitarbeiteranzahl > 0 {
 		auswertung.EmissionenProMitarbeiter = math.Round(auswertung.EmissionenGesamt/float64(auswertung.Mitarbeiteranzahl)*100) / 100

@@ -191,6 +191,12 @@ type AuswertungRes struct {
 	EmissionenGesamt                         float64 `json:"emissionenGesamt"`
 	EmissionenProMitarbeiter                 float64 `json:"emissionenProMitarbeiter"`
 
+	// Berechneter Gesamtverbrauch
+	VerbrauchWearme  float64 `json:"verbrauchWaerme"`
+	VerbrauchStrom   float64 `json:"verbrauchStrom"`
+	VerbrauchKaelte  float64 `json:"verbrauchKaelte"`
+	VerbrauchEnergie float64 `json:"verbrauchEnergie"`
+
 	Vergleich2PersonenHaushalt float64 `json:"vergleich2PersonenHaushalt"`
 	Vergleich4PersonenHaushalt float64 `json:"vergleich4PersonenHaushalt"`
 }
