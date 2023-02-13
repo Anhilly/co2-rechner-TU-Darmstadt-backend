@@ -33,10 +33,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)             // Normalfall wirft keine Errors
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
+		is.Equal(verbrauch, 0.0)  // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
 	})
 
 	t.Run("BerechneEnergieverbrauch: leerer Slice", func(t *testing.T) {
@@ -46,10 +47,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)             // Normalfall wirft keine Errors
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
+		is.Equal(verbrauch, 0.0)  // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
 	})
 
 	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Einzelzaehler ", func(t *testing.T) {
@@ -61,10 +63,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)                    // Normalfall wirft keine Errors
 		is.Equal(emissionen, 6604024.85) // erwartetes Ergebnis: 6604024.85
+		is.Equal(verbrauch, 45861.28)
 	})
 
 	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Gebaeude mehrere Zaehler ", func(t *testing.T) {
@@ -76,10 +79,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)                     // Normalfall wirft keine Errors
 		is.Equal(emissionen, 23126680.04) // erwartetes Ergebnis: 23126680.04
+		is.Equal(verbrauch, 160601.94)
 	})
 
 	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Gruppenzaehler ", func(t *testing.T) {
@@ -91,10 +95,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 3
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)                    // Normalfall wirft keine Errors
 		is.Equal(emissionen, 1085282.24) // erwartetes Ergebnis: 1085282.24
+		is.Equal(verbrauch, 15073.36)
 	})
 
 	// Test ueberprueft, ob Referenzen von Gebaeude 1321 korrekt angepasst
@@ -107,10 +112,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 2
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)                    // Normalfall wirft keine Errors
 		is.Equal(emissionen, 8804937.41) // erwartetes Ergebnis: 8804937.41
+		is.Equal(verbrauch, 30894.52)
 	})
 
 	t.Run("BerechneEnergieverbrauch: komplexe Eingabe", func(t *testing.T) {
@@ -124,10 +130,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)                    // Normalfall wirft keine Errors
 		is.Equal(emissionen, 38362781.9) // erwartetes Ergebnis: 38362781.9
+		is.Equal(verbrauch, 266408.21)
 	})
 
 	t.Run("BerechneEnergieverbrauch: Gebaeude ohne Zaehler", func(t *testing.T) {
@@ -139,10 +146,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 3
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)             // Normalfall wirft keine Errors
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Zaehler = kein berechenbarer Verbrauch)
+		is.Equal(verbrauch, 0.0)
 	})
 
 	t.Run("BerechneEnergieverbrauch: Nutzflaeche = 0", func(t *testing.T) {
@@ -157,10 +165,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)             // Normalfall wirft keine Errors
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Nutzflaeche = keine Emissionen)
+		is.Equal(verbrauch, 0.0)
 	})
 
 	// Spezialfaelle
@@ -173,10 +182,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung = structs.IDEnergieversorgungKaelte
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)             // Spezialfall 2 wirft keine Errors
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0
+		is.Equal(verbrauch, 0.0)
 	})
 
 	t.Run("BerechneEnergieverbrauch: Kaeltezaehler, Spezialfall 3", func(t *testing.T) {
@@ -188,10 +198,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung = structs.IDEnergieversorgungKaelte
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)                   // Spezialfall 3 wirft keine Errors
 		is.Equal(emissionen, 659215.24) // erwartetes Ergebnis: 659215.24
+		is.Equal(verbrauch, 9155.77)
 	})
 
 	// Errortests
@@ -202,10 +213,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 0
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(emissionen, 0.0)           // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(verbrauch, 0.0)
 	})
 
 	t.Run("BerechneEnergieverbrauch: Jahr = 0 nicht vorhanden", func(t *testing.T) {
@@ -215,10 +227,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 0
 		var idEnergieversorgung int32 = 1
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.Equal(err, structs.ErrJahrNichtVorhanden) // Funktion wirft ErrJahrNichtVorhanden
 		is.Equal(emissionen, 0.0)                    // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(verbrauch, 0.0)
 	})
 
 	t.Run("BerechneEnergieverbrauch: Gebaeude Nr = 0 nicht vorhanden", func(t *testing.T) {
@@ -230,10 +243,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(emissionen, 0.0)           // bei Fehlern wird 0.0 als Ergebnis zurückgegeben
+		is.Equal(verbrauch, 0.0)
 	})
 
 	t.Run("BerechneEnergieverbrauch: negativer Nutzflaeche eingegeben", func(t *testing.T) {
@@ -245,10 +259,11 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		var jahr int32 = 2020
 		var idEnergieversorgung int32 = 1
 
-		emissionen, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
+		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.Equal(err, structs.ErrFlaecheNegativ) // Funktion wirft ErrFlaecheNegativ
 		is.Equal(emissionen, 0.0)                // im Fehlerfall ist Emissionen = 0.0
+		is.Equal(verbrauch, 0.0)
 	})
 
 	// Fehler GebaeudeSpezialfall --> Was ist 'Spezialfall' für ein Attribut bzw. warum ist es immer ==1?
