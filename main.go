@@ -9,8 +9,7 @@ import (
 
 func main() {
 	logger := lumberjack.Logger{
-		//Filename:  "/app/backend/logs/go.log",
-		Filename:  "/home/tobias/Git/co2-rechner-TU-Darmstadt-backend/go.log",
+		Filename:  "/app/backend/logs/go.log",
 		MaxSize:   100,
 		LocalTime: true,
 	}
