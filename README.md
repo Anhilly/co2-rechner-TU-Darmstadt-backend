@@ -14,13 +14,13 @@ Dieses Projekt ermöglicht eine Erfassung von CO2 Emissionen von TU Einheiten un
 
 Das Backend kann nicht unabhängig betrieben werden.
 
-Das Frontend, welches eine webbasierte Interaktionsseite bietet, ist hier einsehbar: [Github](https://github.com/Lithium-1Hauptgruppe/CO2-Rechner-TU-Darmstadt-Frontend)  
+Das Frontend, welches eine webbasierte Interaktionsseite bietet, ist hier einsehbar: [Github](https://github.com/felix-marx/CO2-Rechner-TU-Darmstadt-Frontend)  
 Die Interaktionen zwischen Frontend und Backend sind in einer REST artigen API definiert, welche hier eingesehen werden kann: [Github](https://github.com/Anhilly/CO2-Rechner-api)
 
 ## Abhängigkeiten
 
 Das Projekt ist in der Sprache Go geschrieben.
-Der CO2 Rechner verwendet folgende direkte Abhängigkeiten um die Funktionalität bereitzustellen:
+Der CO2 Rechner verwendet folgende direkte Abhängigkeiten, um die Funktionalität bereitzustellen:
 
 - [Go Lang Version 1.17](https://go.dev/) - Go Entwicklungssprache
 - [go chi Version 5.0.7](https://github.com/go-chi/chi) - Go Router für HTTP Dienste
@@ -31,6 +31,7 @@ Der CO2 Rechner verwendet folgende direkte Abhängigkeiten um die Funktionalitä
 - [crypto Version 0.0.0-20201216223049-8b5274cf687f](https://golang.org/x/crypto) - Verschlüsselungsalgorithmen
 - [gomail Version 2.0.0-20160411212932-81ebce5c23df](https://gopkg.in/gomail.v2) - Versand von E-Mails
 - [go password Version 0.2.0](https://github.com/sethvargo/go-password) - Generierung von zufälligen Passwörtern
+- [lumberjack Version 2.0.0](https://gopkg.in/natefinch/lumberjack.v2) - Logger
 
 ## Entwicklungssetup
 

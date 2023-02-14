@@ -22,6 +22,7 @@ func RouteUmfrage() chi.Router {
 	r.Post("/gebaeude", PostAllGebaeude)
 	r.Post("/alleUmfragen", PostAllUmfragen)
 	r.Post("/GetAllUmfragenForUser", PostAllUmfragenForUser)
+	r.Post("/duplicateUmfrage", PostDuplicateUmfrage)
 
 	// Get
 	r.Get("/GetUmfrageYear", GetUmfrageYear)
@@ -234,6 +235,81 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
+// PostDuplicateUmfrage dupliziert die Umfrage mit übergebener ObjectID
+// und sendet structs.UmfrageID mit neuer ObjectID zurück
+func PostDuplicateUmfrage(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	umfrageReq := structs.DuplicateUmfrage{}
+	umfrageRes := structs.UmfrageID{}
+
+	err = json.Unmarshal(s, &umfrageReq)
+	if err != nil {
+		// Konnte Body der Request nicht lesen, daher Client error --> 400
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("PostDuplicateUmfrage")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
+		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
+		return
+	}
+
+	umfrage, err := database.UmfrageFind(umfrageReq.UmfrageID)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	duplizierteUmfrage := structs.InsertUmfrage{
+		Bezeichnung:       umfrage.Bezeichnung + " (Kopie)",
+		Mitarbeiteranzahl: umfrage.Mitarbeiteranzahl,
+		Jahr:              umfrage.Jahr,
+		Gebaeude:          umfrage.Gebaeude,
+		ITGeraete:         umfrage.ITGeraete,
+		Auth:              umfrageReq.Auth,
+	}
+
+	umfrageID, err := database.UmfrageInsert(duplizierteUmfrage)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		} else {
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	// return empty umfrage string if umfrageID is invalid
+	if umfrageID == primitive.NilObjectID {
+		umfrageRes.UmfrageID = ""
+	} else {
+		umfrageRes.UmfrageID = umfrageID.Hex()
+	}
+
+	sendResponse(res, true, umfrageRes, http.StatusOK)
+}
+
 // DeleteUmfrage loescht eine Umfrage mit der empfangenen UmfrageID aus der Datenbank.
 // Sendet im Erfolgsfall null zurueck
 func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
@@ -249,6 +325,11 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 
 	// Pruefe ob Nutzer authentifiziert ist, dann ob er die zu loeschende Umfrage besitzt
 	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
+		return
+	}
+	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
+		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
 

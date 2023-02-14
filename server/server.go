@@ -5,6 +5,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"log"
 	"net/http"
 )
@@ -14,8 +15,10 @@ const (
 )
 
 // StartServer started den Router und mounted alle Subseiten.
-func StartServer() {
+func StartServer(logger *lumberjack.Logger) {
 	r := chi.NewRouter()
+
+	middleware.DefaultLogger = middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: log.New(logger, "", log.LstdFlags)})
 
 	r.Use(middleware.Logger)
 

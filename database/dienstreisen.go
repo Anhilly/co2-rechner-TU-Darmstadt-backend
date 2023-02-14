@@ -22,7 +22,7 @@ func DienstreisenFind(idDienstreisen int32) (structs.Dienstreisen, error) {
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.Dienstreisen{}, err
 	}
 

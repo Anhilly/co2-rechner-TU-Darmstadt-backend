@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"runtime/debug"
 	"time"
@@ -29,7 +30,7 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 		zaehlertyp = structs.ZaehlertypKaelte
 	default:
 		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.Zaehler{}, structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
@@ -42,7 +43,7 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.Zaehler{}, err
 	}
 
@@ -68,7 +69,7 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 		collectionname = structs.KaeltezaehlerCol
 	default:
 		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
@@ -78,15 +79,21 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	currentDoc, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
 	// Ueberpruefung, ob schon Wert zu angegebenen Jahr existiert
+	wert_ersetzten := false
+
 	for _, zaehlerdatum := range currentDoc.Zaehlerdaten {
 		if int32(zaehlerdatum.Zeitstempel.Year()) == data.Jahr {
+			if zaehlerdatum.Wert == 0.0 {
+				wert_ersetzten = true
+				break
+			}
 			log.Println(structs.ErrJahrVorhanden)
-			debug.PrintStack()
+			log.Println(string(debug.Stack()))
 			return structs.ErrJahrVorhanden
 		}
 	}
@@ -95,17 +102,64 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	location, _ := time.LoadLocation("Etc/GMT")
 	zeitstempel := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
 
-	_, err = collection.UpdateOne(
-		ctx,
-		bson.D{{"pkEnergie", data.PKEnergie}},
-		bson.D{{"$push",
-			bson.D{{"zaehlerdaten",
-				bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
-	)
+	if wert_ersetzten {
+		_, err = collection.UpdateOne(
+			ctx,
+			bson.D{{"pkEnergie", data.PKEnergie}},
+			bson.D{{"$set",
+				bson.D{{"zaehlerdaten.$[element]",
+					bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
+			options.Update().SetArrayFilters(options.ArrayFilters{
+				Filters: []interface{}{bson.M{"element.zeitstempel": zeitstempel}},
+			}),
+		)
+
+	} else {
+		_, err = collection.UpdateOne(
+			ctx,
+			bson.D{{"pkEnergie", data.PKEnergie}},
+			bson.D{{"$push",
+				bson.D{{"zaehlerdaten",
+					bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
+		)
+	}
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
+	}
+
+	return nil
+}
+
+// ZaehlerAddStandardZaehlerdaten updated alle Zaehler in der Datenbank um den Zaehlerwert {jahr, 0.0},
+// falls Jahr noch nicht vorhanden.
+func ZaehlerAddStandardZaehlerdaten(data structs.AddStandardZaehlerdaten) error {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	// Update aller Zaehler ohne Wert für Zeitstempel
+	location, _ := time.LoadLocation("Etc/GMT")
+	zeitstempel := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
+
+	for _, tmp := range []string{structs.WaermezaehlerCol, structs.StromzaehlerCol, structs.KaeltezaehlerCol} {
+		collection := client.Database(dbName).Collection(tmp)
+
+		_, err := collection.UpdateMany(
+			ctx,
+			bson.D{{"zaehlerdaten",
+				bson.D{{"$not",
+					bson.D{{"$elemMatch",
+						bson.D{{"zeitstempel", zeitstempel}}}}}}}},
+			bson.D{{"$push",
+				bson.D{{"zaehlerdaten",
+					bson.D{{"wert", 0.0}, {"zeitstempel", zeitstempel}}}}}},
+		)
+		if err != nil {
+			log.Println(err)
+			log.Println(string(debug.Stack()))
+			return err
+		}
 	}
 
 	return nil
@@ -129,22 +183,32 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		collectionname = structs.KaeltezaehlerCol
 	default:
 		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 	collection := client.Database(dbName).Collection(collectionname)
 
 	if len(data.GebaeudeRef) == 0 {
 		log.Println(structs.ErrFehlendeGebaeuderef)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrFehlendeGebaeuderef
 	}
 
 	_, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
 	if err == nil { // kein Error = Nr schon vorhanden
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrZaehlerVorhanden
+	}
+
+	location, _ := time.LoadLocation("Etc/GMT")
+	aktuellesJahr := int32(time.Now().Year())
+	var zaehlerdaten []structs.Zaehlerwerte
+	for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+		zaehlerdaten = append(zaehlerdaten, structs.Zaehlerwerte{
+			Wert:        0.0,
+			Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
+		})
 	}
 
 	_, err = collection.InsertOne(
@@ -153,7 +217,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 			PKEnergie:    data.PKEnergie,
 			Bezeichnung:  data.Bezeichnung,
 			Einheit:      data.Einheit,
-			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Zaehlerdaten: zaehlerdaten,
 			Spezialfall:  1,
 			Revision:     1,
 			GebaeudeRef:  data.GebaeudeRef,
@@ -161,7 +225,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
@@ -169,7 +233,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		err := GebaeudeAddZaehlerref(referenz, data.PKEnergie, data.IDEnergieversorgung)
 		if err != nil {
 			log.Println(err)
-			debug.PrintStack()
+			log.Println(string(debug.Stack()))
 			return err
 		}
 	}

@@ -28,5 +28,7 @@
 server/mail_config.go
 
 go_build_main_Linux_linux
-
 go_build_main_Linux_linux_GOARCH_amd64
+build/*
+/build/
+/go.log

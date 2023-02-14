@@ -22,7 +22,7 @@ func AlleUmfragen() ([]structs.Umfrage, error) {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, err
 	}
 
@@ -31,7 +31,7 @@ func AlleUmfragen() ([]structs.Umfrage, error) {
 	err = cursor.All(ctx, &results)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, err
 	}
 
@@ -65,7 +65,7 @@ func AlleUmfragenForUser(username string) ([]structs.Umfrage, error) {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, err
 	}
 
@@ -74,7 +74,7 @@ func AlleUmfragenForUser(username string) ([]structs.Umfrage, error) {
 	err = cursor.All(ctx, &results)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return nil, err
 	}
 
@@ -97,7 +97,7 @@ func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.Umfrage{}, err
 	}
 
@@ -129,7 +129,7 @@ func UmfrageUpdate(data structs.UpdateUmfrage) (primitive.ObjectID, error) {
 
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return primitive.NilObjectID, err
 	}
 
@@ -158,14 +158,14 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 		})
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return primitive.NilObjectID, err
 	}
 
 	id, ok := insertedDoc.InsertedID.(primitive.ObjectID)
 	if !ok {
 		log.Println(structs.ErrObjectIDNichtKonvertierbar)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
@@ -193,7 +193,7 @@ func UmfrageAddMitarbeiterUmfrageRef(idUmfrage primitive.ObjectID, referenz prim
 	).Decode(&updatedDoc)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
@@ -228,13 +228,13 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 	)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
 	if anzahl.DeletedCount == 0 {
 		log.Println(structs.ErrObjectIDNichtGefunden)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ErrObjectIDNichtGefunden
 	}
 
@@ -277,7 +277,7 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 	).Decode(&updatedDoc)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return err
 	}
 
@@ -306,7 +306,7 @@ func UmfrageUpdateLinkShare(setValue int32, umfrageID primitive.ObjectID) (primi
 	).Decode(&updatedDoc)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return primitive.NilObjectID, err
 	}
 

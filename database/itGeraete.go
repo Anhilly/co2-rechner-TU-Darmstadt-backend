@@ -21,7 +21,7 @@ func ITGeraeteFind(idITGeraete int32) (structs.ITGeraete, error) {
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
-		debug.PrintStack()
+		log.Println(string(debug.Stack()))
 		return structs.ITGeraete{}, err
 	}
 

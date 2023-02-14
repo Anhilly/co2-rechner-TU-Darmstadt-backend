@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"testing"
+	"time"
 )
 
 func TestInsert(t *testing.T) {
@@ -80,9 +81,103 @@ func TestGebaeudeInsert(t *testing.T) {
 			Einheit:     "m^2",
 			Spezialfall: 1,
 			Revision:    1,
-			KaelteRef:   []int32{},
-			WaermeRef:   []int32{},
-			StromRef:    []int32{},
+			Stromversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+				{Jahr: 2023, IDVertrag: 1},
+			},
+			Waermeversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+				{Jahr: 2023, IDVertrag: 1},
+			},
+			Kaelteversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+				{Jahr: 2023, IDVertrag: 1},
+			},
+			KaelteRef: []int32{},
+			WaermeRef: []int32{},
+			StromRef:  []int32{},
+		}) // Ueberpruefung des geaenderten Elementes
+	})
+
+	t.Run("GebaeudeInsert: Nr = 1", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.InsertGebaeude{
+			Nr:          1,
+			Bezeichnung: "Testgebaeude",
+			Flaeche: structs.GebaeudeFlaeche{
+				HNF:     1000.0,
+				NNF:     1000.0,
+				NGF:     1000.0,
+				FF:      1000.0,
+				VF:      1000.0,
+				FreiF:   1000.0,
+				GesamtF: 1000.0,
+			},
+			WaermeVersorgerJahre: []int32{2020, 2019, 2018},
+			KaelteVersorgerJahre: []int32{2021},
+			StromVersorgerJahre:  []int32{2023},
+		}
+
+		err := database.GebaeudeInsert(data)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		insertedDoc, err := database.GebaeudeFind(data.Nr)
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(insertedDoc, structs.Gebaeude{
+			Nr:          1,
+			Bezeichnung: "Testgebaeude",
+			Flaeche: structs.GebaeudeFlaeche{
+				HNF:     1000.0,
+				NNF:     1000.0,
+				NGF:     1000.0,
+				FF:      1000.0,
+				VF:      1000.0,
+				FreiF:   1000.0,
+				GesamtF: 1000.0,
+			},
+			Einheit:     "m^2",
+			Spezialfall: 1,
+			Revision:    1,
+			Stromversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+				{Jahr: 2023, IDVertrag: 2},
+			},
+			Waermeversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 2},
+				{Jahr: 2019, IDVertrag: 2},
+				{Jahr: 2020, IDVertrag: 2},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+				{Jahr: 2023, IDVertrag: 1},
+			},
+			Kaelteversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 2},
+				{Jahr: 2022, IDVertrag: 1},
+				{Jahr: 2023, IDVertrag: 1},
+			},
+			KaelteRef: []int32{},
+			WaermeRef: []int32{},
+			StromRef:  []int32{},
 		}) // Ueberpruefung des geaenderten Elementes
 	})
 
@@ -127,9 +222,10 @@ func TestZaehlerInsert(t *testing.T) {
 		err := database.ZaehlerInsert(data)
 		is.NoErr(err)
 
-		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
-		is.NoErr(err)
-		is.Equal(neuerZaehler, structs.Zaehler{
+		// Vergleichszaehler wird dynamisch erstellt, weil eingetragene Zaehlerdaten vom aktuellen Jahr abhaengen
+		location, _ := time.LoadLocation("Etc/GMT")
+		aktuellesJahr := int32(time.Now().Year())
+		vergleichszaehler := structs.Zaehler{
 			Zaehlertyp:   "Waerme",
 			PKEnergie:    190,
 			Bezeichnung:  "Testzaehler",
@@ -138,7 +234,17 @@ func TestZaehlerInsert(t *testing.T) {
 			Spezialfall:  1,
 			Revision:     1,
 			GebaeudeRef:  []int32{1101},
-		})
+		}
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
+				Wert:        0.0,
+				Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
+			})
+		}
+
+		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(neuerZaehler, vergleichszaehler)
 
 		updatedGebaeude, err := database.GebaeudeFind(1101)
 		is.NoErr(err)
@@ -157,9 +263,30 @@ func TestZaehlerInsert(t *testing.T) {
 			Einheit:     "m^2",
 			Spezialfall: 1,
 			Revision:    1,
-			KaelteRef:   []int32{},
-			WaermeRef:   []int32{2084, 190},
-			StromRef:    []int32{},
+			Stromversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Waermeversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Kaelteversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			KaelteRef: []int32{},
+			WaermeRef: []int32{2084, 190},
+			StromRef:  []int32{26024, 24799},
 		})
 	})
 
@@ -177,9 +304,10 @@ func TestZaehlerInsert(t *testing.T) {
 		err := database.ZaehlerInsert(data)
 		is.NoErr(err)
 
-		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
-		is.NoErr(err)
-		is.Equal(neuerZaehler, structs.Zaehler{
+		// Vergleichszaehler wird dynamisch erstellt, weil eingetragene Zaehlerdaten vom aktuellen Jahr abhaengen
+		location, _ := time.LoadLocation("Etc/GMT")
+		aktuellesJahr := int32(time.Now().Year())
+		vergleichszaehler := structs.Zaehler{
 			Zaehlertyp:   "Strom",
 			PKEnergie:    191,
 			Bezeichnung:  "Testzaehler",
@@ -188,7 +316,17 @@ func TestZaehlerInsert(t *testing.T) {
 			Spezialfall:  1,
 			Revision:     1,
 			GebaeudeRef:  []int32{1101},
-		})
+		}
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
+				Wert:        0.0,
+				Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
+			})
+		}
+
+		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(neuerZaehler, vergleichszaehler)
 
 		updatedGebaeude, err := database.GebaeudeFind(1101)
 		is.NoErr(err)
@@ -207,9 +345,30 @@ func TestZaehlerInsert(t *testing.T) {
 			Einheit:     "m^2",
 			Spezialfall: 1,
 			Revision:    1,
-			KaelteRef:   []int32{},
-			WaermeRef:   []int32{2084, 190},
-			StromRef:    []int32{191},
+			Stromversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Waermeversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Kaelteversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			KaelteRef: []int32{},
+			WaermeRef: []int32{2084, 190},
+			StromRef:  []int32{26024, 24799, 191},
 		})
 	})
 
@@ -227,9 +386,10 @@ func TestZaehlerInsert(t *testing.T) {
 		err := database.ZaehlerInsert(data)
 		is.NoErr(err)
 
-		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
-		is.NoErr(err)
-		is.Equal(neuerZaehler, structs.Zaehler{
+		// Vergleichszaehler wird dynamisch erstellt, weil eingetragene Zaehlerdaten vom aktuellen Jahr abhaengen
+		location, _ := time.LoadLocation("Etc/GMT")
+		aktuellesJahr := int32(time.Now().Year())
+		vergleichszaehler := structs.Zaehler{
 			Zaehlertyp:   "Kaelte",
 			PKEnergie:    192,
 			Bezeichnung:  "Testzaehler",
@@ -238,7 +398,17 @@ func TestZaehlerInsert(t *testing.T) {
 			Spezialfall:  1,
 			Revision:     1,
 			GebaeudeRef:  []int32{1101},
-		})
+		}
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
+				Wert:        0.0,
+				Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
+			})
+		}
+
+		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(neuerZaehler, vergleichszaehler)
 
 		updatedGebaeude, err := database.GebaeudeFind(1101)
 		is.NoErr(err)
@@ -257,9 +427,30 @@ func TestZaehlerInsert(t *testing.T) {
 			Einheit:     "m^2",
 			Spezialfall: 1,
 			Revision:    1,
-			KaelteRef:   []int32{192},
-			WaermeRef:   []int32{2084, 190},
-			StromRef:    []int32{191},
+			Stromversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Waermeversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Kaelteversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			KaelteRef: []int32{192},
+			WaermeRef: []int32{2084, 190},
+			StromRef:  []int32{26024, 24799, 191},
 		})
 	})
 

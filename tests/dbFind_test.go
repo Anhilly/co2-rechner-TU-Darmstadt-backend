@@ -122,7 +122,14 @@ func TestEnergieversorgungFind(t *testing.T) {
 			Kategorie:           "Fernwaerme",
 			Einheit:             "g/kWh",
 			Revision:            1,
-			CO2Faktor:           []structs.CO2Energie{{Wert: 144, Jahr: 2020}},
+			CO2Faktor: []structs.CO2Energie{
+				{Jahr: 2020, Vertraege: []structs.CO2FaktorVetrag{
+					{IDVertrag: 1, Wert: 144},
+				}},
+				{Jahr: 2021, Vertraege: []structs.CO2FaktorVetrag{
+					{IDVertrag: 1, Wert: 125},
+				}},
+			},
 		}) // Überprüfung des zurückgelieferten Elements
 	})
 
@@ -160,9 +167,30 @@ func TestGebaeudeFind(t *testing.T) {
 			Einheit:     "m^2",
 			Spezialfall: 1,
 			Revision:    1,
-			KaelteRef:   []int32{},
-			WaermeRef:   []int32{2084},
-			StromRef:    []int32{},
+			Stromversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Waermeversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			Kaelteversorger: []structs.Versoger{
+				{Jahr: 2018, IDVertrag: 1},
+				{Jahr: 2019, IDVertrag: 1},
+				{Jahr: 2020, IDVertrag: 1},
+				{Jahr: 2021, IDVertrag: 1},
+				{Jahr: 2022, IDVertrag: 1},
+			},
+			KaelteRef: []int32{},
+			WaermeRef: []int32{2084},
+			StromRef:  []int32{26024, 24799},
 		}) // Überprüfung des zurückgelieferten Elements
 	})
 
@@ -276,10 +304,6 @@ func TestZaehlerFind(t *testing.T) {
 			Bezeichnung: "3101 Kaelte Hauptzaehler",
 			Zaehlerdaten: []structs.Zaehlerwerte{
 				{
-					Wert:        311.06,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
 					Wert:        414.61,
 					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
@@ -290,6 +314,14 @@ func TestZaehlerFind(t *testing.T) {
 				{
 					Wert:        169.59,
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        380.67,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        370.39,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
 			Einheit:     "MWh",
@@ -325,6 +357,14 @@ func TestZaehlerFind(t *testing.T) {
 					Wert:        736.9,
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
+				{
+					Wert:        859.29,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        697.07,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
 			},
 			Einheit:     "MWh",
 			Spezialfall: 1,
@@ -348,10 +388,6 @@ func TestZaehlerFind(t *testing.T) {
 			Bezeichnung: "2201 Strom Hauptzaehler",
 			Zaehlerdaten: []structs.Zaehlerwerte{
 				{
-					Wert:        126048.9,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
 					Wert:        0.0,
 					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
@@ -362,6 +398,14 @@ func TestZaehlerFind(t *testing.T) {
 				{
 					Wert:        0.0,
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        165.44,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        197.599,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
 			Einheit:     "kWh",
@@ -397,10 +441,10 @@ func TestZaehlerFind(t *testing.T) {
 	})
 
 	// Zaehler soll nicht beachtet werden, 1473 Waerme Hauptzaehler Justitzzentrum
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2014 nicht vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerFind: Waermezaehler, ID = 2104 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2014
+		var pkEnergie int32 = 2104
 		var idEnergieversorgung int32 = 1
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
@@ -410,10 +454,10 @@ func TestZaehlerFind(t *testing.T) {
 	})
 
 	// Zaehler soll nicht beachtet werden, 1475 Waerme Hauptzaehler Landgericht Gebaeude A
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2015 nicht vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerFind: Waermezaehler, ID = 2105 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2015
+		var pkEnergie int32 = 2105
 		var idEnergieversorgung int32 = 1
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
@@ -423,10 +467,10 @@ func TestZaehlerFind(t *testing.T) {
 	})
 
 	// Zaehler soll nicht beachtet werden, 1476 Waerme Hauptzaehler Landgericht Gebaeude B
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2016 nicht vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerFind: Waermezaehler, ID = 2106 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2016
+		var pkEnergie int32 = 2106
 		var idEnergieversorgung int32 = 1
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
@@ -531,6 +575,71 @@ func TestZaehlerFind(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var pkEnergie int32 = 4194
+		var idEnergieversorgung int32 = 1
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Heizgruppe Süd Schloss gesamt + E-Technik gesamt
+	t.Run("ZaehlerFind: Waermezaehler, ID = 3960 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 3960
+		var idEnergieversorgung int32 = 1
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Netz Darmstadt Nord
+	t.Run("ZaehlerFind: Waermezaehler, ID = 6697 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 6697
+		var idEnergieversorgung int32 = 1
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Wärmezähler Lichtwiese Forschungsprojekt
+	t.Run("ZaehlerFind: Waermezaehler, ID = 3789 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 3789
+		var idEnergieversorgung int32 = 1
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Wärme Hauptzähler Tagesverbrauch
+	t.Run("ZaehlerFind: Waermezaehler, ID = 2558 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 2558
+		var idEnergieversorgung int32 = 1
+
+		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, Wärme Hauptzähler Wochenverbrauch
+	t.Run("ZaehlerFind: Waermezaehler, ID = 2560 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		var pkEnergie int32 = 2560
 		var idEnergieversorgung int32 = 1
 
 		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
@@ -808,8 +917,8 @@ func TestGebaeudeAlleNr(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		gebaeudenummer, err := database.GebaeudeAlleNr()
-		is.NoErr(err)                           // kein Error seitens der Datenbank
-		is.Equal(len(gebaeudenummer) > 0, true) // Slice ist nicht leer
+		is.NoErr(err)                    // kein Error seitens der Datenbank
+		is.True(len(gebaeudenummer) > 0) // Slice ist nicht leer
 	})
 }
 
@@ -824,8 +933,8 @@ func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
 		is.NoErr(err)
 
 		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
-		is.NoErr(err)                                // kein Error seitens der Datenbank
-		is.Equal(len(mitarbeiterUmfragen) > 0, true) // Slice ist nicht leer
+		is.NoErr(err)                         // kein Error seitens der Datenbank
+		is.True(len(mitarbeiterUmfragen) > 0) // Slice ist nicht leer
 
 		correctMitarbeiterUmfrageID, err := primitive.ObjectIDFromHex("61b34f9324756df01eee5ff4")
 		is.NoErr(err)
@@ -866,8 +975,8 @@ func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
 		is.NoErr(err)
 
 		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
-		is.NoErr(err)                                 // kein Error seitens der Datenbank
-		is.Equal(len(mitarbeiterUmfragen) == 0, true) // Slice ist nicht leer
+		is.NoErr(err)                         // kein Error seitens der Datenbank
+		is.Equal(len(mitarbeiterUmfragen), 0) // Slice ist nicht leer
 	})
 
 	// Errorfaelle
@@ -892,8 +1001,8 @@ func TestAlleUmfragen(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		alleUmfragen, err := database.AlleUmfragen()
-		is.NoErr(err)                          // kein Error seitens der Datenbank
-		is.Equal(len(alleUmfragen) == 5, true) // Slice ist nicht leer
+		is.NoErr(err)                  // kein Error seitens der Datenbank
+		is.Equal(len(alleUmfragen), 5) // Slice ist nicht leer
 	})
 }
 
@@ -906,8 +1015,8 @@ func TestAlleUmfragenForUser(t *testing.T) {
 
 		userMail := "anton@tobi.com"
 		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
-		is.NoErr(err)                         // kein Error seitens der Datenbank
-		is.Equal(len(alleUmfragen) > 0, true) // Slice ist nicht leer
+		is.NoErr(err)                  // kein Error seitens der Datenbank
+		is.True(len(alleUmfragen) > 0) // Slice ist nicht leer
 
 		correctRefID, err := primitive.ObjectIDFromHex("61b23e9855aa64762baf76d7")
 		is.NoErr(err)

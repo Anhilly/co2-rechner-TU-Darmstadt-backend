@@ -19,7 +19,7 @@ func ConnectDatabase() error {
 	defer cancel()
 
 	client, err = mongo.NewClient(
-		options.Client().ApplyURI("mongodb://" + username + ":" + password + "@" + serverAdress + ":" + port))
+		options.Client().ApplyURI(containerName + "://" + username + ":" + password + "@" + serverAdress + ":" + port))
 	if err != nil {
 		return err
 	}
