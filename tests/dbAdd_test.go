@@ -394,7 +394,7 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		data := structs.AddZaehlerdaten{
 			PKEnergie:           5967,
 			Wert:                1000.0,
-			Jahr:                2020,
+			Jahr:                2021,
 			IDEnergieversorgung: 2,
 		}
 
