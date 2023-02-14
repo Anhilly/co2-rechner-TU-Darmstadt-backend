@@ -917,8 +917,8 @@ func TestGebaeudeAlleNr(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		gebaeudenummer, err := database.GebaeudeAlleNr()
-		is.NoErr(err)                           // kein Error seitens der Datenbank
-		is.Equal(len(gebaeudenummer) > 0, true) // Slice ist nicht leer
+		is.NoErr(err)                    // kein Error seitens der Datenbank
+		is.True(len(gebaeudenummer) > 0) // Slice ist nicht leer
 	})
 }
 
@@ -933,8 +933,8 @@ func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
 		is.NoErr(err)
 
 		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
-		is.NoErr(err)                                // kein Error seitens der Datenbank
-		is.Equal(len(mitarbeiterUmfragen) > 0, true) // Slice ist nicht leer
+		is.NoErr(err)                         // kein Error seitens der Datenbank
+		is.True(len(mitarbeiterUmfragen) > 0) // Slice ist nicht leer
 
 		correctMitarbeiterUmfrageID, err := primitive.ObjectIDFromHex("61b34f9324756df01eee5ff4")
 		is.NoErr(err)
@@ -975,8 +975,8 @@ func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
 		is.NoErr(err)
 
 		mitarbeiterUmfragen, err := database.MitarbeiterUmfrageFindForUmfrage(umfrageID)
-		is.NoErr(err)                                 // kein Error seitens der Datenbank
-		is.Equal(len(mitarbeiterUmfragen) == 0, true) // Slice ist nicht leer
+		is.NoErr(err)                         // kein Error seitens der Datenbank
+		is.Equal(len(mitarbeiterUmfragen), 0) // Slice ist nicht leer
 	})
 
 	// Errorfaelle
@@ -1001,8 +1001,8 @@ func TestAlleUmfragen(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		alleUmfragen, err := database.AlleUmfragen()
-		is.NoErr(err)                          // kein Error seitens der Datenbank
-		is.Equal(len(alleUmfragen) == 5, true) // Slice ist nicht leer
+		is.NoErr(err)                  // kein Error seitens der Datenbank
+		is.Equal(len(alleUmfragen), 5) // Slice ist nicht leer
 	})
 }
 
@@ -1015,8 +1015,8 @@ func TestAlleUmfragenForUser(t *testing.T) {
 
 		userMail := "anton@tobi.com"
 		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
-		is.NoErr(err)                         // kein Error seitens der Datenbank
-		is.Equal(len(alleUmfragen) > 0, true) // Slice ist nicht leer
+		is.NoErr(err)                  // kein Error seitens der Datenbank
+		is.True(len(alleUmfragen) > 0) // Slice ist nicht leer
 
 		correctRefID, err := primitive.ObjectIDFromHex("61b23e9855aa64762baf76d7")
 		is.NoErr(err)
