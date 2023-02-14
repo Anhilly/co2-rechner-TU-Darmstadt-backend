@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"testing"
+	"time"
 )
 
 func TestInsert(t *testing.T) {
@@ -221,9 +222,10 @@ func TestZaehlerInsert(t *testing.T) {
 		err := database.ZaehlerInsert(data)
 		is.NoErr(err)
 
-		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
-		is.NoErr(err)
-		is.Equal(neuerZaehler, structs.Zaehler{
+		// Vergleichszaehler wird dynamisch erstellt, weil eingetragene Zaehlerdaten vom aktuellen Jahr abhaengen
+		location, _ := time.LoadLocation("Etc/GMT")
+		aktuellesJahr := int32(time.Now().Year())
+		vergleichszaehler := structs.Zaehler{
 			Zaehlertyp:   "Waerme",
 			PKEnergie:    190,
 			Bezeichnung:  "Testzaehler",
@@ -232,7 +234,17 @@ func TestZaehlerInsert(t *testing.T) {
 			Spezialfall:  1,
 			Revision:     1,
 			GebaeudeRef:  []int32{1101},
-		})
+		}
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
+				Wert:        0.0,
+				Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
+			})
+		}
+
+		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(neuerZaehler, vergleichszaehler)
 
 		updatedGebaeude, err := database.GebaeudeFind(1101)
 		is.NoErr(err)
@@ -292,9 +304,10 @@ func TestZaehlerInsert(t *testing.T) {
 		err := database.ZaehlerInsert(data)
 		is.NoErr(err)
 
-		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
-		is.NoErr(err)
-		is.Equal(neuerZaehler, structs.Zaehler{
+		// Vergleichszaehler wird dynamisch erstellt, weil eingetragene Zaehlerdaten vom aktuellen Jahr abhaengen
+		location, _ := time.LoadLocation("Etc/GMT")
+		aktuellesJahr := int32(time.Now().Year())
+		vergleichszaehler := structs.Zaehler{
 			Zaehlertyp:   "Strom",
 			PKEnergie:    191,
 			Bezeichnung:  "Testzaehler",
@@ -303,7 +316,17 @@ func TestZaehlerInsert(t *testing.T) {
 			Spezialfall:  1,
 			Revision:     1,
 			GebaeudeRef:  []int32{1101},
-		})
+		}
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
+				Wert:        0.0,
+				Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
+			})
+		}
+
+		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(neuerZaehler, vergleichszaehler)
 
 		updatedGebaeude, err := database.GebaeudeFind(1101)
 		is.NoErr(err)
@@ -363,9 +386,10 @@ func TestZaehlerInsert(t *testing.T) {
 		err := database.ZaehlerInsert(data)
 		is.NoErr(err)
 
-		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
-		is.NoErr(err)
-		is.Equal(neuerZaehler, structs.Zaehler{
+		// Vergleichszaehler wird dynamisch erstellt, weil eingetragene Zaehlerdaten vom aktuellen Jahr abhaengen
+		location, _ := time.LoadLocation("Etc/GMT")
+		aktuellesJahr := int32(time.Now().Year())
+		vergleichszaehler := structs.Zaehler{
 			Zaehlertyp:   "Kaelte",
 			PKEnergie:    192,
 			Bezeichnung:  "Testzaehler",
@@ -374,7 +398,17 @@ func TestZaehlerInsert(t *testing.T) {
 			Spezialfall:  1,
 			Revision:     1,
 			GebaeudeRef:  []int32{1101},
-		})
+		}
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
+				Wert:        0.0,
+				Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
+			})
+		}
+
+		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(neuerZaehler, vergleichszaehler)
 
 		updatedGebaeude, err := database.GebaeudeFind(1101)
 		is.NoErr(err)
