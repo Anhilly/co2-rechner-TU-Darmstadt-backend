@@ -331,6 +331,58 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		}) // Ueberpruefung des geaenderten Elementes
 	})
 
+	t.Run("ZaehlerAddZaehlerdaten: Ueberschreiben von Wert 0.0 bei Zaehler", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data := structs.AddZaehlerdaten{
+			PKEnergie:           5967,
+			Wert:                5643,
+			Jahr:                2018,
+			IDEnergieversorgung: 2,
+		}
+		location, _ := time.LoadLocation("Etc/GMT")
+
+		err := database.ZaehlerAddZaehlerdaten(data)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+
+		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Strom",
+			PKEnergie:   5967,
+			Bezeichnung: "2201 Strom Hauptzaehler",
+			Zaehlerdaten: []structs.Zaehlerwerte{
+				{
+					Wert:        0.0,
+					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        0.0,
+					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        5643.0,
+					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        165.44,
+					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        197.599,
+					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+				{
+					Wert:        1000.0,
+					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
+				},
+			},
+			Einheit:     "kWh",
+			Spezialfall: 1,
+			Revision:    1,
+			GebaeudeRef: []int32{2201},
+		}) // Ueberpruefung des geaenderten Elementes
+	})
+
 	// Errortests
 	t.Run("ZaehlerAddZaehlerdaten: IDEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
