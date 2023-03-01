@@ -13,7 +13,18 @@ type AlleGebaeudeRes struct {
 
 // Struct zum Abfragen aller Gebaeude und eingetragenen Zählern
 type AlleGebaeudeUndZaehlerRes struct {
-	Gebaeude []GebaeudeNrUndZaehlerRef `json:"gebaeude"`
+	Gebaeude []GebaeudeNrUndZaehlerRef         `json:"gebaeude"`
+	Zaehler  []ZaehlerUndZaehlerdatenVorhanden `json:"zaehler"`
+}
+
+type ZaehlerUndZaehlerdatenVorhanden struct {
+	PKEnergie             int32                  `json:"pkEnergie"`
+	ZaehlerdatenVorhanden []ZaehlerwertVorhanden `json:"zaehlerdatenVorhanden"`
+}
+
+type ZaehlerwertVorhanden struct {
+	Jahr      int32 `json:"jahr"`
+	Vorhanden bool  `json:"vorhanden"`
 }
 
 // Struct zum Abfragen ob Umfrage existiert

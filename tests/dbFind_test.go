@@ -41,6 +41,7 @@ func TestFind(t *testing.T) {
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
 	t.Run("TestGebaeudeAlleNrUndZaehler", TestGebaeudeAlleNrUndZaehler)
+	t.Run("TestZaehlerAlleZaehlerUndDaten", TestZaehlerAlleZaehlerUndDaten)
 	t.Run("TestMitarbeiterUmfrageFindMany", TestMitarbeiterUmfrageFindMany)
 	t.Run("TestMitarbeiterUmfageForUmfrage", TestMitarbeiterUmfageForUmfrage)
 	t.Run("TestAlleUmfragen", TestAlleUmfragen)
@@ -926,10 +927,24 @@ func TestGebaeudeAlleNrUndZaehler(t *testing.T) { // TODO: Mehr Tets möglich?
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("GebaeudeAlleNrUndZaehler: liefert Slice zurueck", func(t *testing.T) {
+	t.Run("GebaeudeAlleNrUndZaehlerRef: liefert Slice zurueck", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		gebaeude, err := database.GebaeudeAlleNrUndZaehler()
+		gebaeude, err := database.GebaeudeAlleNrUndZaehlerRef()
+		is.NoErr(err)              // kein Error seitens der Datenbank
+		is.True(len(gebaeude) > 0) // Slice ist nicht leer
+	})
+}
+
+func TestZaehlerAlleZaehlerUndDaten(t *testing.T) { // TODO: Mehr Tets möglich?
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("ZaehlerAlleZaehlerUndDaten: liefert Slice zurueck", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeude, err := database.ZaehlerAlleZaehlerUndDaten()
+
 		is.NoErr(err)              // kein Error seitens der Datenbank
 		is.True(len(gebaeude) > 0) // Slice ist nicht leer
 	})

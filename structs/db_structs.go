@@ -62,6 +62,12 @@ type Zaehler struct {
 	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
 }
 
+// Uebertyp fuer Kaeltezaehler, Waermezaehler und Stromzaehler
+type ZaehlerUndZaehlerdaten struct {
+	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"`
+	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
+}
+
 type Zaehlerwerte struct {
 	Wert        float64   `json:"wert" bson:"wert"`
 	Zeitstempel time.Time `json:"zeitstempel" bson:"zeitstempel"`

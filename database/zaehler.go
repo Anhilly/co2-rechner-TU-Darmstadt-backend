@@ -52,6 +52,74 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 	return data, nil
 }
 
+// ZaehlerAlleZaehlerUndDaten
+func ZaehlerAlleZaehlerUndDaten() ([]structs.ZaehlerUndZaehlerdaten, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	var results []structs.ZaehlerUndZaehlerdaten
+	var temp []structs.ZaehlerUndZaehlerdaten
+
+	collectionWaermezaehler := client.Database(dbName).Collection(structs.WaermezaehlerCol)
+	cursorWaermezaehler, err := collectionWaermezaehler.Find(
+		ctx,
+		bson.D{},
+		options.Find().SetProjection(bson.M{"_id": 0, "pkEnergie": 1, "zaehlerdaten": 1}),
+	)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+	err = cursorWaermezaehler.All(ctx, &temp)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+	results = append(results, temp...)
+
+	collectionKaeltezaehler := client.Database(dbName).Collection(structs.KaeltezaehlerCol)
+	cursorKaeltezaehler, err := collectionKaeltezaehler.Find(
+		ctx,
+		bson.D{},
+		options.Find().SetProjection(bson.M{"_id": 0, "pkEnergie": 1, "zaehlerdaten": 1}),
+	)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+	err = cursorKaeltezaehler.All(ctx, &temp)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+	results = append(results, temp...)
+
+	collectionStromzaehler := client.Database(dbName).Collection(structs.StromzaehlerCol)
+	cursorStromzaehler, err := collectionStromzaehler.Find(
+		ctx,
+		bson.D{},
+		options.Find().SetProjection(bson.M{"_id": 0, "pkEnergie": 1, "zaehlerdaten": 1}),
+	)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+	err = cursorStromzaehler.All(ctx, &temp)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+	results = append(results, temp...)
+
+	return results, nil
+}
+
 // ZaehlerAddZaehlerdaten updated einen Zaehler in der Datenbank um den Zaehlerwert {jahr, wert},
 // falls Zaehler vorhanden und Jahr noch nicht vorhanden.
 func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {

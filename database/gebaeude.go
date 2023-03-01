@@ -290,7 +290,7 @@ func GebaeudeAlleNr() ([]int32, error) {
 	return gebaeudenummern, nil
 }
 
-func GebaeudeAlleNrUndZaehler() ([]structs.GebaeudeNrUndZaehlerRef, error) {
+func GebaeudeAlleNrUndZaehlerRef() ([]structs.GebaeudeNrUndZaehlerRef, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 

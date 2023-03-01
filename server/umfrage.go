@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 // RouteUmfrage mounted alle aufrufbaren API Endpunkte unter */umfrage
@@ -177,6 +178,7 @@ func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
 }
 
 // PostAllGebaeudeUndZaehler sendet Response mit allen Gebaeuden Nummern und den eingetragenen Zaehlern in der Datenbank zurueck.
+// Zusaetzlich werden alle Zaehler mit Angabe, ob ein Wert für jedes von 2018 bis zum aktuellen Jahr vorhanden ist.
 func PostAllGebaeudeUndZaehler(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -197,11 +199,39 @@ func PostAllGebaeudeUndZaehler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNrUndZaehler()
+	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNrUndZaehlerRef()
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
+
+	alleZaehler, err := database.ZaehlerAlleZaehlerUndDaten()
+	aktuellesJahr := int32(time.Now().Year())
+
+	for _, zaehler := range alleZaehler { //TODO: geht das auch noch effizienter?
+		var new_zaehler structs.ZaehlerUndZaehlerdatenVorhanden
+		new_zaehler.PKEnergie = zaehler.PKEnergie
+
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			found := false
+
+			for _, zaehlerwert := range zaehler.Zaehlerdaten {
+				if i == int32(zaehlerwert.Zeitstempel.Year()) {
+					found = true
+				}
+			}
+
+			new_zaehler.ZaehlerdatenVorhanden = append(
+				new_zaehler.ZaehlerdatenVorhanden,
+				structs.ZaehlerwertVorhanden{
+					Jahr:      int32(i),
+					Vorhanden: found,
+				})
+		}
+
+		gebaeudeRes.Zaehler = append(gebaeudeRes.Zaehler, new_zaehler)
+	}
+
 	sendResponse(res, true, gebaeudeRes, http.StatusOK)
 }
 
