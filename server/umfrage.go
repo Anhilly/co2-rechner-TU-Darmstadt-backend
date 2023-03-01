@@ -20,6 +20,7 @@ func RouteUmfrage() chi.Router {
 	r.Post("/updateUmfrage", PostUpdateUmfrage)
 	r.Post("/getUmfrage", GetUmfrage)
 	r.Post("/gebaeude", PostAllGebaeude)
+	r.Post("/gebaeudeUndZaehler", PostAllGebaeudeUndZaehler)
 	r.Post("/alleUmfragen", PostAllUmfragen)
 	r.Post("/GetAllUmfragenForUser", PostAllUmfragenForUser)
 	r.Post("/duplicateUmfrage", PostDuplicateUmfrage)
@@ -175,8 +176,8 @@ func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, gebaeudeRes, http.StatusOK)
 }
 
-// PostAllGebaeudeAndCounter sendet Response mit allen Gebaeuden Nummern und den eingetragenen Zaehlern in der Datenbank zurueck.
-func PostAllGebaeudeAndCounter(res http.ResponseWriter, req *http.Request) {
+// PostAllGebaeudeUndZaehler sendet Response mit allen Gebaeuden Nummern und den eingetragenen Zaehlern in der Datenbank zurueck.
+func PostAllGebaeudeUndZaehler(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
