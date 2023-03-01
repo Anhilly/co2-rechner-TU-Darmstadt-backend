@@ -40,11 +40,11 @@ func TestFind(t *testing.T) {
 	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
+	t.Run("TestGebaeudeAlleNrUndZaehler", TestGebaeudeAlleNrUndZaehler)
 	t.Run("TestMitarbeiterUmfrageFindMany", TestMitarbeiterUmfrageFindMany)
 	t.Run("TestMitarbeiterUmfageForUmfrage", TestMitarbeiterUmfageForUmfrage)
 	t.Run("TestAlleUmfragen", TestAlleUmfragen)
 	t.Run("TestAlleUmfragenForUser", TestAlleUmfragenForUser)
-
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -919,6 +919,19 @@ func TestGebaeudeAlleNr(t *testing.T) {
 		gebaeudenummer, err := database.GebaeudeAlleNr()
 		is.NoErr(err)                    // kein Error seitens der Datenbank
 		is.True(len(gebaeudenummer) > 0) // Slice ist nicht leer
+	})
+}
+
+func TestGebaeudeAlleNrUndZaehler(t *testing.T) { // TODO: Mehr Tets möglich?
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("GebaeudeAlleNrUndZaehler: liefert Slice zurueck", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeude, err := database.GebaeudeAlleNrUndZaehler()
+		is.NoErr(err)              // kein Error seitens der Datenbank
+		is.True(len(gebaeude) > 0) // Slice ist nicht leer
 	})
 }
 

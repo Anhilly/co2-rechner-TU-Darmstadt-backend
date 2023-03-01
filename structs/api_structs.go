@@ -6,9 +6,14 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 In dieser Daten sind Request und Response JSON für die API als structs aufgelistet.
 */
 
-// Struct zum Abfragen aller Gebaeudedaten
-type AllGebaeudeRes struct {
+// Struct zum Abfragen aller Gebaeude
+type AlleGebaeudeRes struct {
 	Gebaeude []int32 `json:"gebaeude"`
+}
+
+// Struct zum Abfragen aller Gebaeude und eingetragenen Zählern
+type AlleGebaeudeUndZaehlerRes struct {
+	Gebaeude []GebaeudeNrUndZaehlerRef `json:"gebaeude"`
 }
 
 // Struct zum Abfragen ob Umfrage existiert

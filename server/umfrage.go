@@ -146,7 +146,7 @@ func GetUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrage, http.StatusOK)
 }
 
-// GetAllGebaeude sendet Response mit allen Gebaeuden in der Datenbank zurueck.
+// PostAllGebaeude sendet Response mit allen Gebaeuden in der Datenbank zurueck.
 func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -161,13 +161,42 @@ func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	gebaeudeRes := structs.AllGebaeudeRes{}
+	gebaeudeRes := structs.AlleGebaeudeRes{}
 
 	if !AuthWithResponse(res, gebaeudeReq.Auth.Username, gebaeudeReq.Auth.Sessiontoken) {
 		return
 	}
 
 	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNr()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	sendResponse(res, true, gebaeudeRes, http.StatusOK)
+}
+
+// PostAllGebaeudeAndCounter sendet Response mit allen Gebaeuden Nummern und den eingetragenen Zaehlern in der Datenbank zurueck.
+func PostAllGebaeudeAndCounter(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	gebaeudeReq := structs.RequestAuth{}
+	err = json.Unmarshal(s, &gebaeudeReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	gebaeudeRes := structs.AlleGebaeudeUndZaehlerRes{}
+
+	if !AuthWithResponse(res, gebaeudeReq.Auth.Username, gebaeudeReq.Auth.Sessiontoken) {
+		return
+	}
+
+	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNrUndZaehler()
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

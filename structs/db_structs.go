@@ -42,6 +42,13 @@ type Versoger struct {
 	IDVertrag int32 `json:"idVertrag" bson:"idVertrag"`
 }
 
+type GebaeudeNrUndZaehlerRef struct {
+	Nr        int32   `json:"nr" bson:"nr"`
+	KaelteRef []int32 `json:"kaelteRef" bson:"kaelteRef"`
+	WaermeRef []int32 `json:"waermeRef" bson:"waermeRef"`
+	StromRef  []int32 `json:"stromRef" bson:"stromRef"`
+}
+
 // Uebertyp fuer Kaeltezaehler, Waermezaehler und Stromzaehler
 type Zaehler struct {
 	Zaehlertyp   string         `json:"-" bson:"-"`                 // Feld wird nur in Go benutzt
