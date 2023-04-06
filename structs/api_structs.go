@@ -217,9 +217,9 @@ type AuswertungRes struct {
 	Vergleich4PersonenHaushalt float64 `json:"vergleich4PersonenHaushalt"`
 
 	// Für Datenlücken-Visualisierung
-	Gebaeude  []GebaeudeNrUndZaehlerRef         `json:"gebaeude"`
-	Zaehler   []ZaehlerUndZaehlerdatenVorhanden `json:"zaehler"`
-	Gebaeude2 []UmfrageGebaeude                 `json:"gebaeude2"`
+	GebaeudeIDsUndZaehler []GebaeudeNrUndZaehlerRef         `json:"gebaeudeIDsUndZaehler"`
+	Zaehler               []ZaehlerUndZaehlerdatenVorhanden `json:"zaehler"`
+	UmfrageGebaeude       []UmfrageGebaeude                 `json:"umfrageGebaeude"`
 }
 
 // Requests zur Authentifizierung und Abmeldung

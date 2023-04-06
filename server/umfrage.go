@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 )
 
 // RouteUmfrage mounted alle aufrufbaren API Endpunkte unter */umfrage
@@ -206,31 +205,11 @@ func PostAllGebaeudeUndZaehler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	alleZaehler, err := database.ZaehlerAlleZaehlerUndDaten()
-	aktuellesJahr := int32(time.Now().Year())
-
-	for _, zaehler := range alleZaehler { //TODO: geht das auch noch effizienter?
-		var new_zaehler structs.ZaehlerUndZaehlerdatenVorhanden
-		new_zaehler.PKEnergie = zaehler.PKEnergie
-
-		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
-			found := false
-
-			for _, zaehlerwert := range zaehler.Zaehlerdaten {
-				if i == int32(zaehlerwert.Zeitstempel.Year()) {
-					found = true
-				}
-			}
-
-			new_zaehler.ZaehlerdatenVorhanden = append(
-				new_zaehler.ZaehlerdatenVorhanden,
-				structs.ZaehlerwertVorhanden{
-					Jahr:      int32(i),
-					Vorhanden: found,
-				})
-		}
-
-		gebaeudeRes.Zaehler = append(gebaeudeRes.Zaehler, new_zaehler)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
 	}
+	gebaeudeRes.Zaehler = binaereZahlerdatenFuerZaehler(alleZaehler)
 
 	sendResponse(res, true, gebaeudeRes, http.StatusOK)
 }

@@ -167,12 +167,28 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.Vergleich4PersonenHaushalt = math.Round(auswertung.EmissionenGesamt/structs.Verbrauch4PersonenHaushalt*100) / 100
 
 	// Datenlücken-Visualisierung
-	auswertung.Gebaeude, err = database.GebaeudeAlleNrUndZaehlerRef()
+	auswertung.GebaeudeIDsUndZaehler, err = database.GebaeudeAlleNrUndZaehlerRef()
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
+
 	alleZaehler, err := database.ZaehlerAlleZaehlerUndDaten()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	auswertung.Zaehler = binaereZahlerdatenFuerZaehler(alleZaehler)
+
+	auswertung.UmfrageGebaeude = umfrage.Gebaeude
+
+	sendResponse(res, true, auswertung, http.StatusOK)
+}
+
+// binaereZahlerdatenFuerZaehler gibt fuer eine Liste an Zaehlern mit Zaehlerdaten eine binaere Liste fuer jeden
+// Zaehler, ob Daten fuer dieses Jahr vorhanden sind
+func binaereZahlerdatenFuerZaehler(alleZaehler []structs.ZaehlerUndZaehlerdaten) []structs.ZaehlerUndZaehlerdatenVorhanden {
+	var zaehlerUndZaehlerdaten []structs.ZaehlerUndZaehlerdatenVorhanden
 	aktuellesJahr := int32(time.Now().Year())
 
 	for _, zaehler := range alleZaehler { //TODO: geht das auch noch effizienter?
@@ -196,12 +212,10 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 				})
 		}
 
-		auswertung.Zaehler = append(auswertung.Zaehler, new_zaehler)
+		zaehlerUndZaehlerdaten = append(zaehlerUndZaehlerdaten, new_zaehler)
 	}
 
-	auswertung.Gebaeude2 = umfrage.Gebaeude
-
-	sendResponse(res, true, auswertung, http.StatusOK)
+	return zaehlerUndZaehlerdaten
 }
 
 // UpdateSetLinkShare empfaengt ein POST Update Request und setzt den LinkSharing Status auf den empfangenen Wert.
