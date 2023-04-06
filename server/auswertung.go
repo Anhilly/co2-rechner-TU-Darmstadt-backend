@@ -11,6 +11,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"time"
 )
 
 // RouteAuswertung mounted alle aufrufbaren API Endpunkte unter */auswertung
@@ -164,6 +165,41 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 
 	auswertung.Vergleich2PersonenHaushalt = math.Round(auswertung.EmissionenGesamt/structs.Verbrauch2PersonenHaushalt*100) / 100
 	auswertung.Vergleich4PersonenHaushalt = math.Round(auswertung.EmissionenGesamt/structs.Verbrauch4PersonenHaushalt*100) / 100
+
+	// Datenlücken-Visualisierung
+	auswertung.Gebaeude, err = database.GebaeudeAlleNrUndZaehlerRef()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	alleZaehler, err := database.ZaehlerAlleZaehlerUndDaten()
+	aktuellesJahr := int32(time.Now().Year())
+
+	for _, zaehler := range alleZaehler { //TODO: geht das auch noch effizienter?
+		var new_zaehler structs.ZaehlerUndZaehlerdatenVorhanden
+		new_zaehler.PKEnergie = zaehler.PKEnergie
+
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			found := false
+
+			for _, zaehlerwert := range zaehler.Zaehlerdaten {
+				if i == int32(zaehlerwert.Zeitstempel.Year()) {
+					found = true
+				}
+			}
+
+			new_zaehler.ZaehlerdatenVorhanden = append(
+				new_zaehler.ZaehlerdatenVorhanden,
+				structs.ZaehlerwertVorhanden{
+					Jahr:      int32(i),
+					Vorhanden: found,
+				})
+		}
+
+		auswertung.Zaehler = append(auswertung.Zaehler, new_zaehler)
+	}
+
+	auswertung.Gebaeude2 = umfrage.Gebaeude
 
 	sendResponse(res, true, auswertung, http.StatusOK)
 }
