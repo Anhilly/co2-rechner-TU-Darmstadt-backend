@@ -290,6 +290,7 @@ func GebaeudeAlleNr() ([]int32, error) {
 	return gebaeudenummern, nil
 }
 
+// GebaeudeAlleNrUndZaehlerRef gibt alle Nummern von Gebaeuden und die Zaehlerreferenzen in der Datenbank zurueck.
 func GebaeudeAlleNrUndZaehlerRef() ([]structs.GebaeudeNrUndZaehlerRef, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
