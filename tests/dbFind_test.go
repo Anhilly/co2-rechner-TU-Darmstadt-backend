@@ -40,7 +40,7 @@ func TestFind(t *testing.T) {
 	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
-	t.Run("TestGebaeudeAlleNrUndZaehler", TestGebaeudeAlleNrUndZaehler)
+	t.Run("TestGebaeudeAlleNrUndZaehlerRef", TestGebaeudeAlleNrUndZaehlerRef)
 	t.Run("TestZaehlerAlleZaehlerUndDaten", TestZaehlerAlleZaehlerUndDaten)
 	t.Run("TestMitarbeiterUmfrageFindMany", TestMitarbeiterUmfrageFindMany)
 	t.Run("TestMitarbeiterUmfageForUmfrage", TestMitarbeiterUmfageForUmfrage)
@@ -923,7 +923,7 @@ func TestGebaeudeAlleNr(t *testing.T) {
 	})
 }
 
-func TestGebaeudeAlleNrUndZaehler(t *testing.T) { // TODO: Mehr Tets möglich?
+func TestGebaeudeAlleNrUndZaehlerRef(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
@@ -936,7 +936,7 @@ func TestGebaeudeAlleNrUndZaehler(t *testing.T) { // TODO: Mehr Tets möglich?
 	})
 }
 
-func TestZaehlerAlleZaehlerUndDaten(t *testing.T) { // TODO: Mehr Tets möglich?
+func TestZaehlerAlleZaehlerUndDaten(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
