@@ -191,7 +191,7 @@ func binaereZahlerdatenFuerZaehler(alleZaehler []structs.ZaehlerUndZaehlerdaten)
 	var zaehlerUndZaehlerdaten []structs.ZaehlerUndZaehlerdatenVorhanden
 	aktuellesJahr := int32(time.Now().Year())
 
-	for _, zaehler := range alleZaehler { //TODO: geht das auch noch effizienter?
+	for _, zaehler := range alleZaehler {
 		var new_zaehler structs.ZaehlerUndZaehlerdatenVorhanden
 		new_zaehler.PKEnergie = zaehler.PKEnergie
 

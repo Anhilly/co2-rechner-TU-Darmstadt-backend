@@ -155,7 +155,7 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 		is.Equal(ngf, 0.0)            // erwartetes Ergebnis: 0.0 (kein Gruppenzaehler)
 	})
 
-	t.Run("zaehlerNormalfall: kWh bleibt kWh (Kaeltezaehler)", func(t *testing.T) { // TODO: fix test after fixing bug in CSV parser
+	t.Run("zaehlerNormalfall: kWh bleibt kWh (Kaeltezaehler)", func(t *testing.T) { //TODO: fix test after fixing bug in CSV parser
 		is := is.NewRelaxed(t)
 
 		var pkEnergie int32 = 6108
@@ -383,7 +383,7 @@ func TestGebaeudeNormalfall(t *testing.T) { //nolint:funlen
 
 		is.NoErr(err)                // Normalfall wirft keine Errors
 		is.Equal(emissionen, 0.0)    // erwartetes Ergebnis: 0.0 (kein Zaehler = keine berechenbaren Emissionen)
-		is.Equal(gvNutzflaeche, 0.0) // erwartetes Ergebnis: 0.0<
+		is.Equal(gvNutzflaeche, 0.0) // erwartetes Ergebnis: 0.0
 	})
 
 	t.Run("gebaeudeNormalfall: einfach Eingabe", func(t *testing.T) {
