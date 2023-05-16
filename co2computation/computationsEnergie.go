@@ -47,7 +47,7 @@ func BerechneEnergieverbrauch(gebaeudeFlaecheDaten []structs.UmfrageGebaeude, ja
 // Ergebniseinheit: g/kWh
 func getEnergieCO2Faktor(id int32, jahr int32) (map[int32]int32, error) {
 	var co2FaktorVertraege []structs.CO2FaktorVetrag = nil
-	co2Faktoren := make(map[int32]int32)
+	co2Faktoren := make(map[int32]int32) // idVertrag: co2Faktor
 
 	// Bestimmung CO2 Faktor für angegebenes Jahr
 	energiewerte, err := database.EnergieversorgungFind(id)

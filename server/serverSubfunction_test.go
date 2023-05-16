@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TestAuthenticationSubfunctions(t *testing.T) {
+func TestServerSubfunctions(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	err := database.ConnectDatabase()
@@ -18,6 +18,9 @@ func TestAuthenticationSubfunctions(t *testing.T) {
 		is.NoErr(err)
 	}()
 
+	// Auswertung
+
+	// Authentication
 	t.Run("TestCheckValidSessionToken", TestCheckValidSessionToken)
 	t.Run("TestLoescheSessionToken", TestLoescheSessionToken)
 	t.Run("TestGeneriereSessionToken", TestGeneriereSessionToken)
