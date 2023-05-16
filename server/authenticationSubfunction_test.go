@@ -18,13 +18,13 @@ func TestAuthenticationSubfunctions(t *testing.T) {
 		is.NoErr(err)
 	}()
 
-	t.Run("TestcheckValidSessionToken", TestcheckValidSessionToken)
-	t.Run("TestloescheSessionToken", TestloescheSessionToken)
-	t.Run("TestgeneriereSessionToken", TestgeneriereSessionToken)
+	t.Run("TestCheckValidSessionToken", TestCheckValidSessionToken)
+	t.Run("TestLoescheSessionToken", TestLoescheSessionToken)
+	t.Run("TestGeneriereSessionToken", TestGeneriereSessionToken)
 	t.Run("TestAuthenticate", TestAuthenticate)
 }
 
-func TestcheckValidSessionToken(t *testing.T) { //nolint:funlen
+func TestCheckValidSessionToken(t *testing.T) { //nolint:funlen
 	is := is.NewRelaxed(t)
 
 	// Normalfall
@@ -68,7 +68,7 @@ func TestcheckValidSessionToken(t *testing.T) { //nolint:funlen
 	})
 }
 
-func TestloescheSessionToken(t *testing.T) { //nolint:funlen
+func TestLoescheSessionToken(t *testing.T) { //nolint:funlen
 	is := is.NewRelaxed(t)
 
 	// Normalfall
@@ -103,7 +103,7 @@ func TestloescheSessionToken(t *testing.T) { //nolint:funlen
 	})
 }
 
-func TestgeneriereSessionToken(t *testing.T) { //nolint:funlen
+func TestGeneriereSessionToken(t *testing.T) { //nolint:funlen
 	is := is.NewRelaxed(t)
 
 	// Normalfall
