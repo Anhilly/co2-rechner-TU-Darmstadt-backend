@@ -40,11 +40,12 @@ func TestFind(t *testing.T) {
 	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
+	t.Run("TestGebaeudeAlleNrUndZaehlerRef", TestGebaeudeAlleNrUndZaehlerRef)
+	t.Run("TestZaehlerAlleZaehlerUndDaten", TestZaehlerAlleZaehlerUndDaten)
 	t.Run("TestMitarbeiterUmfrageFindMany", TestMitarbeiterUmfrageFindMany)
 	t.Run("TestMitarbeiterUmfageForUmfrage", TestMitarbeiterUmfageForUmfrage)
 	t.Run("TestAlleUmfragen", TestAlleUmfragen)
 	t.Run("TestAlleUmfragenForUser", TestAlleUmfragenForUser)
-
 }
 
 func TestITGeraeteFind(t *testing.T) {
@@ -400,11 +401,11 @@ func TestZaehlerFind(t *testing.T) {
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
-					Wert:        165.44,
+					Wert:        165440,
 					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
-					Wert:        197.599,
+					Wert:        197599.6,
 					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},
@@ -919,6 +920,33 @@ func TestGebaeudeAlleNr(t *testing.T) {
 		gebaeudenummer, err := database.GebaeudeAlleNr()
 		is.NoErr(err)                    // kein Error seitens der Datenbank
 		is.True(len(gebaeudenummer) > 0) // Slice ist nicht leer
+	})
+}
+
+func TestGebaeudeAlleNrUndZaehlerRef(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("GebaeudeAlleNrUndZaehlerRef: liefert Slice zurueck", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeude, err := database.GebaeudeAlleNrUndZaehlerRef()
+		is.NoErr(err)              // kein Error seitens der Datenbank
+		is.True(len(gebaeude) > 0) // Slice ist nicht leer
+	})
+}
+
+func TestZaehlerAlleZaehlerUndDaten(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("ZaehlerAlleZaehlerUndDaten: liefert Slice zurueck", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeude, err := database.ZaehlerAlleZaehlerUndDaten()
+
+		is.NoErr(err)              // kein Error seitens der Datenbank
+		is.True(len(gebaeude) > 0) // Slice ist nicht leer
 	})
 }
 

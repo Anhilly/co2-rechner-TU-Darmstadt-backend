@@ -289,3 +289,32 @@ func GebaeudeAlleNr() ([]int32, error) {
 
 	return gebaeudenummern, nil
 }
+
+// GebaeudeAlleNrUndZaehlerRef gibt alle Nummern von Gebaeuden und die Zaehlerreferenzen in der Datenbank zurueck.
+func GebaeudeAlleNrUndZaehlerRef() ([]structs.GebaeudeNrUndZaehlerRef, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+
+	cursor, err := collection.Find(
+		ctx,
+		bson.D{},
+		options.Find().SetProjection(bson.M{"_id": 0, "nr": 1, "kaelteRef": 1, "waermeRef": 1, "stromRef": 1}),
+	)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+
+	var results []structs.GebaeudeNrUndZaehlerRef
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+
+	return results, nil
+}

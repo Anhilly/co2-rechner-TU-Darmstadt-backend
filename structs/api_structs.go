@@ -6,9 +6,25 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 In dieser Daten sind Request und Response JSON für die API als structs aufgelistet.
 */
 
-// Struct zum Abfragen aller Gebaeudedaten
-type AllGebaeudeRes struct {
+// Struct zum Abfragen aller Gebaeude
+type AlleGebaeudeRes struct {
 	Gebaeude []int32 `json:"gebaeude"`
+}
+
+// Struct zum Abfragen aller Gebaeude und eingetragenen Zählern
+type AlleGebaeudeUndZaehlerRes struct {
+	Gebaeude []GebaeudeNrUndZaehlerRef         `json:"gebaeude"`
+	Zaehler  []ZaehlerUndZaehlerdatenVorhanden `json:"zaehler"`
+}
+
+type ZaehlerUndZaehlerdatenVorhanden struct {
+	PKEnergie             int32                  `json:"pkEnergie"`
+	ZaehlerdatenVorhanden []ZaehlerwertVorhanden `json:"zaehlerdatenVorhanden"`
+}
+
+type ZaehlerwertVorhanden struct {
+	Jahr      int32 `json:"jahr"`
+	Vorhanden bool  `json:"vorhanden"`
 }
 
 // Struct zum Abfragen ob Umfrage existiert
@@ -199,6 +215,11 @@ type AuswertungRes struct {
 
 	Vergleich2PersonenHaushalt float64 `json:"vergleich2PersonenHaushalt"`
 	Vergleich4PersonenHaushalt float64 `json:"vergleich4PersonenHaushalt"`
+
+	// Für Datenlücken-Visualisierung
+	GebaeudeIDsUndZaehler []GebaeudeNrUndZaehlerRef         `json:"gebaeudeIDsUndZaehler"`
+	Zaehler               []ZaehlerUndZaehlerdatenVorhanden `json:"zaehler"`
+	UmfrageGebaeude       []UmfrageGebaeude                 `json:"umfrageGebaeude"`
 }
 
 // Requests zur Authentifizierung und Abmeldung

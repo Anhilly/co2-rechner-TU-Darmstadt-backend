@@ -11,6 +11,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"time"
 )
 
 // RouteAuswertung mounted alle aufrufbaren API Endpunkte unter */auswertung
@@ -165,7 +166,56 @@ func PostAuswertung(res http.ResponseWriter, req *http.Request) {
 	auswertung.Vergleich2PersonenHaushalt = math.Round(auswertung.EmissionenGesamt/structs.Verbrauch2PersonenHaushalt*100) / 100
 	auswertung.Vergleich4PersonenHaushalt = math.Round(auswertung.EmissionenGesamt/structs.Verbrauch4PersonenHaushalt*100) / 100
 
+	// Datenlücken-Visualisierung
+	auswertung.GebaeudeIDsUndZaehler, err = database.GebaeudeAlleNrUndZaehlerRef()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	alleZaehler, err := database.ZaehlerAlleZaehlerUndDaten()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	auswertung.Zaehler = binaereZahlerdatenFuerZaehler(alleZaehler)
+
+	auswertung.UmfrageGebaeude = umfrage.Gebaeude
+
 	sendResponse(res, true, auswertung, http.StatusOK)
+}
+
+// binaereZahlerdatenFuerZaehler gibt fuer eine Liste an Zaehlern mit Zaehlerdaten eine binaere Liste fuer jeden
+// Zaehler, ob Daten fuer dieses Jahr vorhanden sind
+func binaereZahlerdatenFuerZaehler(alleZaehler []structs.ZaehlerUndZaehlerdaten) []structs.ZaehlerUndZaehlerdatenVorhanden {
+	var zaehlerUndZaehlerdaten []structs.ZaehlerUndZaehlerdatenVorhanden
+	aktuellesJahr := int32(time.Now().Year())
+
+	for _, zaehler := range alleZaehler {
+		var new_zaehler structs.ZaehlerUndZaehlerdatenVorhanden
+		new_zaehler.PKEnergie = zaehler.PKEnergie
+
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			found := false
+
+			for _, zaehlerwert := range zaehler.Zaehlerdaten {
+				if i == int32(zaehlerwert.Zeitstempel.Year()) {
+					found = true
+				}
+			}
+
+			new_zaehler.ZaehlerdatenVorhanden = append(
+				new_zaehler.ZaehlerdatenVorhanden,
+				structs.ZaehlerwertVorhanden{
+					Jahr:      int32(i),
+					Vorhanden: found,
+				})
+		}
+
+		zaehlerUndZaehlerdaten = append(zaehlerUndZaehlerdaten, new_zaehler)
+	}
+
+	return zaehlerUndZaehlerdaten
 }
 
 // UpdateSetLinkShare empfaengt ein POST Update Request und setzt den LinkSharing Status auf den empfangenen Wert.

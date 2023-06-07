@@ -20,6 +20,7 @@ func RouteUmfrage() chi.Router {
 	r.Post("/updateUmfrage", PostUpdateUmfrage)
 	r.Post("/getUmfrage", GetUmfrage)
 	r.Post("/gebaeude", PostAllGebaeude)
+	r.Post("/gebaeudeUndZaehler", PostAllGebaeudeUndZaehler)
 	r.Post("/alleUmfragen", PostAllUmfragen)
 	r.Post("/GetAllUmfragenForUser", PostAllUmfragenForUser)
 	r.Post("/duplicateUmfrage", PostDuplicateUmfrage)
@@ -146,7 +147,7 @@ func GetUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrage, http.StatusOK)
 }
 
-// GetAllGebaeude sendet Response mit allen Gebaeuden in der Datenbank zurueck.
+// PostAllGebaeude sendet Response mit allen Gebaeuden in der Datenbank zurueck.
 func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -161,7 +162,7 @@ func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	gebaeudeRes := structs.AllGebaeudeRes{}
+	gebaeudeRes := structs.AlleGebaeudeRes{}
 
 	if !AuthWithResponse(res, gebaeudeReq.Auth.Username, gebaeudeReq.Auth.Sessiontoken) {
 		return
@@ -172,6 +173,44 @@ func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
+	sendResponse(res, true, gebaeudeRes, http.StatusOK)
+}
+
+// PostAllGebaeudeUndZaehler sendet Response mit allen Gebaeuden Nummern und den eingetragenen Zaehlern in der Datenbank zurueck.
+// Zusaetzlich werden alle Zaehler mit Angabe, ob ein Wert für jedes von 2018 bis zum aktuellen Jahr vorhanden ist.
+func PostAllGebaeudeUndZaehler(res http.ResponseWriter, req *http.Request) {
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	gebaeudeReq := structs.RequestAuth{}
+	err = json.Unmarshal(s, &gebaeudeReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	gebaeudeRes := structs.AlleGebaeudeUndZaehlerRes{}
+
+	if !AuthWithResponse(res, gebaeudeReq.Auth.Username, gebaeudeReq.Auth.Sessiontoken) {
+		return
+	}
+
+	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNrUndZaehlerRef()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	alleZaehler, err := database.ZaehlerAlleZaehlerUndDaten()
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	gebaeudeRes.Zaehler = binaereZahlerdatenFuerZaehler(alleZaehler)
+
 	sendResponse(res, true, gebaeudeRes, http.StatusOK)
 }
 
