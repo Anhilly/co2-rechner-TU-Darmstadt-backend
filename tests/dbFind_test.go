@@ -401,11 +401,11 @@ func TestZaehlerFind(t *testing.T) {
 					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
-					Wert:        165.44,
+					Wert:        165440,
 					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 				{
-					Wert:        197.599,
+					Wert:        197599.6,
 					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
 				},
 			},

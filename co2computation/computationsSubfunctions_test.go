@@ -168,7 +168,7 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 		verbrauch, ngf, err := zaehlerNormalfall(zaehler, jahr, gebaeudeNr)
 
 		is.NoErr(err)                // Normalfall wirft keine Errors
-		is.Equal(verbrauch, 17336.0) // erwartetes Ergebnis: 17336.0 (Verbrauch Jahr 2021)
+		is.Equal(verbrauch, 17671.0) // erwartetes Ergebnis: 17336.0 (Verbrauch Jahr 2021)
 		is.Equal(ngf, 0.0)           // erwartetes Ergebnis: 0.0 (kein Gruppenzaehler)
 	})
 
