@@ -7,9 +7,22 @@ import (
 	"log"
 )
 
+var Mode = "dev" // changed using symbol substitution at link time
+
 func main() {
+	var filename string
+	if Mode == "prod" {
+		print("prod mode")
+		filename = prod_log_filename
+	} else if Mode == "dev" {
+		print("dev mode")
+		filename = dev_log_filename
+	} else {
+		panic("MODE not set")
+	}
+
 	logger := lumberjack.Logger{
-		Filename:  "/app/backend/logs/go.log",
+		Filename:  filename,
 		MaxSize:   100,
 		LocalTime: true,
 	}

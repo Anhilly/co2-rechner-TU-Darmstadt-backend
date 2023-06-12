@@ -17,7 +17,8 @@
 
 #Database Config
 /database/db_config.go
-
+/server/mail_config.go
+/config.go
 
 *.crt
 
@@ -25,10 +26,9 @@
 
 *.key
 
-server/mail_config.go
-
 go_build_main_Linux_linux
 go_build_main_Linux_linux_GOARCH_amd64
+go_backend
 build/*
 /build/
 /go.log
