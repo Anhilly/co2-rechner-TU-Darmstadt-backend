@@ -7,14 +7,14 @@ import (
 	"log"
 )
 
-var Mode = "dev" // changed using symbol substitution at link time
+var mode = "dev" // changed using symbol substitution at link time
 
 func main() {
 	var filename string
-	if Mode == "prod" {
+	if mode == "prod" {
 		print("prod mode")
 		filename = prod_log_filename
-	} else if Mode == "dev" {
+	} else if mode == "dev" {
 		print("dev mode")
 		filename = dev_log_filename
 	} else {
@@ -35,5 +35,5 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	server.StartServer(&logger)
+	server.StartServer(&logger, mode)
 }

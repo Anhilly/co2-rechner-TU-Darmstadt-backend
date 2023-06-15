@@ -5,6 +5,7 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"log"
 	"net/http"
@@ -15,12 +16,25 @@ const (
 )
 
 // StartServer started den Router und mounted alle Subseiten.
-func StartServer(logger *lumberjack.Logger) {
+func StartServer(logger *lumberjack.Logger, mode string) {
 	r := chi.NewRouter()
 
 	middleware.DefaultLogger = middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: log.New(logger, "", log.LstdFlags)})
 
 	r.Use(middleware.Logger)
+
+	if mode == "dev" {
+		r.Use(cors.Handler(cors.Options{
+			// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+			AllowedOrigins: []string{"https://*", "http://*"},
+			// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			ExposedHeaders:   []string{"Link"},
+			AllowCredentials: false,
+			MaxAge:           300, // Maximum value not ignored by any of major browsers
+		}))
+	}
 
 	r.Mount("/umfrage", RouteUmfrage())
 	r.Mount("/mitarbeiterUmfrage", RouteMitarbeiterUmfrage())
