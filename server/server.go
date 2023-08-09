@@ -60,8 +60,16 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 	r.Mount("/auswertung", RouteAuswertung())
 	r.Mount("/nutzerdaten", RouteNutzerdaten())
 
-	log.Println("Server Started")
+	r.Group(func(r chi.Router) { // authenticated routes
+		r.Use(keycloakAuthMiddleware)
 
+		r.Get("/hello", welcome)
+	})
+
+	// unauthenticated routes
+	r.Get("/", welcome)
+
+	log.Println("Server Started")
 	log.Fatalln(http.ListenAndServe(config.Port, r))
 }
 
@@ -95,6 +103,10 @@ func keycloakAuthMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func welcome(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
 }
 
 // sendResponse sendet Response zurueck, bei Marshal Fehler sende 500 Code Error
