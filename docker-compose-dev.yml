@@ -15,6 +15,12 @@ services:
     image: quay.io/keycloak/keycloak:21.0
     volumes:
       - ./development/co2Rechner-realm-export.json:/opt/keycloak/data/import/co2Rechner-realm-export.json
+    command:
+      - "-Djboss.socket.binding.port-offset=100"
+      - "-Dkeycloak.migration.action=import"
+      - "-Dkeycloak.migration.provider=singleFile"
+      - "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING"
+      - "-Dkeycloak.migration.file=/opt/keycloak/data/import/co2Rechner-realm-export.json"
     environment:
       DB_VENDOR: POSTGRES
       DB_ADDR: keycloak_db
@@ -25,7 +31,7 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       PROXY_ADDRESS_FORWARDING: "true"
-    entrypoint: [ "/opt/keycloak/bin/kc.sh", "start --import-realm --metrics-enabled true --proxy edge --hostname-path=/auth --hostname-admin-url=http://localhost:8080/auth --hostname-strict=false --http-port 8090 --db postgres --db-url=jdbc:postgresql://keycloak_db/keycloak --db-username keycloak --db-password password" ]
+    entrypoint: [ "/opt/keycloak/bin/kc.sh", "start --metrics-enabled true --proxy edge --hostname-path=/auth --hostname-admin-url=http://localhost:8080/auth --hostname-strict=false --http-port 8090 --db postgres --db-url=jdbc:postgresql://keycloak_db/keycloak --db-username keycloak --db-password password" ]
     ports:
       - "127.0.0.1:8090:8090"
     depends_on:

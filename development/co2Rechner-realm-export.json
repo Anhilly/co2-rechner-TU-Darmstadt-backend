@@ -469,6 +469,24 @@
       ],
       "notBefore": 0,
       "groups": []
+    },
+    {
+      "id": "c4daf060-53d4-4576-a05e-5f1a8d86f791",
+      "createdTimestamp": 1691513442690,
+      "username": "test",
+      "email": "test@test.de",
+      "firstName": "Tester",
+      "lastName": "Testus",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234"
+        }
+      ],
+      "attributes": {
+        "abc": [ "xyz" ]
+      }
     }
   ],
   "scopeMappings": [
