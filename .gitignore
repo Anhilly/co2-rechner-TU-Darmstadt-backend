@@ -16,9 +16,7 @@
 .idea
 
 #Database Config
-/database/db_config.go
-/server/mail_config.go
-/config.go
+/config/config.go
 
 *.crt
 

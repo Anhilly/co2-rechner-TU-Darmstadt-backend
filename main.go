@@ -1,7 +1,9 @@
 package main
 
 import (
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"log"
@@ -10,13 +12,14 @@ import (
 var mode = "dev" // changed using symbol substitution at link time
 
 func main() {
+	// setting up logger
 	var filename string
 	if mode == "prod" {
 		print("prod mode")
-		filename = prod_log_filename
+		filename = config.Prod_log_filename
 	} else if mode == "dev" {
 		print("dev mode")
-		filename = dev_log_filename
+		filename = config.Dev_log_filename
 	} else {
 		panic("MODE not set")
 	}
@@ -30,10 +33,18 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Llongfile)
 	log.SetOutput(&logger)
 
+	// setting up database
 	err := database.ConnectDatabase()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
+	// setting up keycloak
+	err = keycloak.SetupKeycloakClient(mode)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// starting server
 	server.StartServer(&logger, mode)
 }

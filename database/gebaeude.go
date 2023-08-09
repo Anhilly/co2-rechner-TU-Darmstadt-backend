@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,7 +16,7 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+	collection := client.Database(config.DBName).Collection(structs.GebaeudeCol)
 
 	var data structs.Gebaeude
 	err := collection.FindOne(
@@ -46,7 +47,7 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+	collection := client.Database(config.DBName).Collection(structs.GebaeudeCol)
 
 	_, err := GebaeudeFind(data.Nr)
 	if err == nil { // kein Error = Nr schon vorhanden
@@ -140,7 +141,7 @@ func GebaeudeAddVersorger(data structs.AddVersorger) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+	collection := client.Database(config.DBName).Collection(structs.GebaeudeCol)
 
 	// Ueberpruefung, ob IDVertrag vorhanden
 	if data.IDVertrag != structs.IDVertragTU && data.IDVertrag != structs.IDVertragExtern {
@@ -193,7 +194,7 @@ func GebaeudeAddStandardVersorger(data structs.AddStandardVersorger) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+	collection := client.Database(config.DBName).Collection(structs.GebaeudeCol)
 
 	for _, versorgername := range []string{"waermeversorger", "stromversorger", "kaelteversorger"} {
 		_, err := collection.UpdateMany(
@@ -223,7 +224,7 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+	collection := client.Database(config.DBName).Collection(structs.GebaeudeCol)
 
 	switch idEnergieversorgung {
 	case structs.IDEnergieversorgungWaerme: // Waerme
@@ -259,7 +260,7 @@ func GebaeudeAlleNr() ([]int32, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+	collection := client.Database(config.DBName).Collection(structs.GebaeudeCol)
 
 	cursor, err := collection.Find(
 		ctx,
@@ -295,7 +296,7 @@ func GebaeudeAlleNrUndZaehlerRef() ([]structs.GebaeudeNrUndZaehlerRef, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+	collection := client.Database(config.DBName).Collection(structs.GebaeudeCol)
 
 	cursor, err := collection.Find(
 		ctx,

@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -34,7 +35,7 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 		return structs.Zaehler{}, structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
-	collection := client.Database(dbName).Collection(collectionname)
+	collection := client.Database(config.DBName).Collection(collectionname)
 
 	var data structs.Zaehler
 	err := collection.FindOne(
@@ -60,7 +61,7 @@ func ZaehlerAlleZaehlerUndDaten() ([]structs.ZaehlerUndZaehlerdaten, error) {
 	var results []structs.ZaehlerUndZaehlerdaten
 	var temp []structs.ZaehlerUndZaehlerdaten
 
-	collectionWaermezaehler := client.Database(dbName).Collection(structs.WaermezaehlerCol)
+	collectionWaermezaehler := client.Database(config.DBName).Collection(structs.WaermezaehlerCol)
 	cursorWaermezaehler, err := collectionWaermezaehler.Find(
 		ctx,
 		bson.D{},
@@ -79,7 +80,7 @@ func ZaehlerAlleZaehlerUndDaten() ([]structs.ZaehlerUndZaehlerdaten, error) {
 	}
 	results = append(results, temp...)
 
-	collectionKaeltezaehler := client.Database(dbName).Collection(structs.KaeltezaehlerCol)
+	collectionKaeltezaehler := client.Database(config.DBName).Collection(structs.KaeltezaehlerCol)
 	cursorKaeltezaehler, err := collectionKaeltezaehler.Find(
 		ctx,
 		bson.D{},
@@ -98,7 +99,7 @@ func ZaehlerAlleZaehlerUndDaten() ([]structs.ZaehlerUndZaehlerdaten, error) {
 	}
 	results = append(results, temp...)
 
-	collectionStromzaehler := client.Database(dbName).Collection(structs.StromzaehlerCol)
+	collectionStromzaehler := client.Database(config.DBName).Collection(structs.StromzaehlerCol)
 	cursorStromzaehler, err := collectionStromzaehler.Find(
 		ctx,
 		bson.D{},
@@ -141,7 +142,7 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 
-	collection := client.Database(dbName).Collection(collectionname)
+	collection := client.Database(config.DBName).Collection(collectionname)
 
 	// Ueberpruefung, ob PK in Datenbank vorhanden
 	currentDoc, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
@@ -211,7 +212,7 @@ func ZaehlerAddStandardZaehlerdaten(data structs.AddStandardZaehlerdaten) error 
 	zeitstempel := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
 
 	for _, tmp := range []string{structs.WaermezaehlerCol, structs.StromzaehlerCol, structs.KaeltezaehlerCol} {
-		collection := client.Database(dbName).Collection(tmp)
+		collection := client.Database(config.DBName).Collection(tmp)
 
 		_, err := collection.UpdateMany(
 			ctx,
@@ -254,7 +255,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		log.Println(string(debug.Stack()))
 		return structs.ErrIDEnergieversorgungNichtVorhanden
 	}
-	collection := client.Database(dbName).Collection(collectionname)
+	collection := client.Database(config.DBName).Collection(collectionname)
 
 	if len(data.GebaeudeRef) == 0 {
 		log.Println(structs.ErrFehlendeGebaeuderef)

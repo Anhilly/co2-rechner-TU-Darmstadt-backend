@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,7 +17,7 @@ func NutzerdatenFind(username string) (structs.Nutzerdaten, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+	collection := client.Database(config.DBName).Collection(structs.NutzerdatenCol)
 
 	var data structs.Nutzerdaten
 	err := collection.FindOne(
@@ -36,7 +37,7 @@ func NutzerdatenUpdate(nutzer structs.Nutzerdaten) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+	collection := client.Database(config.DBName).Collection(structs.NutzerdatenCol)
 
 	// Update des Eintrages
 	_, err := collection.UpdateOne(
@@ -64,7 +65,7 @@ func NutzerdatenUpdateMailBestaetigung(id primitive.ObjectID, value int32) error
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+	collection := client.Database(config.DBName).Collection(structs.NutzerdatenCol)
 
 	// Update des Eintrages
 	_, err := collection.UpdateOne(
@@ -86,7 +87,7 @@ func NutzerdatenAddUmfrageref(username string, id primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+	collection := client.Database(config.DBName).Collection(structs.NutzerdatenCol)
 
 	var updatedDoc structs.Nutzerdaten
 	err := collection.FindOneAndUpdate(
@@ -109,7 +110,7 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) (primitive.ObjectID, error)
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+	collection := client.Database(config.DBName).Collection(structs.NutzerdatenCol)
 	// Pruefe, ob bereits ein Eintrag mit diesem Nutzernamen existiert
 	_, err := NutzerdatenFind(anmeldedaten.Username)
 	if err == nil {
@@ -156,7 +157,7 @@ func NutzerdatenDelete(username string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+	collection := client.Database(config.DBName).Collection(structs.NutzerdatenCol)
 
 	// finde nutzerdaten
 	nutzerdaten, err := NutzerdatenFind(username)
@@ -200,7 +201,7 @@ func AlleNutzerdaten() ([]structs.Nutzerdaten, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+	collection := client.Database(config.DBName).Collection(structs.NutzerdatenCol)
 
 	cursor, err := collection.Find(
 		ctx,

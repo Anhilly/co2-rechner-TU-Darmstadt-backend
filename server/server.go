@@ -2,6 +2,8 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -9,10 +11,13 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 	"log"
 	"net/http"
+	"strings"
 )
 
-const (
-	port = ":9000"
+var (
+	clientID     = ""
+	clientSecret = ""
+	realm        = ""
 )
 
 // StartServer started den Router und mounted alle Subseiten.
@@ -24,7 +29,7 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 	r.Use(middleware.Logger)
 
 	if mode == "dev" {
-		r.Use(cors.Handler(cors.Options{
+		r.Use(cors.Handler(cors.Options{ // TODO: check if even still needed with reverse proxy
 			// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
 			AllowedOrigins: []string{"https://*", "http://*"},
 			// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
@@ -34,6 +39,18 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 			AllowCredentials: false,
 			MaxAge:           300, // Maximum value not ignored by any of major browsers
 		}))
+
+		// set values for authentication middleware
+		clientID = config.Dev_clientID
+		clientSecret = config.Dev_clientSecret
+		realm = config.Dev_realm
+	} else if mode == "prod" {
+		// set values for authentication middleware
+		clientID = config.Prod_clientID
+		clientSecret = config.Prod_clientSecret
+		realm = config.Prod_realm
+	} else {
+		log.Fatalln("Mode not specified")
 	}
 
 	r.Mount("/umfrage", RouteUmfrage())
@@ -45,7 +62,39 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 
 	log.Println("Server Started")
 
-	log.Fatalln(http.ListenAndServe(port, r))
+	log.Fatalln(http.ListenAndServe(config.Port, r))
+}
+
+func keycloakAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		authHeader := r.Header.Get("Authorization")
+		if len(authHeader) < 1 {
+			w.WriteHeader(401)
+			return
+		}
+
+		accessToken := strings.Split(authHeader, " ")[1]
+
+		rptResult, err := keycloak.KeycloakClient.RetrospectToken(ctx, accessToken, clientID, clientSecret, realm)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(403)
+			return
+		}
+		log.Println(rptResult)
+
+		isTokenValid := *rptResult.Active
+
+		if !isTokenValid {
+			log.Println("Invalid Token")
+			w.WriteHeader(401)
+			return
+		}
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 // sendResponse sendet Response zurueck, bei Marshal Fehler sende 500 Code Error

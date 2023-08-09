@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -19,7 +20,7 @@ func ConnectDatabase() error {
 	defer cancel()
 
 	client, err = mongo.NewClient(
-		options.Client().ApplyURI(containerName + "://" + username + ":" + password + "@" + serverAdress + ":" + port))
+		options.Client().ApplyURI(config.ContainerName + "://" + config.Username + ":" + config.Password + "@" + config.ServerAdress + ":" + config.PortDB))
 	if err != nil {
 		return err
 	}

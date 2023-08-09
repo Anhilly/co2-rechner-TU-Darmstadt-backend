@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"log"
 	"os/exec"
@@ -14,9 +15,9 @@ import (
 func CreateDump(directoryName string) (string, error) {
 	dirTimestamp := time.Now().Format("20060102150405") + directoryName // Format: yyyyMMddHHmmss
 
-	cmd := exec.Command("docker", "exec", "-i", containerName, "/usr/bin/mongodump",
-		"--username", username, "--password", password, "--authenticationDatabase", "admin",
-		"--db", dbName, "--out", structs.DumpPath+dirTimestamp)
+	cmd := exec.Command("docker", "exec", "-i", config.ContainerName, "/usr/bin/mongodump",
+		"--username", config.Username, "--password", config.Password, "--authenticationDatabase", "admin",
+		"--db", config.DBName, "--out", structs.DumpPath+dirTimestamp)
 
 	err := cmd.Run()
 	if err != nil {
@@ -30,9 +31,9 @@ func CreateDump(directoryName string) (string, error) {
 
 // RestoreDump spielt einen Dump, der in "DumpPath + directoryName" liegt, wieder in die Datenbank ein mittels mongorestore.
 func RestoreDump(directoryName string) error {
-	cmd := exec.Command("docker", "exec", "-i", containerName, "/usr/bin/mongorestore",
-		"--username", username, "--password", password, "--authenticationDatabase", "admin",
-		"--drop", "--db", dbName, structs.DumpPath+directoryName+"/"+dbName)
+	cmd := exec.Command("docker", "exec", "-i", config.ContainerName, "/usr/bin/mongorestore",
+		"--username", config.Username, "--password", config.Password, "--authenticationDatabase", "admin",
+		"--drop", "--db", config.DBName, structs.DumpPath+directoryName+"/"+config.DBName)
 
 	err := cmd.Run()
 	if err != nil {
@@ -45,7 +46,7 @@ func RestoreDump(directoryName string) error {
 }
 
 func RemoveDump(directoryName string) error {
-	cmd := exec.Command("docker", "exec", "-i", containerName, "rm", "-rf", structs.DumpPath+directoryName)
+	cmd := exec.Command("docker", "exec", "-i", config.ContainerName, "rm", "-rf", structs.DumpPath+directoryName)
 
 	err := cmd.Run()
 	if err != nil {
