@@ -1,0 +1,44 @@
+name: co2Rechner-dev-environment
+services:
+  web:
+    image: nginx
+    volumes:
+      - ./development/conf.d:/etc/nginx/conf.d
+      - ./development/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:8080"
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=8080
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.0
+    volumes:
+      - ./development/co2Rechner-realm-export.json:/opt/keycloak/data/import/co2Rechner-realm-export.json
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: keycloak_db
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_SCHEMA: public
+      DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      PROXY_ADDRESS_FORWARDING: "true"
+    entrypoint: [ "/opt/keycloak/bin/kc.sh", "start --import-realm --metrics-enabled true --proxy edge --hostname-path=/auth --hostname-admin-url=http://localhost:8080/auth --hostname-strict=false --http-port 8090 --db postgres --db-url=jdbc:postgresql://keycloak_db/keycloak --db-username keycloak --db-password password" ]
+    ports:
+      - "127.0.0.1:8090:8090"
+    depends_on:
+      - keycloak_db
+
+  keycloak_db:
+    image: postgres:14.4
+    volumes:
+      - co2Rechner_keycloak_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+
+volumes:
+  co2Rechner_keycloak_db_data:
