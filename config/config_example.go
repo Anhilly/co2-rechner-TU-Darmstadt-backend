@@ -23,12 +23,21 @@ const (
 
 // Database configuration
 const (
-	ServerAdress  = "localhost"
-	PortDB        = "27017"
-	Username      = "username"
-	Password      = "password"
-	DBName        = "dbName"
-	ContainerName = "mongodb"
+	// Production mode
+	ProdDBHost      = "host"
+	ProdDBPort      = "port"
+	ProdDBUsername  = "username"
+	ProdDBPassword  = "***************
+	ProdDBName      = "db"
+	ProdDBContainer = "mongodb"
+
+	// Development mode
+	DevDBHost      = "host"
+	DevDBPort      = "port"
+	DevDBUsername  = "username"
+	DevDBPassword  = "***************"
+	DevDBName      = "db"
+	DevDBContainer = "mongodb"
 )
 
 // Log configuration

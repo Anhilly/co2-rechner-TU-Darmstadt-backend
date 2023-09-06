@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,7 +14,7 @@ func AlleUmfragen() ([]structs.Umfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.UmfrageCol)
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	cursor, err := collection.Find(
 		ctx,
@@ -58,7 +57,7 @@ func AlleUmfragenForUser(username string) ([]structs.Umfrage, error) {
 		return []structs.Umfrage{}, nil
 	}
 
-	collection := client.Database(config.DBName).Collection(structs.UmfrageCol)
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	cursor, err := collection.Find(
 		ctx,
@@ -88,7 +87,7 @@ func UmfrageFind(id primitive.ObjectID) (structs.Umfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.UmfrageCol)
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	var data structs.Umfrage
 	err := collection.FindOne(
@@ -110,7 +109,7 @@ func UmfrageUpdate(data structs.UpdateUmfrage) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.UmfrageCol)
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	var updatedDoc structs.Umfrage
 
@@ -142,7 +141,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.UmfrageCol)
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	insertedDoc, err := collection.InsertOne(
 		ctx,
@@ -183,7 +182,7 @@ func UmfrageAddMitarbeiterUmfrageRef(idUmfrage primitive.ObjectID, referenz prim
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.UmfrageCol)
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	var updatedDoc structs.Umfrage
 	err := collection.FindOneAndUpdate(
@@ -207,7 +206,7 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.UmfrageCol)
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	// Loesche assoziierte Mitarbeiterumfragen
 	eintrag, err := UmfrageFind(umfrageID)
@@ -240,7 +239,7 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 	}
 
 	// Loesche Umfrage aus RefListe des Nutzers
-	collection = client.Database(config.DBName).Collection(structs.NutzerdatenCol)
+	collection = client.Database(dbName).Collection(structs.NutzerdatenCol)
 
 	// Falls Nutzer Admin ist, finde Nutzer dem die Umfrage gehoert, um aus seiner Reflist zu loeschen
 	nutzer, err := NutzerdatenFind(username)
@@ -292,7 +291,7 @@ func UmfrageUpdateLinkShare(setValue int32, umfrageID primitive.ObjectID) (primi
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.UmfrageCol)
+	collection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	var updatedDoc structs.Umfrage
 

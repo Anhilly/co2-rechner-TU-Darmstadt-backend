@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
@@ -14,7 +13,7 @@ func ITGeraeteFind(idITGeraete int32) (structs.ITGeraete, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.ITGeraeteCol)
+	collection := client.Database(dbName).Collection(structs.ITGeraeteCol)
 
 	var data structs.ITGeraete
 	err := collection.FindOne(

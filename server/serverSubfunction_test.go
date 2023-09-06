@@ -11,7 +11,7 @@ import (
 func TestServerSubfunctions(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	err := database.ConnectDatabase()
+	err := database.ConnectDatabase("dev")
 	is.NoErr(err)
 	defer func() {
 		err := database.DisconnectDatabase()

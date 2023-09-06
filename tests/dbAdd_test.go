@@ -14,13 +14,13 @@ import (
 func TestAdd(t *testing.T) {
 	is := is.NewRelaxed(t)
 
+	err := database.ConnectDatabase("dev")
+	is.NoErr(err)
+
 	dir, err := database.CreateDump("TestAdd")
 	is.NoErr(err)
 
 	fmt.Println(dir)
-
-	err = database.ConnectDatabase()
-	is.NoErr(err)
 
 	defer func(dir string) {
 		err := database.DisconnectDatabase()

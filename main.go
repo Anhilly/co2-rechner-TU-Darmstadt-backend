@@ -34,7 +34,7 @@ func main() {
 	log.SetOutput(&logger)
 
 	// setting up database
-	err := database.ConnectDatabase()
+	err := database.ConnectDatabase(mode)
 	if err != nil {
 		log.Fatalln(err)
 	}

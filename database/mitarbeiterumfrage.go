@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,7 +15,7 @@ func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, 
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.MitarbeiterUmfrageCol)
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
 
 	var data structs.MitarbeiterUmfrage
 	err := collection.FindOne(
@@ -38,7 +37,7 @@ func MitarbeiterUmfrageFind(id primitive.ObjectID) (structs.MitarbeiterUmfrage, 
 //	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 //	defer cancel()
 //
-//	collection := client.Database(config.DBName).Collection(structs.MitarbeiterUmfrageCol)
+//	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
 //
 //	var updatedDoc structs.Umfrage
 //
@@ -79,7 +78,7 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 	// hole die IDs der assoziierten Mitarbeiterumfragen
 	umfrageRefs := umfrage.MitarbeiterUmfrageRef
 
-	collection := client.Database(config.DBName).Collection(structs.MitarbeiterUmfrageCol)
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
 
 	cursor, err := collection.Find(
 		ctx,
@@ -109,7 +108,7 @@ func MitarbeiterUmfrageFindMany(ids []primitive.ObjectID) ([]structs.Mitarbeiter
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.MitarbeiterUmfrageCol)
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
 
 	cursor, err := collection.Find(
 		ctx,
@@ -144,7 +143,7 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.MitarbeiterUmfrageCol)
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
 
 	// only insert if umfrage is not complete yet
 	umfrageID := data.IDUmfrage
@@ -206,7 +205,7 @@ func UmfrageDeleteMitarbeiterUmfrage(mitarbeiterUmfrageID primitive.ObjectID) er
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	collection := client.Database(config.DBName).Collection(structs.MitarbeiterUmfrageCol)
+	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
 
 	anzahl, err := collection.DeleteOne(
 		ctx,
@@ -224,7 +223,7 @@ func UmfrageDeleteMitarbeiterUmfrage(mitarbeiterUmfrageID primitive.ObjectID) er
 	}
 
 	// remove MitarbeiterUmfrage from Refs in Umfrage
-	umfrageCollection := client.Database(config.DBName).Collection(structs.UmfrageCol)
+	umfrageCollection := client.Database(dbName).Collection(structs.UmfrageCol)
 
 	var updatedDocument structs.Umfrage
 
