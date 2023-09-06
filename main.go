@@ -16,10 +16,10 @@ func main() {
 	var filename string
 	if mode == "prod" {
 		print("prod mode")
-		filename = config.Prod_log_filename
+		filename = config.ProdLogFilename
 	} else if mode == "dev" {
 		print("dev mode")
-		filename = config.Dev_log_filename
+		filename = config.DevLogFilename
 	} else {
 		panic("MODE not set")
 	}

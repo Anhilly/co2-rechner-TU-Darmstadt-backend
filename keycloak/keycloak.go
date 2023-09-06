@@ -10,9 +10,9 @@ var KeycloakClient *gocloak.GoCloak
 
 func SetupKeycloakClient(mode string) error {
 	if mode == "prod" {
-		KeycloakClient = gocloak.NewClient(config.Prod_url)
+		KeycloakClient = gocloak.NewClient(config.ProdKeycloakUrl)
 	} else if mode == "dev" {
-		KeycloakClient = gocloak.NewClient(config.Dev_url)
+		KeycloakClient = gocloak.NewClient(config.DevKeycloakUrl)
 	} else {
 		return errors.New("MODE not set")
 	}

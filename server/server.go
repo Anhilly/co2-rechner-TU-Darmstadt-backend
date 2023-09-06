@@ -28,13 +28,13 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 	r.Use(middleware.Logger)
 
 	if mode == "dev" { // set values for authentication middleware
-		clientID = config.Dev_clientID
-		clientSecret = config.Dev_clientSecret
-		realm = config.Dev_realm
+		clientID = config.DevKeycloakClientID
+		clientSecret = config.DevKeycloakClientSecret
+		realm = config.DevKeycloakRealm
 	} else if mode == "prod" {
-		clientID = config.Prod_clientID
-		clientSecret = config.Prod_clientSecret
-		realm = config.Prod_realm
+		clientID = config.ProdKeycloakClientID
+		clientSecret = config.ProdKeycloakClientSecret
+		realm = config.ProdKeycloakRealm
 	} else {
 		log.Fatalln("Mode not specified")
 	}

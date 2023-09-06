@@ -19,8 +19,7 @@ func ConnectDatabase() error {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	client, err = mongo.NewClient(
-		options.Client().ApplyURI(config.ContainerName + "://" + config.Username + ":" + config.Password + "@" + config.ServerAdress + ":" + config.PortDB))
+	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://" + config.Username + ":" + config.Password + "@" + config.ServerAdress + ":" + config.PortDB))
 	if err != nil {
 		return err
 	}

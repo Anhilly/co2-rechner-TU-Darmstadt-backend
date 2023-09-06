@@ -9,16 +9,16 @@ const (
 // Keycloak configuration
 const (
 	// Production mode
-	Prod_url          = "URL"
-	Prod_clientID     = "clientID"
-	Prod_clientSecret = "***************"
-	Prod_realm        = "realm"
+	ProdKeycloakUrl          = "URL"
+	ProdKeycloakClientID     = "clientID"
+	ProdKeycloakClientSecret = "***************"
+	ProdKeycloakRealm        = "realm"
 
 	// Development mode
-	Dev_url          = "URL"
-	Dev_clientID     = "clientID"
-	Dev_clientSecret = "***************"
-	Dev_realm        = "realm"
+	DevKeycloakUrl          = "URL"
+	DevKeycloakClientID     = "clientID"
+	DevKeycloakClientSecret = "***************"
+	DevKeycloakRealm        = "realm"
 )
 
 // Database configuration
@@ -34,10 +34,10 @@ const (
 // Log configuration
 const (
 	// Production mode
-	Prod_log_filename = "./logs/go.log"
+	ProdLogFilename = "./logs/go.log"
 
 	// Development mode
-	Dev_log_filename = "./go.log"
+	DevLogFilename = "./go.log"
 )
 
 // Mail configuration
