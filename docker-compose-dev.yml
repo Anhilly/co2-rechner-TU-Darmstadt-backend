@@ -14,15 +14,16 @@ services:
   mongodb:
     image: mongo
     volumes:
+      - ./development/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - ./development/mongorestore.sh:/docker-entrypoint-initdb.d/mongorestore.sh:ro
       - ./development/dump:/dump
-      - mongodata_test:/data/db
+      - mongodata:/data/db
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: co2Rechner
+      MONGO_INITDB_DATABASE: admin
 
   keycloak:
     image: quay.io/keycloak/keycloak:21.0
@@ -61,4 +62,4 @@ services:
 
 volumes:
   co2Rechner_keycloak_db_data:
-  mongodata_test:
+  mongodata:
