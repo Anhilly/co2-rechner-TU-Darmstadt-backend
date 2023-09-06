@@ -30,3 +30,4 @@ go_backend
 build/*
 /build/
 /go.log
+/development/dump/co2Rechner/
