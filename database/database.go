@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -61,12 +60,6 @@ func ConnectDatabase(mode string) error {
 	if err != nil {
 		return err
 	}
-
-	dir, err := CreateDump("test")
-	if err != nil {
-		return err
-	}
-	fmt.Println(dir)
 
 	log.Println("Database Connected")
 
