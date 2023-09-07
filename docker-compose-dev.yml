@@ -5,6 +5,7 @@ services:
     volumes:
       - ./development/conf.d:/etc/nginx/conf.d
       - ./development/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx-config:/etc/nginx
     ports:
       - "8080:8080"
     environment:
@@ -18,6 +19,7 @@ services:
       - ./development/mongorestore.sh:/docker-entrypoint-initdb.d/mongorestore.sh:ro
       - ./development/dump:/dump
       - mongodata:/data/db
+      - mongoconfig:/data/configdb
     ports:
       - "27017:27017"
     environment:
@@ -45,21 +47,25 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       PROXY_ADDRESS_FORWARDING: "true"
-    entrypoint: [ "/opt/keycloak/bin/kc.sh", "start --metrics-enabled true --proxy edge --hostname-path=/auth --hostname-admin-url=http://localhost:8080/auth --hostname-strict=false --http-port 8090 --db postgres --db-url=jdbc:postgresql://keycloak_db/keycloak --db-username keycloak --db-password password" ]
+    entrypoint: [ "/opt/keycloak/bin/kc.sh", "start --metrics-enabled true --proxy edge --hostname-path=/auth --hostname-admin-url=http://localhost:8080/auth --hostname-strict=false --http-port 8090 --db postgres --db-url=jdbc:postgresql://keycloak-db/keycloak --db-username keycloak --db-password password" ]
     ports:
       - "127.0.0.1:8090:8090"
     depends_on:
-      - keycloak_db
+      - keycloak-db
 
-  keycloak_db:
+  keycloak-db:
     image: postgres:14.4
     volumes:
-      - co2Rechner_keycloak_db_data:/var/lib/postgresql/data
+      - keycloak-db-data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: password
 
 volumes:
-  co2Rechner_keycloak_db_data:
+  keycloak-db-data:
   mongodata:
+  mongoconfig:
+  nginx-config:
+
+
