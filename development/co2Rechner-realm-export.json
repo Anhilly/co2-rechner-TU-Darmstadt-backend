@@ -473,20 +473,32 @@
     {
       "id": "c4daf060-53d4-4576-a05e-5f1a8d86f791",
       "createdTimestamp": 1691513442690,
-      "username": "test",
-      "email": "test@test.de",
-      "firstName": "Tester",
-      "lastName": "Testus",
+      "username": "testuser",
+      "email": "testuser@testuser",
+      "firstName": "00xx0000",
       "enabled": true,
+      "emailVerified": true,
       "credentials": [
         {
           "type": "password",
-          "value": "test1234"
+          "value": "1234567890"
         }
-      ],
-      "attributes": {
-        "abc": [ "xyz" ]
-      }
+      ]
+    },
+    {
+      "id": "c4daf060-53d4-4576-a05e-5f1a8d86f792",
+      "createdTimestamp": 1691513442690,
+      "username": "testadmin",
+      "email": "testadmin@testadmin",
+      "firstName": "00xx0000",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "0987654321"
+        }
+      ]
     }
   ],
   "scopeMappings": [
@@ -1626,29 +1638,7 @@
   "enabledEventTypes": [],
   "adminEventsEnabled": false,
   "adminEventsDetailsEnabled": false,
-  "identityProviders": [
-    {
-      "alias": "github",
-      "internalId": "163a22f2-5ff6-486f-9420-42e1bfa2529f",
-      "providerId": "github",
-      "enabled": true,
-      "updateProfileFirstLoginMode": "on",
-      "trustEmail": false,
-      "storeToken": false,
-      "addReadTokenRoleOnCreate": false,
-      "authenticateByDefault": false,
-      "linkOnly": false,
-      "firstBrokerLoginFlowAlias": "first broker login",
-      "config": {
-        "hideOnLoginPage": "false",
-        "acceptsPromptNoneForwardFromClient": "false",
-        "clientId": "73381ff4de6ca6e3d91e",
-        "disableUserInfo": "false",
-        "syncMode": "IMPORT",
-        "clientSecret": "**********"
-      }
-    }
-  ],
+  "identityProviders": [],
   "identityProviderMappers": [],
   "components": {
     "org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy": [
