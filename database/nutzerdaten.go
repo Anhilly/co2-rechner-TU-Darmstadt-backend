@@ -5,7 +5,6 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"runtime/debug"
 )
@@ -46,9 +45,8 @@ func NutzerdatenUpdate(nutzer structs.Nutzerdaten) error {
 			{"$set",
 				bson.D{
 					{"nutzername", nutzer.Nutzername},
-					{"passwort", nutzer.Passwort},
+					{"email", nutzer.EMail},
 					{"rolle", nutzer.Rolle},
-					{"emailBestaetigt", nutzer.EmailBestaetigt},
 				}},
 		},
 	)
@@ -60,26 +58,26 @@ func NutzerdatenUpdate(nutzer structs.Nutzerdaten) error {
 }
 
 // NutzerdatenUpdateMailBestaetigung updatet den emailBestaetigt Eintrag von angegeben Nutzer in der Datenbank
-func NutzerdatenUpdateMailBestaetigung(id primitive.ObjectID, value int32) error {
-	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
-	defer cancel()
-
-	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
-
-	// Update des Eintrages
-	_, err := collection.UpdateOne(
-		ctx,
-		bson.M{"_id": id},
-		bson.D{
-			{"$set", bson.D{{"emailBestaetigt", value}}},
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
+//func NutzerdatenUpdateMailBestaetigung(id primitive.ObjectID, value int32) error {
+//	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+//	defer cancel()
+//
+//	collection := client.Database(dbName).Collection(structs.NutzerdatenCol)
+//
+//	// Update des Eintrages
+//	_, err := collection.UpdateOne(
+//		ctx,
+//		bson.M{"_id": id},
+//		bson.D{
+//			{"$set", bson.D{{"emailBestaetigt", value}}},
+//		},
+//	)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}
 
 // NutzerdatenAddUmfrageref fuegt einem Nutzer eine ObjectID einer Umfrage hinzu, falls der Nutzer vorhanden sind.
 func NutzerdatenAddUmfrageref(username string, id primitive.ObjectID) error {
@@ -116,22 +114,15 @@ func NutzerdatenInsert(anmeldedaten structs.AuthReq) (primitive.ObjectID, error)
 		// Eintrag mit diesem Nutzernamen existiert bereits
 		return primitive.NilObjectID, structs.ErrInsertExistingAccount
 	}
-	// Kein Eintrag vorhanden
 
-	passwordhash, err := bcrypt.GenerateFromPassword([]byte(anmeldedaten.Passwort), bcrypt.DefaultCost)
-	if err != nil {
-		log.Println(err)
-		log.Println(string(debug.Stack()))
-		return primitive.NilObjectID, err // Bcrypt hashing error
-	}
+	// Kein Eintrag vorhanden
 	result, err := collection.InsertOne(ctx, structs.Nutzerdaten{
-		NutzerID:        primitive.NewObjectID(),
-		Nutzername:      anmeldedaten.Username,
-		Passwort:        string(passwordhash),
-		Rolle:           structs.IDRolleNutzer,
-		EmailBestaetigt: structs.IDEmailNichtBestaetigt,
-		Revision:        1,
-		UmfrageRef:      []primitive.ObjectID{},
+		NutzerID:   primitive.NewObjectID(),
+		Nutzername: anmeldedaten.Username,
+		// EMail:      anmeldedaten.EMail,		// TODO: Adapt to new struct
+		Rolle:      structs.IDRolleNutzer,
+		Revision:   2,
+		UmfrageRef: []primitive.ObjectID{},
 	})
 	if err != nil {
 		log.Println(err)

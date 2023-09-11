@@ -49,7 +49,13 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 	r.Group(func(r chi.Router) { // authenticated routes
 		r.Use(keycloakAuthMiddleware)
 
+		// temporary route for testing
 		r.Get("/hello", welcome)
+
+		// nutzerdaten routes
+		r.Get("/nutzerdaten/checkUser", CheckUser)
+		r.Get("/nutzerdaten/checkRolle", CheckRolle)
+
 	})
 
 	// unauthenticated routes
