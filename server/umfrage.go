@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
@@ -37,16 +36,11 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-
-	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
 	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
@@ -100,16 +94,11 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 // GetUmfrage empfaengt POST Request und sendet Umfrage struct fuer passende UmfrageID zurueck,
 // sofern auth Eigentuemer oder Admin
 func GetUmfrage(res http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-
-	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
 	var requestedUmfrageID primitive.ObjectID
 	err = requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
@@ -175,16 +164,11 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	umfrageReq := structs.InsertUmfrage{}
 	umfrageRes := structs.UmfrageID{}
 
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-
-	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -240,16 +224,11 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 func DuplicateUmfrage(res http.ResponseWriter, req *http.Request) {
 	umfrageRes := structs.UmfrageID{}
 
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-
-	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
 	var requestedUmfrageID primitive.ObjectID
 	err = requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
@@ -315,16 +294,11 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
 	umfrageReq := structs.DeleteUmfrage{}
 
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-
-	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
 	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
@@ -365,16 +339,11 @@ func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
 // PostAllUmfragenForUser sendet alle Umfragen, die dem authentifizierten Nutzer gehoeren
 // als structs.AlleUmfragen zurueck
 func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-
-	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
 	umfragenRes := structs.AlleUmfragen{}
 

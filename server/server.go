@@ -1,7 +1,9 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
@@ -64,8 +66,7 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 	r.Group(func(r chi.Router) { // authenticated routes
 		r.Use(keycloakAuthMiddleware)
 
-		// temporary route for testing
-		r.Get("/hello", welcome)
+		r.Get("/authRoute", welcome)
 
 		// auswertung routes
 		r.Get("/auswertung", GetAuswertung)
@@ -107,6 +108,38 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 	log.Fatalln(http.ListenAndServe(config.Port, r))
 }
 
+func getEmailFromToken(token string, ctx context.Context) (string, error) {
+	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, token, realm)
+	if err != nil {
+		return "", err
+	}
+
+	var email string
+	if userInfo.Email != nil {
+		email = *userInfo.Email
+	} else {
+		return "", errors.New("Cannot retrieve email from token")
+	}
+
+	return email, nil
+}
+
+func getUsernameFromToken(token string, ctx context.Context) (string, error) {
+	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, token, realm)
+	if err != nil {
+		return "", err
+	}
+
+	var nutzername string
+	if userInfo.PreferredUsername != nil {
+		nutzername = *userInfo.PreferredUsername
+	} else {
+		return "", errors.New("Cannot retrieve username from token")
+	}
+
+	return nutzername, nil
+}
+
 func keycloakAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
@@ -142,14 +175,12 @@ func checkAdminMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-		userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+		nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], ctx)
 		if err != nil {
-			errorResponse(res, err, http.StatusBadRequest)
+			log.Println(err)
+			res.WriteHeader(401)
 			return
 		}
-
-		nutzername := *userInfo.PreferredUsername
 
 		nutzer, err := database.NutzerdatenFind(nutzername)
 		if err != nil {
@@ -158,7 +189,7 @@ func checkAdminMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		if nutzer.Rolle != 1 {
-			log.Println("Unauthorized becuase user is not admin") //TODO: change Error Message
+			log.Println(structs.ErrNutzerHatKeineBerechtigung)
 			res.WriteHeader(401)
 			return
 		}

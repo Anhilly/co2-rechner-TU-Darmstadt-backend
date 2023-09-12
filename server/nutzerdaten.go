@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"io/ioutil"
 	"log"
@@ -12,16 +11,11 @@ import (
 )
 
 func CheckUser(res http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-
-	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
 	// Pruefe, ob Nutzer bereits existiert
 	_, err = database.NutzerdatenFind(nutzername)
@@ -31,9 +25,15 @@ func CheckUser(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Pruefe, ob Nutzer mit E-Mail bereits existiert, um Account zu migrieren
-	nutzer, err := database.NutzerdatenFindByEMail(*userInfo.Email)
+	email, err := getEmailFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	nutzer, err := database.NutzerdatenFindByEMail(email)
 	if err == nil { // Nutzer fuer Migration gefunden
-		nutzer.Nutzername = *userInfo.PreferredUsername // aendere Nutzername
+		nutzer.Nutzername = nutzername // aendere Nutzername
 
 		restorepath, err := database.CreateDump("CheckUser")
 		if err != nil {
@@ -68,7 +68,7 @@ func CheckUser(res http.ResponseWriter, req *http.Request) {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
-	_, err = database.NutzerdatenInsert(*userInfo.PreferredUsername, *userInfo.Email)
+	_, err = database.NutzerdatenInsert(nutzername, email)
 	if err != nil {
 		err2 := database.RestoreDump(restorepath)
 		if err2 != nil {
@@ -94,16 +94,11 @@ func CheckUser(res http.ResponseWriter, req *http.Request) {
 }
 
 func CheckRolle(res http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-
-	nutzername := *userInfo.PreferredUsername
 
 	nutzer, err := database.NutzerdatenFind(nutzername)
 	if err != nil {
@@ -132,16 +127,12 @@ func DeleteNutzerdaten(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
+		log.Println(err)
+		res.WriteHeader(401)
 		return
 	}
-
-	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
 	// check if user is admin if they do not want to delete themselves
 	if deleteNutzerdatenReq.Username != nutzername {

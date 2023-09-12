@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/co2computation"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -26,20 +25,9 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	var nutzername string
-	if userInfo.PreferredUsername != nil {
-		nutzername = *userInfo.PreferredUsername
-	} else {
-		errorResponse(res, errors.New("username is nil"), http.StatusBadRequest)
 		return
 	}
 
@@ -231,16 +219,11 @@ func binaereZahlerdatenFuerZaehler(alleZaehler []structs.ZaehlerUndZaehlerdaten)
 // 0 = Link Share deaktiviert, 1 = aktiviert.
 // Kann nicht durch einen Administrator geaendert werden, nur durch besitzenden Nutzer.
 func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
-
-	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-
-	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
