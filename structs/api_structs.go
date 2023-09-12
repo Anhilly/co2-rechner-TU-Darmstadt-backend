@@ -103,12 +103,6 @@ type AlleMitarbeiterUmfragenForUmfrage struct {
 	MitarbeiterUmfragen []MitarbeiterUmfrage `json:"mitarbeiterUmfragen"`
 }
 
-// Nutzer Authentifikation Token	//TODO: Remove
-type AuthToken struct {
-	Username     string `json:"username"`
-	Sessiontoken string `json:"sessiontoken"`
-}
-
 type UpdateUmfrage struct {
 	UmfrageID         primitive.ObjectID `json:"umfrageID"`
 	Bezeichnung       string             `json:"bezeichnung"`
@@ -149,10 +143,6 @@ type RequestLinkShare struct {
 	Freigabewert int32              `json:"freigabewert"`
 }
 
-type RequestAuth struct { //TODO: Remove entirely
-	Auth AuthToken `json:"authToken"` //TODO: Remove
-}
-
 type AuswertungRes struct {
 	// Information von Umfrage
 	ID                    primitive.ObjectID `json:"id"`
@@ -191,44 +181,6 @@ type AuswertungRes struct {
 	UmfrageGebaeude       []UmfrageGebaeude                 `json:"umfrageGebaeude"`
 }
 
-// Requests zur Authentifizierung und Abmeldung
-type AuthReq struct { // wird fuer Anmeldung und Registrierung verwendet
-	Username string `json:"username"`
-	Passwort string `json:"password"`
-}
-
-type PasswortAendernReq struct { // wird fuer Anmeldung und Registrierung verwendet	//TODO: Remove entirely
-	Auth          AuthToken `json:"authToken"` //TODO: Remove
-	Passwort      string    `json:"passwort"`
-	NeuesPasswort string    `json:"neuesPasswort"`
-}
-
-type PasswortVergessenReq struct { //TODO: Remove entirely
-	Username string `json:"username"`
-}
-
-type EmailBestaetigung struct { //TODO: Remove entirely
-	UserID primitive.ObjectID `json:"nutzerID"`
-}
-
-type AbmeldungReq struct { //TODO: Remove entirely
-	Username string `json:"username"`
-}
-
-type PruefeSessionReq struct { //TODO: Remove entirely
-	Username     string `json:"username"`
-	Sessiontoken string `json:"sessiontoken"`
-}
-
-type PruefeSessionRes struct { //TODO: Remove entirely
-	Rolle           int32 `json:"rolle"`
-	EmailBestaetigt int32 `json:"emailBestaetigt"`
-}
-
-type PruefeRolleRes struct {
-	Rolle int32 `json:"rolle"`
-}
-
 // Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
 type Response struct {
 	Status string      `json:"status"`
@@ -236,22 +188,12 @@ type Response struct {
 	Error  interface{} `json:"error"` // Typisch nil, wenn kein Error
 }
 
-type AbmeldeRes struct {
-	Message string `json:"message"`
-}
-
-type RegistrierungRes struct {
-	Message string `json:"message"`
-}
-
-type AuthRes struct {
-	Message      string `json:"message"`
-	Sessiontoken string `json:"sessiontoken"`
-	Rolle        int32  `json:"rolle"`
-}
-
 type DeleteNutzerdatenReq struct {
 	Username string `json:"username"`
+}
+
+type PruefeRolleRes struct {
+	Rolle int32 `json:"rolle"`
 }
 
 type Error struct {

@@ -40,8 +40,6 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		log.Fatalln("Mode not specified")
 	}
 
-	r.Mount("/auth", RouteAuthentication())
-
 	r.Group(func(r chi.Router) { // admin only, authenticated routes
 		r.Use(keycloakAuthMiddleware)
 		r.Use(checkAdminMiddleware)
