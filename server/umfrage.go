@@ -20,7 +20,7 @@ func RouteUmfrage() chi.Router {
 	r.Post("/updateUmfrage", PostUpdateUmfrage)
 	r.Post("/getUmfrage", GetUmfrage)
 	r.Post("/gebaeude", PostAllGebaeude)
-	r.Post("/gebaeudeUndZaehler", PostAllGebaeudeUndZaehler)
+	//r.Post("/gebaeudeUndZaehler", PostAllGebaeudeUndZaehler)
 	r.Post("/alleUmfragen", PostAllUmfragen)
 	r.Post("/GetAllUmfragenForUser", PostAllUmfragenForUser)
 	r.Post("/duplicateUmfrage", PostDuplicateUmfrage)
@@ -178,25 +178,9 @@ func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
 
 // PostAllGebaeudeUndZaehler sendet Response mit allen Gebaeuden Nummern und den eingetragenen Zaehlern in der Datenbank zurueck.
 // Zusaetzlich werden alle Zaehler mit Angabe, ob ein Wert für jedes von 2018 bis zum aktuellen Jahr vorhanden ist.
-func PostAllGebaeudeUndZaehler(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	gebaeudeReq := structs.RequestAuth{}
-	err = json.Unmarshal(s, &gebaeudeReq)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
+func GetAllGebaeudeUndZaehler(res http.ResponseWriter, req *http.Request) {
+	var err error
 	gebaeudeRes := structs.AlleGebaeudeUndZaehlerRes{}
-
-	if !AuthWithResponse(res, gebaeudeReq.Auth.Username, gebaeudeReq.Auth.Sessiontoken) {
-		return
-	}
 
 	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNrUndZaehlerRef()
 	if err != nil {

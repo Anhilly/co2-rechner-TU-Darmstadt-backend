@@ -56,6 +56,9 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		r.Get("/nutzerdaten/checkUser", CheckUser)
 		r.Get("/nutzerdaten/checkRolle", CheckRolle)
 
+		// umfrage routes
+		r.Get("/umfrage/gebaeudeUndZaehler", GetAllGebaeudeUndZaehler)
+
 	})
 
 	// unauthenticated routes
@@ -66,12 +69,12 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 }
 
 func keycloakAuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
 
-		authHeader := r.Header.Get("Authorization")
+		authHeader := req.Header.Get("Authorization")
 		if len(authHeader) < 1 {
-			w.WriteHeader(401)
+			res.WriteHeader(401)
 			return
 		}
 
@@ -80,7 +83,7 @@ func keycloakAuthMiddleware(next http.Handler) http.Handler {
 		rptResult, err := keycloak.KeycloakClient.RetrospectToken(ctx, accessToken, clientID, clientSecret, realm)
 		if err != nil {
 			log.Println(err)
-			w.WriteHeader(403)
+			res.WriteHeader(403)
 			return
 		}
 		log.Println(rptResult)
@@ -89,11 +92,11 @@ func keycloakAuthMiddleware(next http.Handler) http.Handler {
 
 		if !isTokenValid {
 			log.Println("Invalid Token")
-			w.WriteHeader(401)
+			res.WriteHeader(401)
 			return
 		}
 
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(res, req.WithContext(ctx))
 	})
 }
 
