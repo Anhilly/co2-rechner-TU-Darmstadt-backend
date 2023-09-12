@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/co2computation"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -25,12 +26,6 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
 	// hole Umfragen aus der Datenbank
 	umfrage, err := database.UmfrageFind(requestedUmfrageID)
 	if err != nil {
@@ -38,24 +33,47 @@ func GetAuswertung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Wenn Auswertung nicht fuers teilen freigegeben muss Nutzer authoritaet geprueft werden
-	//if umfrage.AuswertungFreigegeben == 0 {
-	//	// Authentifizierung
-	//	if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
-	//		return
-	//	}
-	//	nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
-	//	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, auswertungReq.UmfrageID) {
-	//		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
-	//		return
-	//	}
-	//}
+	// Wenn Auswertung nicht fuers teilen freigegeben muss Nutzer authentifiziert sein
+	var nutzername string
+	if umfrage.AuswertungFreigegeben == 0 {
+		// Keycloak Authentifizierung
+		ctx := req.Context()
 
-	// TODO: how to implement link sharing
-	nutzer, _ := database.NutzerdatenFind(nutzername)
-	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, requestedUmfrageID) {
-		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
-		return
+		authHeader := req.Header.Get("Authorization")
+		if len(authHeader) < 1 {
+			res.WriteHeader(401)
+			return
+		}
+
+		accessToken := strings.Split(authHeader, " ")[1]
+
+		rptResult, err := keycloak.KeycloakClient.RetrospectToken(ctx, accessToken, clientID, clientSecret, realm)
+		if err != nil {
+			log.Println(err)
+			res.WriteHeader(403)
+			return
+		}
+
+		isTokenValid := *rptResult.Active
+
+		if !isTokenValid {
+			log.Println("Invalid Token")
+			res.WriteHeader(401)
+			return
+		}
+
+		// Pruefe, ob Nutzer Admin ist oder der Besitzer der Umfrage
+		nutzername, err = getUsernameFromToken(accessToken, req.Context())
+		if err != nil {
+			errorResponse(res, err, http.StatusBadRequest)
+			return
+		}
+
+		nutzer, _ := database.NutzerdatenFind(nutzername)
+		if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, requestedUmfrageID) {
+			errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
+			return
+		}
 	}
 
 	mitarbeiterumfragen, err := database.MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)

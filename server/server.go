@@ -42,6 +42,31 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		log.Fatalln("Mode not specified")
 	}
 
+	r.Group(func(r chi.Router) { // authenticated routes
+		r.Use(keycloakAuthMiddleware)
+
+		r.Get("/authRoute", welcome)
+
+		// auswertung routes
+		r.Post("/auswertung/updateSetLinkShare", UpdateSetLinkShare)
+
+		// nutzerdaten routes
+		r.Get("/nutzerdaten/checkUser", CheckUser)
+		r.Get("/nutzerdaten/checkRolle", CheckRolle)
+		r.Delete("/nutzerdaten/deleteNutzerdaten", DeleteNutzerdaten)
+
+		// umfrage routes
+		r.Get("/umfrage/umfrage", GetUmfrage)
+		r.Get("/umfrage/allUmfragenForUser", GetAllUmfragenForUser)
+		r.Get("/umfrage/gebaeude", GetAllGebaeude)
+		r.Get("/umfrage/gebaeudeUndZaehler", GetAllGebaeudeUndZaehler)
+		r.Get("/umfrage/duplicateUmfrage", DuplicateUmfrage)
+		r.Post("/umfrage/insertUmfrage", PostInsertUmfrage)
+		r.Post("/umfrage/updateUmfrage", PostUpdateUmfrage)
+		r.Delete("/umfrage/deleteUmfrage", DeleteUmfrage)
+
+	})
+
 	r.Group(func(r chi.Router) { // admin only, authenticated routes
 		r.Use(keycloakAuthMiddleware)
 		r.Use(checkAdminMiddleware)
@@ -63,46 +88,19 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		r.Get("/umfrage/alleUmfragen", GetAllUmfragen)
 	})
 
-	r.Group(func(r chi.Router) { // authenticated routes
-		r.Use(keycloakAuthMiddleware)
-
-		r.Get("/authRoute", welcome)
-
-		// auswertung routes
-		r.Get("/auswertung", GetAuswertung)
-
-		r.Post("/auswertung/updateSetLinkShare", UpdateSetLinkShare)
-
-		// nutzerdaten routes
-		r.Get("/nutzerdaten/checkUser", CheckUser)
-		r.Get("/nutzerdaten/checkRolle", CheckRolle)
-		r.Delete("/nutzerdaten/deleteNutzerdaten", DeleteNutzerdaten)
-
-		// umfrage routes
-		r.Get("/umfrage/umfrage", GetUmfrage)
-		r.Get("/umfrage/allUmfragenForUser", GetAllUmfragenForUser)
-		r.Get("/umfrage/gebaeude", GetAllGebaeude)
-		r.Get("/umfrage/gebaeudeUndZaehler", GetAllGebaeudeUndZaehler)
-		r.Get("/umfrage/duplicateUmfrage", DuplicateUmfrage)
-
-		r.Post("/umfrage/insertUmfrage", PostInsertUmfrage)
-		r.Post("/umfrage/updateUmfrage", PostUpdateUmfrage)
-
-		r.Delete("/umfrage/deleteUmfrage", DeleteUmfrage)
-
-	})
-
 	// unauthenticated routes
 	r.Get("/", welcome)
 
 	// mitarbeiterUmfrage routes
 	r.Get("/mitarbeiterUmfrage/exists", GetUmfrageExists)
-
 	r.Post("/mitarbeiterUmfrage/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
 
 	// umfrage routes
 	r.Get("/umfrage/umfrageYear", GetUmfrageYear)
 	r.Get("/umfrage/sharedResults", GetSharedResults)
+
+	// special routes with separate authentication in function
+	r.Get("/auswertung", GetAuswertung)
 
 	log.Println("Server Started")
 	log.Fatalln(http.ListenAndServe(config.Port, r))
