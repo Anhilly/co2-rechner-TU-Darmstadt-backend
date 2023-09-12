@@ -44,7 +44,6 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 	r.Mount("/db", RouteDB())
 	r.Mount("/auth", RouteAuthentication())
 	r.Mount("/auswertung", RouteAuswertung())
-	r.Mount("/nutzerdaten", RouteNutzerdaten())
 
 	r.Group(func(r chi.Router) { // authenticated routes
 		r.Use(keycloakAuthMiddleware)
@@ -55,6 +54,7 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		// nutzerdaten routes
 		r.Get("/nutzerdaten/checkUser", CheckUser)
 		r.Get("/nutzerdaten/checkRolle", CheckRolle)
+		r.Delete("/nutzerdaten/deleteNutzerdaten", DeleteNutzerdaten)
 
 		// umfrage routes
 		r.Get("/umfrage/gebaeudeUndZaehler", GetAllGebaeudeUndZaehler)
@@ -86,7 +86,6 @@ func keycloakAuthMiddleware(next http.Handler) http.Handler {
 			res.WriteHeader(403)
 			return
 		}
-		log.Println(rptResult)
 
 		isTokenValid := *rptResult.Active
 

@@ -5,21 +5,11 @@ import (
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
-	"github.com/go-chi/chi/v5"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 )
-
-// RouteNutzerdaten mounted alle aufrufbaren API Endpunkte unter */nutzerdaten
-func RouteNutzerdaten() chi.Router {
-	r := chi.NewRouter()
-
-	r.Delete("/deleteNutzerdaten", DeleteNutzerdaten)
-
-	return r
-}
 
 func CheckUser(res http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
@@ -33,51 +23,74 @@ func CheckUser(res http.ResponseWriter, req *http.Request) {
 
 	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
-	// check if user already exists
+	// Pruefe, ob Nutzer bereits existiert
 	_, err = database.NutzerdatenFind(nutzername)
-	if err == nil {
+	if err == nil { // Nutzer existiert bereits
 		sendResponse(res, true, nil, http.StatusOK)
 		return
 	}
 
-	// check if there is an account with same email for migration
-	// TODO: Accounnt migration
+	// Pruefe, ob Nutzer mit E-Mail bereits existiert, um Account zu migrieren
+	nutzer, err := database.NutzerdatenFindByEMail(*userInfo.Email)
+	if err == nil { // Nutzer fuer Migration gefunden
+		nutzer.Nutzername = *userInfo.PreferredUsername // aendere Nutzername
 
-	// create new user
-	// TODO: create new user
+		restorepath, err := database.CreateDump("CheckUser")
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
 
-	//restorepath, err := database.CreateDump("PostRegistrierung")
-	//if err != nil {
-	//	errorResponse(res, err, http.StatusInternalServerError)
-	//	return
-	//}
-	//id, err := database.NutzerdatenInsert()
-	//if err != nil {
-	//	err2 := database.RestoreDump(restorepath)
-	//	if err2 != nil {
-	//		// Datenbank konnte nicht wiederhergestellt werden
-	//		log.Println(err2)
-	//	} else {
-	//		err := database.RemoveDump(restorepath)
-	//		if err != nil {
-	//			log.Println(err)
-	//		}
-	//	}
-	//	// Konnte keinen neuen Nutzer erstellen
-	//	errorResponse(res, err, http.StatusConflict)
-	//	return
-	//}
-	//
-	//err = database.RemoveDump(restorepath)
-	//if err != nil {
-	//	log.Println(err)
-	//}
-	//
-	//sendResponse(res, true, nil, http.StatusCreated)
-}
+		err = database.NutzerdatenUpdate(nutzer)
+		if err != nil {
+			err2 := database.RestoreDump(restorepath)
+			if err2 != nil {
+				// Datenbank konnte nicht wiederhergestellt werden
+				log.Println(err2)
+			} else {
+				err := database.RemoveDump(restorepath)
+				if err != nil {
+					log.Println(err)
+				}
+			}
+			// Konnte Nutzer nicht migrieren
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
 
-type RolleRes struct {
-	Rolle int32 `json:"rolle"`
+		sendResponse(res, true, nil, http.StatusOK)
+		return
+	}
+
+	// Neuen Nutzer erstellen
+	restorepath, err := database.CreateDump("CheckUser")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	_, err = database.NutzerdatenInsert(*userInfo.PreferredUsername, *userInfo.Email)
+	if err != nil {
+		err2 := database.RestoreDump(restorepath)
+		if err2 != nil {
+			// Datenbank konnte nicht wiederhergestellt werden
+			log.Println(err2)
+		} else {
+			err := database.RemoveDump(restorepath)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		// Konnte keinen neuen Nutzer erstellen
+		errorResponse(res, err, http.StatusConflict)
+		return
+	}
+
+	err = database.RemoveDump(restorepath)
+	if err != nil {
+		log.Println(err)
+	}
+
+	sendResponse(res, true, nil, http.StatusCreated)
 }
 
 func CheckRolle(res http.ResponseWriter, req *http.Request) {
@@ -98,12 +111,12 @@ func CheckRolle(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	sendResponse(res, true, RolleRes{
+	sendResponse(res, true, structs.PruefeRolleRes{
 		Rolle: nutzer.Rolle,
 	}, http.StatusOK)
 }
 
-// PostNutzerdatenDelete loescht den Nutzer, der die Loeschung angefragt hat.
+// DeleteNutzerdaten loescht den Nutzer, der die Loeschung angefragt hat.
 // Gibt auftretende Errors zurück, bspw. interne Berechnungsfehler oder unauthorized access.
 func DeleteNutzerdaten(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
@@ -119,12 +132,20 @@ func DeleteNutzerdaten(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, deleteNutzerdatenReq.Auth.Username, deleteNutzerdatenReq.Auth.Sessiontoken) {
+	ctx := req.Context()
+
+	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
+	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
+
+	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
+
 	// check if user is admin if they do not want to delete themselves
-	if deleteNutzerdatenReq.Username != deleteNutzerdatenReq.Auth.Username {
-		nutzer, err := database.NutzerdatenFind(deleteNutzerdatenReq.Username)
+	if deleteNutzerdatenReq.Username != nutzername {
+		nutzer, err := database.NutzerdatenFind(nutzername)
 		if err != nil {
 			errorResponse(res, err, http.StatusInternalServerError)
 			return

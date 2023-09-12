@@ -256,6 +256,10 @@ type PruefeSessionRes struct {
 	EmailBestaetigt int32 `json:"emailBestaetigt"`
 }
 
+type PruefeRolleRes struct {
+	Rolle int32 `json:"rolle"`
+}
+
 // Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
 type Response struct {
 	Status string      `json:"status"`
@@ -278,8 +282,7 @@ type AuthRes struct {
 }
 
 type DeleteNutzerdatenReq struct {
-	Auth     AuthToken `json:"authToken"`
-	Username string    `json:"username"`
+	Username string `json:"username"`
 }
 
 type Error struct {
