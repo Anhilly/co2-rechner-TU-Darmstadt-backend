@@ -475,7 +475,7 @@
       "createdTimestamp": 1691513442690,
       "username": "testuser",
       "email": "testuser@testuser",
-      "firstName": "00xx0000",
+      "firstName": "testuser",
       "enabled": true,
       "emailVerified": true,
       "credentials": [
@@ -490,7 +490,7 @@
       "createdTimestamp": 1691513442690,
       "username": "testadmin",
       "email": "testadmin@testadmin",
-      "firstName": "00xx0000",
+      "firstName": "testadmin",
       "enabled": true,
       "emailVerified": true,
       "credentials": [
