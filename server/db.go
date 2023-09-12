@@ -6,27 +6,10 @@ import (
 	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
-	"github.com/go-chi/chi/v5"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
-
-// RouteDB mounted alle aufrufbaren API Endpunkte unter */db
-func RouteDB() chi.Router {
-	r := chi.NewRouter()
-
-	r.Post("/addFaktor", PostAddFaktor)
-	r.Post("/addZaehlerdaten", PostAddZaehlerdaten)
-	r.Post("/addZaehlerdatenCSV", PostAddZaehlerdatenCSV)
-	r.Post("/addStandardZaehlerdaten", PostAddStandardZaehlerdaten)
-	r.Post("/addVersorger", PostAddVersorger)
-	r.Post("/addStandardVersorger", PostAddStandardVersorger)
-	r.Post("/insertZaehler", PostInsertZaehler)
-	r.Post("/insertGebaeude", PostInsertGebaeude)
-
-	return r
-}
 
 // PostAddFaktor fuegt einen neuen CO2-Faktor fuer die Energieversorgung eines bestimmten Jahres in die DB ein,
 // sofern der Nutzer authentifizierter Admin ist und sendet eine Response mit null zurueck.
@@ -41,15 +24,6 @@ func PostAddFaktor(res http.ResponseWriter, req *http.Request) {
 	err = json.Unmarshal(s, &data)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
-	if nutzer.Rolle != 1 {
-		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
 
@@ -99,15 +73,6 @@ func PostAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
-	if nutzer.Rolle != 1 {
-		errorResponse(res, err, http.StatusUnauthorized)
-		return
-	}
-
 	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostAddZaehlerdaten")
 	if err != nil {
@@ -151,15 +116,6 @@ func PostAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 	err = json.Unmarshal(s, &data)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
-	if nutzer.Rolle != 1 {
-		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
 
@@ -225,15 +181,6 @@ func PostAddStandardZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
-	if nutzer.Rolle != 1 {
-		errorResponse(res, err, http.StatusUnauthorized)
-		return
-	}
-
 	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostAddStandardZaehlerdaten")
 	if err != nil {
@@ -277,15 +224,6 @@ func PostAddVersorger(res http.ResponseWriter, req *http.Request) {
 	err = json.Unmarshal(s, &data)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
-	if nutzer.Rolle != 1 {
-		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
 
@@ -335,15 +273,6 @@ func PostAddStandardVersorger(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
-	if nutzer.Rolle != 1 {
-		errorResponse(res, err, http.StatusUnauthorized)
-		return
-	}
-
 	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostAddStandardVersorger")
 	if err != nil {
@@ -390,15 +319,6 @@ func PostInsertZaehler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
-	if nutzer.Rolle != 1 {
-		errorResponse(res, err, http.StatusUnauthorized)
-		return
-	}
-
 	// Datenverarbeitung
 	ordner, err := database.CreateDump("PostInsertZaehler")
 	if err != nil {
@@ -442,15 +362,6 @@ func PostInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 	err = json.Unmarshal(s, &data)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	if !AuthWithResponse(res, data.Auth.Username, data.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(data.Auth.Username)
-	if nutzer.Rolle != 1 {
-		errorResponse(res, err, http.StatusUnauthorized)
 		return
 	}
 

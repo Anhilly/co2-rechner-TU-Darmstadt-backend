@@ -35,28 +35,24 @@ type UmfrageID struct {
 
 // Structs für Request JSONs zum Hinzufuegen und Aendern von Daten der Datenbank
 type AddCO2Faktor struct {
-	Auth                AuthToken `json:"authToken"` // TODO: remove
-	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
-	IDVertrag           int32     `json:"idVertrag"`
-	Jahr                int32     `json:"jahr"`
-	Wert                int32     `json:"wert"`
+	IDEnergieversorgung int32 `json:"idEnergieversorgung"`
+	IDVertrag           int32 `json:"idVertrag"`
+	Jahr                int32 `json:"jahr"`
+	Wert                int32 `json:"wert"`
 }
 
 type AddZaehlerdaten struct {
-	Auth                AuthToken `json:"authToken"` // TODO: remove
-	PKEnergie           int32     `json:"pkEnergie"`
-	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
-	Jahr                int32     `json:"jahr"`
-	Wert                float64   `json:"wert"`
+	PKEnergie           int32   `json:"pkEnergie"`
+	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
+	Jahr                int32   `json:"jahr"`
+	Wert                float64 `json:"wert"`
 }
 
 type AddStandardZaehlerdaten struct {
-	Auth AuthToken `json:"authToken"` // TODO: remove
-	Jahr int32     `json:"jahr"`
+	Jahr int32 `json:"jahr"`
 }
 
 type AddZaehlerdatenCSV struct {
-	Auth                AuthToken `json:"authToken"` // TODO: remove
 	PKEnergie           []int32   `json:"pkEnergie"`
 	IDEnergieversorgung []int32   `json:"idEnergieversorgung"`
 	Jahr                int32     `json:"jahr"`
@@ -64,16 +60,14 @@ type AddZaehlerdatenCSV struct {
 }
 
 type InsertZaehler struct {
-	Auth                AuthToken `json:"authToken"` // TODO: remove
-	PKEnergie           int32     `json:"pkEnergie"`
-	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
-	Bezeichnung         string    `json:"bezeichnung"`
-	Einheit             string    `json:"einheit"`
-	GebaeudeRef         []int32   `json:"gebaeudeRef"`
+	PKEnergie           int32   `json:"pkEnergie"`
+	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
+	Bezeichnung         string  `json:"bezeichnung"`
+	Einheit             string  `json:"einheit"`
+	GebaeudeRef         []int32 `json:"gebaeudeRef"`
 }
 
 type InsertGebaeude struct {
-	Auth                 AuthToken       `json:"authToken"` // TODO: remove
 	Nr                   int32           `json:"nr"`
 	Bezeichnung          string          `json:"bezeichnung"`
 	Flaeche              GebaeudeFlaeche `json:"flaeche"`
@@ -83,16 +77,14 @@ type InsertGebaeude struct {
 }
 
 type AddVersorger struct {
-	Auth                AuthToken `json:"authToken"` // TODO: remove
-	Nr                  int32     `json:"nr"`
-	Jahr                int32     `json:"jahr"`
-	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
-	IDVertrag           int32     `json:"idVertrag"`
+	Nr                  int32 `json:"nr"`
+	Jahr                int32 `json:"jahr"`
+	IDEnergieversorgung int32 `json:"idEnergieversorgung"`
+	IDVertrag           int32 `json:"idVertrag"`
 }
 
 type AddStandardVersorger struct {
-	Auth AuthToken `json:"authToken"` // TODO: remove
-	Jahr int32     `json:"jahr"`
+	Jahr int32 `json:"jahr"`
 }
 
 type InsertUmfrage struct {
