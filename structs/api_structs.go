@@ -126,15 +126,6 @@ type UpdateUmfrage struct {
 	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
 }
 
-type UpdateMitarbeiterUmfrage struct { //TODO: Remove entirely
-	Auth        AuthToken            `json:"authToken"` //TODO: Remove
-	UmfrageID   primitive.ObjectID   `json:"umfrageID"`
-	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
-	TageImBuero int32                `json:"tageImBuero"`
-	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
-	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
-}
-
 type InsertMitarbeiterUmfrage struct {
 	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`
@@ -161,15 +152,9 @@ type DeleteUmfrage struct {
 	UmfrageID primitive.ObjectID `json:"umfrageID"`
 }
 
-type RequestUmfrage struct {
-	UmfrageID primitive.ObjectID `json:"umfrageID"`
-	Auth      AuthToken          `json:"authToken"` //TODO: Remove
-}
-
 type RequestLinkShare struct {
 	UmfrageID    primitive.ObjectID `json:"umfrageID"`
 	Freigabewert int32              `json:"freigabewert"`
-	Auth         AuthToken          `json:"authToken"` //TODO: Remove
 }
 
 type RequestAuth struct { //TODO: Remove entirely

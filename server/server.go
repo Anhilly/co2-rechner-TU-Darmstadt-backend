@@ -40,14 +40,15 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		log.Fatalln("Mode not specified")
 	}
 
-	r.Mount("/mitarbeiterUmfrage", RouteMitarbeiterUmfrage())
 	r.Mount("/db", RouteDB())
 	r.Mount("/auth", RouteAuthentication())
-	r.Mount("/auswertung", RouteAuswertung())
 
 	r.Group(func(r chi.Router) { // admin only, authenticated routes
 		r.Use(keycloakAuthMiddleware)
 		r.Use(checkAdminMiddleware)
+
+		// mitarbeiterumfrage routes
+		r.Get("/mitarbeiterUmfrage/mitarbeiterUmfrageForUmfrage", GetMitarbeiterUmfrageForUmfrage)
 
 		// umfrage routes
 		r.Get("/umfrage/alleUmfragen", GetAllUmfragen)
@@ -58,6 +59,11 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 
 		// temporary route for testing
 		r.Get("/hello", welcome)
+
+		// auswertung routes
+		r.Get("/auswertung", GetAuswertung)
+
+		r.Post("/auswertung/updateSetLinkShare", UpdateSetLinkShare)
 
 		// nutzerdaten routes
 		r.Get("/nutzerdaten/checkUser", CheckUser)
@@ -80,6 +86,11 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 
 	// unauthenticated routes
 	r.Get("/", welcome)
+
+	// mitarbeiterUmfrage routes
+	r.Get("/mitarbeiterUmfrage/exists", GetUmfrageExists)
+
+	r.Post("/mitarbeiterUmfrage/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
 
 	// umfrage routes
 	r.Get("/umfrage/umfrageYear", GetUmfrageYear)
