@@ -3,37 +3,14 @@ package server
 import (
 	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
-	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
-
-// RouteUmfrage mounted alle aufrufbaren API Endpunkte unter */umfrage
-func RouteUmfrage() chi.Router {
-	r := chi.NewRouter()
-
-	// Posts
-	r.Post("/insertUmfrage", PostInsertUmfrage)
-	r.Post("/updateUmfrage", PostUpdateUmfrage)
-	r.Post("/getUmfrage", GetUmfrage)
-	r.Post("/gebaeude", PostAllGebaeude)
-	//r.Post("/gebaeudeUndZaehler", PostAllGebaeudeUndZaehler)
-	r.Post("/alleUmfragen", PostAllUmfragen)
-	r.Post("/GetAllUmfragenForUser", PostAllUmfragenForUser)
-	r.Post("/duplicateUmfrage", PostDuplicateUmfrage)
-
-	// Get
-	r.Get("/GetUmfrageYear", GetUmfrageYear)
-	r.Get("/GetSharedResults", GetSharedResults)
-
-	// Delete
-	r.Delete("/deleteUmfrage", DeleteUmfrage)
-
-	return r
-}
 
 // isOwnerOfUmfrage prueft, ob die Umfrage in der Liste der Umfragen des Nutzers auftaucht.
 // @param umfrageID Umfrage deren Nutzer bestimmt werden soll
@@ -51,14 +28,25 @@ func isOwnerOfUmfrage(umfrageRef []primitive.ObjectID, umfrageID primitive.Objec
 // wenn der authentifizierte Nutzer die Umfrage besitzt oder Admin ist.
 // Liefert im Erfolgsfall die gleichgebliebene UmfrageID zurueck.
 func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
+	umfrageReq := structs.UpdateUmfrage{}
+	umfrageRes := structs.UmfrageID{}
+
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
-	umfrageReq := structs.UpdateUmfrage{}
-	umfrageRes := structs.UmfrageID{}
+	ctx := req.Context()
+
+	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
+	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
 	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
@@ -66,10 +54,7 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
+	nutzer, _ := database.NutzerdatenFind(nutzername)
 	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
@@ -115,30 +100,32 @@ func PostUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 // GetUmfrage empfaengt POST Request und sendet Umfrage struct fuer passende UmfrageID zurueck,
 // sofern auth Eigentuemer oder Admin
 func GetUmfrage(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
+	ctx := req.Context()
+
+	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
+	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
-	umfrageReq := structs.RequestUmfrage{}
+	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
-	err = json.Unmarshal(s, &umfrageReq)
+	var requestedUmfrageID primitive.ObjectID
+	err = requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
-	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
-	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
+	// pruefe Zugriffsrechte
+	nutzer, _ := database.NutzerdatenFind(nutzername)
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, requestedUmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
 
-	umfrage, err := database.UmfrageFind(umfrageReq.UmfrageID)
+	umfrage, err := database.UmfrageFind(requestedUmfrageID)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -148,25 +135,9 @@ func GetUmfrage(res http.ResponseWriter, req *http.Request) {
 }
 
 // PostAllGebaeude sendet Response mit allen Gebaeuden in der Datenbank zurueck.
-func PostAllGebaeude(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	gebaeudeReq := structs.RequestAuth{}
-	err = json.Unmarshal(s, &gebaeudeReq)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
+func GetAllGebaeude(res http.ResponseWriter, req *http.Request) {
+	var err error
 	gebaeudeRes := structs.AlleGebaeudeRes{}
-
-	if !AuthWithResponse(res, gebaeudeReq.Auth.Username, gebaeudeReq.Auth.Sessiontoken) {
-		return
-	}
 
 	gebaeudeRes.Gebaeude, err = database.GebaeudeAlleNr()
 	if err != nil {
@@ -201,18 +172,28 @@ func GetAllGebaeudeUndZaehler(res http.ResponseWriter, req *http.Request) {
 // PostInsertUmfrage fuegt die empfangene Umfrage in die Datenbank ein
 // sendet ein structs.UmfrageID mit DB ID gesetzt zurueck
 func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
+	umfrageReq := structs.InsertUmfrage{}
+	umfrageRes := structs.UmfrageID{}
+
+	ctx := req.Context()
+
+	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
+	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
+
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
-	umfrageReq := structs.InsertUmfrage{}
-	umfrageRes := structs.UmfrageID{}
-
 	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
@@ -224,11 +205,7 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
-		return
-	}
-
-	umfrageID, err := database.UmfrageInsert(umfrageReq)
+	umfrageID, err := database.UmfrageInsert(umfrageReq, nutzername)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
@@ -260,40 +237,34 @@ func PostInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 
 // PostDuplicateUmfrage dupliziert die Umfrage mit übergebener ObjectID
 // und sendet structs.UmfrageID mit neuer ObjectID zurück
-func PostDuplicateUmfrage(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	umfrageReq := structs.DuplicateUmfrage{}
+func DuplicateUmfrage(res http.ResponseWriter, req *http.Request) {
 	umfrageRes := structs.UmfrageID{}
 
-	err = json.Unmarshal(s, &umfrageReq)
+	ctx := req.Context()
+
+	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
+	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
 	if err != nil {
-		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
-	// Datenverarbeitung
-	ordner, err := database.CreateDump("PostDuplicateUmfrage")
+	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
+
+	var requestedUmfrageID primitive.ObjectID
+	err = requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
 	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
+		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
-	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
-	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
+	nutzer, _ := database.NutzerdatenFind(nutzername)
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, requestedUmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
 
-	umfrage, err := database.UmfrageFind(umfrageReq.UmfrageID)
+	umfrage, err := database.UmfrageFind(requestedUmfrageID)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -305,10 +276,15 @@ func PostDuplicateUmfrage(res http.ResponseWriter, req *http.Request) {
 		Jahr:              umfrage.Jahr,
 		Gebaeude:          umfrage.Gebaeude,
 		ITGeraete:         umfrage.ITGeraete,
-		Auth:              umfrageReq.Auth,
 	}
 
-	umfrageID, err := database.UmfrageInsert(duplizierteUmfrage)
+	ordner, err := database.CreateDump("PostDuplicateUmfrage")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	umfrageID, err := database.UmfrageInsert(duplizierteUmfrage, nutzername)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
@@ -339,7 +315,18 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
 	umfrageReq := structs.DeleteUmfrage{}
 
-	err := json.Unmarshal(s, &umfrageReq)
+	ctx := req.Context()
+
+	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
+	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
+
+	err = json.Unmarshal(s, &umfrageReq)
 	if err != nil {
 		// Konnte Body der Request nicht lesen, daher Client error --> 400
 		errorResponse(res, err, http.StatusBadRequest) // 400
@@ -347,16 +334,13 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Pruefe ob Nutzer authentifiziert ist, dann ob er die zu loeschende Umfrage besitzt
-	if !AuthWithResponse(res, umfrageReq.Auth.Username, umfrageReq.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(umfrageReq.Auth.Username)
+	nutzer, _ := database.NutzerdatenFind(nutzername)
 	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
 
-	err = database.UmfrageDelete(umfrageReq.Auth.Username, umfrageReq.UmfrageID)
+	err = database.UmfrageDelete(nutzername, umfrageReq.UmfrageID)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -365,28 +349,10 @@ func DeleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
-// PostAllUmfragen sendet alle Umfragen aus der DB in structs.AlleUmfragen zurueck
-func PostAllUmfragen(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
+// GetAllUmfragen sendet alle Umfragen aus der DB in structs.AlleUmfragen zurueck
+func GetAllUmfragen(res http.ResponseWriter, req *http.Request) {
+	var err error
 	umfragenRes := structs.AlleUmfragen{}
-	reqAuth := structs.RequestAuth{}
-	err = json.Unmarshal(s, &reqAuth)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-	if !AuthWithResponse(res, reqAuth.Auth.Username, reqAuth.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(reqAuth.Auth.Username)
-	if nutzer.Rolle != 1 {
-		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
-		return
-	}
 
 	umfragenRes.Umfragen, err = database.AlleUmfragen()
 	if err != nil {
@@ -398,29 +364,22 @@ func PostAllUmfragen(res http.ResponseWriter, req *http.Request) {
 
 // PostAllUmfragenForUser sendet alle Umfragen, die dem authentifizierten Nutzer gehoeren
 // als structs.AlleUmfragen zurueck
-func PostAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
+func GetAllUmfragenForUser(res http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+
+	accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
+	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
-	reqAuth := structs.RequestAuth{}
-	err = json.Unmarshal(s, &reqAuth)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
+	nutzername := *userInfo.PreferredUsername // TODO: check if null pointer
 
-	if !AuthWithResponse(res, reqAuth.Auth.Username, reqAuth.Auth.Sessiontoken) {
-		return
-	}
-
-	nutzer, _ := database.NutzerdatenFind(reqAuth.Auth.Username)
 	umfragenRes := structs.AlleUmfragen{}
 
 	// hole Umfragen aus der Datenbank
-	umfragenRes.Umfragen, err = database.AlleUmfragenForUser(nutzer.Nutzername)
+	umfragenRes.Umfragen, err = database.AlleUmfragenForUser(nutzername)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

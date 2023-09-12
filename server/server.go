@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/go-chi/chi/v5"
@@ -39,11 +40,18 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		log.Fatalln("Mode not specified")
 	}
 
-	r.Mount("/umfrage", RouteUmfrage())
 	r.Mount("/mitarbeiterUmfrage", RouteMitarbeiterUmfrage())
 	r.Mount("/db", RouteDB())
 	r.Mount("/auth", RouteAuthentication())
 	r.Mount("/auswertung", RouteAuswertung())
+
+	r.Group(func(r chi.Router) { // admin only, authenticated routes
+		r.Use(keycloakAuthMiddleware)
+		r.Use(checkAdminMiddleware)
+
+		// umfrage routes
+		r.Get("/umfrage/alleUmfragen", GetAllUmfragen)
+	})
 
 	r.Group(func(r chi.Router) { // authenticated routes
 		r.Use(keycloakAuthMiddleware)
@@ -57,12 +65,25 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		r.Delete("/nutzerdaten/deleteNutzerdaten", DeleteNutzerdaten)
 
 		// umfrage routes
+		r.Get("/umfrage/umfrage", GetUmfrage)
+		r.Get("/umfrage/allUmfragenForUser", GetAllUmfragenForUser)
+		r.Get("/umfrage/gebaeude", GetAllGebaeude)
 		r.Get("/umfrage/gebaeudeUndZaehler", GetAllGebaeudeUndZaehler)
+		r.Get("/umfrage/duplicateUmfrage", DuplicateUmfrage)
+
+		r.Post("/umfrage/insertUmfrage", PostInsertUmfrage)
+		r.Post("/umfrage/updateUmfrage", PostUpdateUmfrage)
+
+		r.Delete("/umfrage/deleteUmfrage", DeleteUmfrage)
 
 	})
 
 	// unauthenticated routes
 	r.Get("/", welcome)
+
+	// umfrage routes
+	r.Get("/umfrage/umfrageYear", GetUmfrageYear)
+	r.Get("/umfrage/sharedResults", GetSharedResults)
 
 	log.Println("Server Started")
 	log.Fatalln(http.ListenAndServe(config.Port, r))
@@ -91,6 +112,35 @@ func keycloakAuthMiddleware(next http.Handler) http.Handler {
 
 		if !isTokenValid {
 			log.Println("Invalid Token")
+			res.WriteHeader(401)
+			return
+		}
+
+		next.ServeHTTP(res, req.WithContext(ctx))
+	})
+}
+
+func checkAdminMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
+
+		accessToken := strings.Split(req.Header.Get("Authorization"), " ")[1]
+		userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, accessToken, realm)
+		if err != nil {
+			errorResponse(res, err, http.StatusBadRequest)
+			return
+		}
+
+		nutzername := *userInfo.PreferredUsername
+
+		nutzer, err := database.NutzerdatenFind(nutzername)
+		if err != nil {
+			log.Println(err)
+			res.WriteHeader(401)
+			return
+		}
+		if nutzer.Rolle != 1 {
+			log.Println("Unauthorized becuase user is not admin") //TODO: change Error Message
 			res.WriteHeader(401)
 			return
 		}

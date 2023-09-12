@@ -137,7 +137,7 @@ func UmfrageUpdate(data structs.UpdateUmfrage) (primitive.ObjectID, error) {
 }
 
 // UmfrageInsert Die Funktion fuegt eine Umfrage in die Datenbank ein und liefert die ObjectId der Umfrage zurueck.
-func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
+func UmfrageInsert(data structs.InsertUmfrage, nutzername string) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -169,7 +169,7 @@ func UmfrageInsert(data structs.InsertUmfrage) (primitive.ObjectID, error) {
 		return primitive.NilObjectID, structs.ErrObjectIDNichtKonvertierbar
 	}
 
-	err = NutzerdatenAddUmfrageref(data.Auth.Username, id)
+	err = NutzerdatenAddUmfrageref(nutzername, id)
 	if err != nil {
 		return primitive.NilObjectID, err
 	}

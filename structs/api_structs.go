@@ -101,7 +101,6 @@ type InsertUmfrage struct {
 	Jahr              int32              `json:"jahr"`
 	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
 	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
-	Auth              AuthToken          `json:"authToken"`
 }
 
 type AlleUmfragen struct {
@@ -119,7 +118,6 @@ type AuthToken struct {
 }
 
 type UpdateUmfrage struct {
-	Auth              AuthToken          `json:"authToken"`
 	UmfrageID         primitive.ObjectID `json:"umfrageID"`
 	Bezeichnung       string             `json:"bezeichnung"`
 	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
@@ -161,15 +159,9 @@ type UmfrageSharedResultsRes struct {
 
 type DeleteUmfrage struct {
 	UmfrageID primitive.ObjectID `json:"umfrageID"`
-	Auth      AuthToken          `json:"authToken"`
 }
 
 type RequestUmfrage struct {
-	UmfrageID primitive.ObjectID `json:"umfrageID"`
-	Auth      AuthToken          `json:"authToken"`
-}
-
-type DuplicateUmfrage struct {
 	UmfrageID primitive.ObjectID `json:"umfrageID"`
 	Auth      AuthToken          `json:"authToken"`
 }
