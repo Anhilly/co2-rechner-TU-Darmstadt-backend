@@ -10,9 +10,9 @@ import (
 	"net/http"
 )
 
-// getMitarbeiterUmfrageFuerUmfrage liefert alle Mitarbeiterumfragen,
+// getMitarbeiterumfrageFuerUmfrage liefert alle Mitarbeiterumfragen,
 // welche mit der Umfrage mit der ID UmfrageID assoziiert sind, zurueck.
-func getMitarbeiterUmfrageFuerUmfrage(res http.ResponseWriter, req *http.Request) {
+func getMitarbeiterumfrageFuerUmfrage(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
 	if err != nil {
@@ -61,7 +61,7 @@ func getUmfrageExists(res http.ResponseWriter, req *http.Request) {
 		umfrageExistsRes.Bezeichnung = umfrage.Bezeichnung
 	}
 
-	mitarbeiterumfragen, err := database.MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
+	mitarbeiterumfragen, err := database.MitarbeiterumfrageFindMany(umfrage.MitarbeiterumfrageRef)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

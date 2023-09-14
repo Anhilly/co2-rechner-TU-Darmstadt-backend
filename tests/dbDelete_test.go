@@ -193,7 +193,7 @@ func TestUmfrageDeleteMitarbeiterUmfrage(t *testing.T) {
 		umfrageAfterDeletion, err := database.UmfrageFind(idUmfrage)
 		is.NoErr(err)
 
-		for _, mitarbeiterRef := range umfrageAfterDeletion.MitarbeiterUmfrageRef {
+		for _, mitarbeiterRef := range umfrageAfterDeletion.MitarbeiterumfrageRef {
 			is.Equal(mitarbeiterRef == idMitarbeiterumfrage, false)
 		}
 	})
@@ -253,7 +253,7 @@ func TestNutzerdatenDelete(t *testing.T) {
 			is.Equal(err, mongo.ErrNoDocuments)
 
 			// mitarbeiterUmfragen koennen nicht mehr gefunden werden
-			for _, mitarbeiterUmfrageID := range umfrage.MitarbeiterUmfrageRef {
+			for _, mitarbeiterUmfrageID := range umfrage.MitarbeiterumfrageRef {
 				_, err = database.MitarbeiterUmfrageFind(mitarbeiterUmfrageID)
 				is.Equal(err, mongo.ErrNoDocuments)
 			}

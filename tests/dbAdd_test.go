@@ -1003,7 +1003,7 @@ func TestUmfrageAddMitarbeiterUmfrageRef(t *testing.T) {
 			},
 			AuswertungFreigegeben: 0,
 			Revision:              1,
-			MitarbeiterUmfrageRef: []primitive.ObjectID{idVorhanden, referenz},
+			MitarbeiterumfrageRef: []primitive.ObjectID{idVorhanden, referenz},
 		}) // Überprüfung des zurückgelieferten Elements
 	})
 

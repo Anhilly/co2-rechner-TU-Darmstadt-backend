@@ -82,7 +82,7 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		r.Post("/db/insertGebaeude", postInsertGebaeude)
 
 		// mitarbeiterumfrage routes
-		r.Get("/mitarbeiterumfrage/mitarbeiterUmfrageFuerUmfrage", getMitarbeiterUmfrageFuerUmfrage)
+		r.Get("/mitarbeiterumfrage/mitarbeiterumfrageFuerUmfrage", getMitarbeiterumfrageFuerUmfrage)
 
 		// umfrage routes
 		r.Get("/umfrage/alleUmfragen", getAlleUmfragen)

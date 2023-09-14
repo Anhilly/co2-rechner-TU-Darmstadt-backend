@@ -555,7 +555,7 @@ func TestUmfrageInsert(t *testing.T) {
 			},
 			AuswertungFreigegeben: 0,
 			Revision:              1,
-			MitarbeiterUmfrageRef: []primitive.ObjectID{},
+			MitarbeiterumfrageRef: []primitive.ObjectID{},
 		}) // Ueberpruefung des geaenderten Elementes
 
 		var idVorhanden primitive.ObjectID
@@ -659,7 +659,7 @@ func TestMitarbeiterUmfrageInsert(t *testing.T) {
 			},
 			AuswertungFreigegeben: 0,
 			Revision:              1,
-			MitarbeiterUmfrageRef: []primitive.ObjectID{idVorhanden, idMitarbeiterumfrage},
+			MitarbeiterumfrageRef: []primitive.ObjectID{idVorhanden, idMitarbeiterumfrage},
 		}) // Ueberpruefung des zurueckgelieferten Elements
 	})
 

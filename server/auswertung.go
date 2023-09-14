@@ -76,7 +76,7 @@ func getAuswertung(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	mitarbeiterumfragen, err := database.MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
+	mitarbeiterumfragen, err := database.MitarbeiterumfrageFindMany(umfrage.MitarbeiterumfrageRef)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

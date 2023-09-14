@@ -88,7 +88,7 @@ func TestUmfrageUpdate(t *testing.T) {
 			Gebaeude:              updateData.Gebaeude,
 			ITGeraete:             updateData.ITGeraete,
 			Revision:              1,
-			MitarbeiterUmfrageRef: []primitive.ObjectID{},
+			MitarbeiterumfrageRef: []primitive.ObjectID{},
 		}) // Ueberpruefung des geaenderten Elementes
 
 		// check that reference from user to umfrage is still correct

@@ -720,7 +720,7 @@ func TestUmfrageFind(t *testing.T) {
 				},
 				AuswertungFreigegeben: 0,
 				Revision:              1,
-				MitarbeiterUmfrageRef: []primitive.ObjectID{idMitarbeiterumfrage},
+				MitarbeiterumfrageRef: []primitive.ObjectID{idMitarbeiterumfrage},
 			}) // Überprüfung des zurückgelieferten Elements
 	})
 
@@ -785,7 +785,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("MitarbeiterUmfrageFindMany: einzelne ID", func(t *testing.T) {
+	t.Run("MitarbeiterumfrageFindMany: einzelne ID", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var id primitive.ObjectID
@@ -794,7 +794,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 
 		ids := []primitive.ObjectID{id}
 
-		data, err := database.MitarbeiterUmfrageFindMany(ids)
+		data, err := database.MitarbeiterumfrageFindMany(ids)
 
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data,
@@ -814,7 +814,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 			}}) // Überprüfung des zurückgelieferten Elements
 	})
 
-	t.Run("MitarbeiterUmfrageFindMany: mehrere IDs", func(t *testing.T) {
+	t.Run("MitarbeiterumfrageFindMany: mehrere IDs", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var id primitive.ObjectID
@@ -830,7 +830,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 
 		ids := []primitive.ObjectID{id, id2}
 
-		data, err := database.MitarbeiterUmfrageFindMany(ids)
+		data, err := database.MitarbeiterumfrageFindMany(ids)
 
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data, []structs.MitarbeiterUmfrage{{
@@ -859,12 +859,12 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 	})
 
 	// Errortests
-	t.Run("MitarbeiterUmfrageFindMany: zu wenige Dokumente", func(t *testing.T) {
+	t.Run("MitarbeiterumfrageFindMany: zu wenige Dokumente", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
 
-		data, err := database.MitarbeiterUmfrageFindMany(ids)
+		data, err := database.MitarbeiterumfrageFindMany(ids)
 
 		is.Equal(err, structs.ErrDokumenteNichtGefunden) // Funktion wirft ErrDokumenteNichtGefunden
 		is.Equal(data, nil)                              // Bei einem Fehler soll nil zurückgeliefert werden

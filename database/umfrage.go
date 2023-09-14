@@ -153,7 +153,7 @@ func UmfrageInsert(data structs.InsertUmfrage, nutzername string) (primitive.Obj
 			Gebaeude:              data.Gebaeude,
 			ITGeraete:             data.ITGeraete,
 			Revision:              1,
-			MitarbeiterUmfrageRef: []primitive.ObjectID{},
+			MitarbeiterumfrageRef: []primitive.ObjectID{},
 			AuswertungFreigegeben: 0,
 		})
 	if err != nil {
@@ -214,7 +214,7 @@ func UmfrageDelete(username string, umfrageID primitive.ObjectID) error {
 		return err
 	}
 
-	for _, mitarbeiterumfrage := range eintrag.MitarbeiterUmfrageRef {
+	for _, mitarbeiterumfrage := range eintrag.MitarbeiterumfrageRef {
 		err = UmfrageDeleteMitarbeiterUmfrage(mitarbeiterumfrage)
 		if err != nil {
 			return err
