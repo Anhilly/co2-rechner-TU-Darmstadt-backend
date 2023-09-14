@@ -24,22 +24,18 @@ Der CO2 Rechner verwendet folgende direkte Abhängigkeiten, um die Funktionalit�
 
 - [Go Lang Version 1.17](https://go.dev/) - Go Entwicklungssprache
 - [go chi Version 5.0.7](https://github.com/go-chi/chi) - Go Router für HTTP Dienste
-- [UUID Version 1.3.0](https://github.com/google/uuid) - Eindeutige ID Generierung
 - [is Version 1.4.0](https://github.com/matryer/is) - Test Framework
-- [errors Version 0.9.1](https://github.com/pkg/errors) - Vereinfachte Fehlerbehandlung
 - [mongo-driver Version 1.8.0](https://go.mongodb.org/mongo-driver) - Mongodb Treiber für Go
-- [crypto Version 0.0.0-20201216223049-8b5274cf687f](https://golang.org/x/crypto) - Verschlüsselungsalgorithmen
-- [gomail Version 2.0.0-20160411212932-81ebce5c23df](https://gopkg.in/gomail.v2) - Versand von E-Mails
-- [go password Version 0.2.0](https://github.com/sethvargo/go-password) - Generierung von zufälligen Passwörtern
 - [lumberjack Version 2.0.0](https://gopkg.in/natefinch/lumberjack.v2) - Logger
 
 ## Entwicklungssetup
 
-Nach Download des Repositorys muss eine neue Datei mit Datenbankinformationen der MongoDB angelegt werden.
-Als Vorlage dient die Datei database/db_config_example.go, aus der die Datei database/db_config.go erstellt werden muss.
-Die MongoDB soll in einem Docker Container laufen. Auf Linux ist es wichtig, dass Docker Commands ohne sudo ausgeführt werden können.
-Zur Verwendung einer lokalen Installation muss das Projekt angepasst werden.
+Für das Entwicklungssetup wird eine lokale Installation von Go benötigt. Die Docker Compose Datei enhält die folgenden Container für die Entwicklung:
+- MongoDB als Datenbank
+- NGINX als Webserver und Reverse Proxy
+- Keycloak zur Authentifizierung und Kommunikation mit externen Diensten
 
-Des Weiteren muss eine weiter Konfiguartions-Datei für den Mailversand erstellt werden.
-Als Vorlage dient die Datei server/mail_config_example.go, aus der die Datei server/mail_config.go erstellt werden muss.
-Hierfür wird ein externer Mail-Server benötigt, der über SMTP ansprechbar ist.
+Das Frontends und Backends müssen unabhängig von der Docker Compose lokal gestartet werden. Die default Konfiguration erwartet das Frontend unter `localhost:8081` und das Backend unter `localhost:3000`.
+
+Fürs Setup muss eine dump der Datenbank in den Ordner `development/dump` gelegt werden. Zusätzlich muss eine `config.go` Datei erstellt und in den Ordner `config` abgelegt werden. Ein Beispiel für die `config.go` Datei ist in `config/config.go.example` zu finden. 
+
