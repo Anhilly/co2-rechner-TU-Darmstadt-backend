@@ -18,7 +18,7 @@ import (
 
 // PostAuswertung fuehrt die CO2-Emissionen Berechnung fuer die uebertragene Umfrage durch und sendet einen
 // structs.AuswertungRes zurueck.
-func GetAuswertung(res http.ResponseWriter, req *http.Request) {
+func getAuswertung(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
 	if err != nil {
@@ -233,10 +233,10 @@ func binaereZahlerdatenFuerZaehler(alleZaehler []structs.ZaehlerUndZaehlerdaten)
 	return zaehlerUndZaehlerdaten
 }
 
-// UpdateSetLinkShare empfaengt ein POST Update Request und setzt den LinkSharing Status auf den empfangenen Wert.
+// updateLinkShare empfaengt ein POST Update Request und setzt den LinkSharing Status auf den empfangenen Wert.
 // 0 = Link Share deaktiviert, 1 = aktiviert.
 // Kann nicht durch einen Administrator geaendert werden, nur durch besitzenden Nutzer.
-func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
+func updateLinkShare(res http.ResponseWriter, req *http.Request) {
 	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)

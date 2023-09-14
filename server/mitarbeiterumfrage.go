@@ -10,9 +10,9 @@ import (
 	"net/http"
 )
 
-// GetMitarbeiterUmfrageForUmfrage liefert alle Mitarbeiterumfragen,
+// getMitarbeiterUmfrageFuerUmfrage liefert alle Mitarbeiterumfragen,
 // welche mit der Umfrage mit der ID UmfrageID assoziiert sind, zurueck.
-func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request) {
+func getMitarbeiterUmfrageFuerUmfrage(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
 	if err != nil {
@@ -31,10 +31,10 @@ func GetMitarbeiterUmfrageForUmfrage(res http.ResponseWriter, req *http.Request)
 	sendResponse(res, true, mitarbeiterUmfragenRes, http.StatusOK)
 }
 
-// GetUmfrageExists liefert einen structs.UmfrageExistsRes zurueck, falls die Umfrage existiert,
+// getUmfrageExists liefert einen structs.UmfrageExistsRes zurueck, falls die Umfrage existiert,
 // dabei wird auch zurueck geliefert, ob die Umfrage durch alle Mitarbeiter ausgefuellt wurde.
 // Diese Funktion hat keine Authentifizierung, da sie fuer die Mitarbeiterumfrage benoetigt wird.
-func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
+func getUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
 	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
 	if err != nil {
@@ -79,9 +79,9 @@ func GetUmfrageExists(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageExistsRes, http.StatusOK)
 }
 
-// PostMitarbeiterUmfrageInsert fuegt die empfangene Mitarbeiterumfrage in die DB ein und
+// postInsertMitarbeiterumfrage fuegt die empfangene Mitarbeiterumfrage in die DB ein und
 // sendet null zurueck, wenn das Einfuegen erfolgreich war.
-func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
+func postInsertMitarbeiterumfrage(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
@@ -97,7 +97,7 @@ func PostMitarbeiterUmfrageInsert(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Datenverarbeitung
-	ordner, err := database.CreateDump("PostMitarbeiterUmfrageInsert")
+	ordner, err := database.CreateDump("postInsertMitarbeiterumfrage")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return

@@ -48,22 +48,22 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		r.Get("/authRoute", welcome)
 
 		// auswertung routes
-		r.Post("/auswertung/updateSetLinkShare", UpdateSetLinkShare)
+		r.Post("/auswertung/updateLinkShare", updateLinkShare)
 
 		// nutzerdaten routes
-		r.Get("/nutzerdaten/checkUser", CheckUser)
-		r.Get("/nutzerdaten/checkRolle", CheckRolle)
-		r.Delete("/nutzerdaten/deleteNutzerdaten", DeleteNutzerdaten)
+		r.Get("/nutzer/pruefeNutzer", pruefeNutzer)
+		r.Get("/nutzer/rolle", getRolle)
+		r.Delete("/nutzer", deleteNutzer)
 
 		// umfrage routes
-		r.Get("/umfrage/umfrage", GetUmfrage)
-		r.Get("/umfrage/allUmfragenForUser", GetAllUmfragenForUser)
-		r.Get("/umfrage/gebaeude", GetAllGebaeude)
-		r.Get("/umfrage/gebaeudeUndZaehler", GetAllGebaeudeUndZaehler)
-		r.Get("/umfrage/duplicateUmfrage", DuplicateUmfrage)
-		r.Post("/umfrage/insertUmfrage", PostInsertUmfrage)
-		r.Post("/umfrage/updateUmfrage", PostUpdateUmfrage)
-		r.Delete("/umfrage/deleteUmfrage", DeleteUmfrage)
+		r.Get("/umfrage", getUmfrage)
+		r.Get("/umfrage/alleUmfragenVonNutzer", getAlleUmfragenVonNutzer)
+		r.Get("/umfrage/gebaeude", getAlleGebaeude)
+		r.Get("/umfrage/gebaeudeUndZaehler", getAlleGebaeudeUndZaehler)
+		r.Get("/umfrage/duplicate", duplicateUmfrage)
+		r.Post("/umfrage/insert", postInsertUmfrage)
+		r.Post("/umfrage/update", postUpdateUmfrage)
+		r.Delete("/umfrage", deleteUmfrage)
 
 	})
 
@@ -72,35 +72,35 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		r.Use(checkAdminMiddleware)
 
 		// db routes
-		r.Post("/db/addFaktor", PostAddFaktor)
-		r.Post("/db/addZaehlerdaten", PostAddZaehlerdaten)
-		r.Post("/db/addZaehlerdatenCSV", PostAddZaehlerdatenCSV)
-		r.Post("/db/addStandardZaehlerdaten", PostAddStandardZaehlerdaten)
-		r.Post("/db/addVersorger", PostAddVersorger)
-		r.Post("/db/addStandardVersorger", PostAddStandardVersorger)
-		r.Post("/db/insertZaehler", PostInsertZaehler)
-		r.Post("/db/insertGebaeude", PostInsertGebaeude)
+		r.Post("/db/addFaktor", postAddFaktor)
+		r.Post("/db/addZaehlerdaten", postAddZaehlerdaten)
+		r.Post("/db/addZaehlerdatenCSV", postAddZaehlerdatenCSV)
+		r.Post("/db/addStandardZaehlerdaten", postAddStandardZaehlerdaten)
+		r.Post("/db/addVersorger", postAddVersorger)
+		r.Post("/db/addStandardVersorger", postAddStandardVersorger)
+		r.Post("/db/insertZaehler", postInsertZaehler)
+		r.Post("/db/insertGebaeude", postInsertGebaeude)
 
 		// mitarbeiterumfrage routes
-		r.Get("/mitarbeiterUmfrage/mitarbeiterUmfrageForUmfrage", GetMitarbeiterUmfrageForUmfrage)
+		r.Get("/mitarbeiterumfrage/mitarbeiterUmfrageFuerUmfrage", getMitarbeiterUmfrageFuerUmfrage)
 
 		// umfrage routes
-		r.Get("/umfrage/alleUmfragen", GetAllUmfragen)
+		r.Get("/umfrage/alleUmfragen", getAlleUmfragen)
 	})
 
 	// unauthenticated routes
 	r.Get("/", welcome)
 
 	// mitarbeiterUmfrage routes
-	r.Get("/mitarbeiterUmfrage/exists", GetUmfrageExists)
-	r.Post("/mitarbeiterUmfrage/insertMitarbeiterUmfrage", PostMitarbeiterUmfrageInsert)
+	r.Get("/mitarbeiterumfrage/exists", getUmfrageExists)
+	r.Post("/mitarbeiterumfrage/insert", postInsertMitarbeiterumfrage)
 
 	// umfrage routes
-	r.Get("/umfrage/umfrageYear", GetUmfrageYear)
-	r.Get("/umfrage/sharedResults", GetSharedResults)
+	r.Get("/umfrage/jahr", getUmfrageJahr)
+	r.Get("/umfrage/sharedResults", getSharedResults)
 
 	// special routes with separate authentication in function
-	r.Get("/auswertung", GetAuswertung)
+	r.Get("/auswertung", getAuswertung)
 
 	log.Println("Server Started")
 	log.Fatalln(http.ListenAndServe(config.Port, r))

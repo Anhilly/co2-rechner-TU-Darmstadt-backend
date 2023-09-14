@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func CheckUser(res http.ResponseWriter, req *http.Request) {
+func pruefeNutzer(res http.ResponseWriter, req *http.Request) {
 	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
@@ -35,7 +35,7 @@ func CheckUser(res http.ResponseWriter, req *http.Request) {
 	if err == nil { // Nutzer fuer Migration gefunden
 		nutzer.Nutzername = nutzername // aendere Nutzername
 
-		restorepath, err := database.CreateDump("CheckUser")
+		restorepath, err := database.CreateDump("pruefeNutzer")
 		if err != nil {
 			errorResponse(res, err, http.StatusInternalServerError)
 			return
@@ -63,7 +63,7 @@ func CheckUser(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Neuen Nutzer erstellen
-	restorepath, err := database.CreateDump("CheckUser")
+	restorepath, err := database.CreateDump("pruefeNutzer")
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -93,7 +93,7 @@ func CheckUser(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusCreated)
 }
 
-func CheckRolle(res http.ResponseWriter, req *http.Request) {
+func getRolle(res http.ResponseWriter, req *http.Request) {
 	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
@@ -111,9 +111,9 @@ func CheckRolle(res http.ResponseWriter, req *http.Request) {
 	}, http.StatusOK)
 }
 
-// DeleteNutzerdaten loescht den Nutzer, der die Loeschung angefragt hat.
+// deleteNutzer loescht den Nutzer, der die Loeschung angefragt hat.
 // Gibt auftretende Errors zurück, bspw. interne Berechnungsfehler oder unauthorized access.
-func DeleteNutzerdaten(res http.ResponseWriter, req *http.Request) {
+func deleteNutzer(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
