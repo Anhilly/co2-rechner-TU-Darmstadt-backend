@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"io/ioutil"
 	"log"
@@ -10,8 +11,10 @@ import (
 	"strings"
 )
 
+// pruefeNutzer prueft, ob der Nutzer bereits existiert oder ob ein Nutzer migriert werden kann.
+// Gegebenfalls wird der Nutzer erstellt.
 func pruefeNutzer(res http.ResponseWriter, req *http.Request) {
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
@@ -25,7 +28,7 @@ func pruefeNutzer(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Pruefe, ob Nutzer mit E-Mail bereits existiert, um Account zu migrieren
-	email, err := getEmailFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	email, err := keycloak.GetEmailFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -93,8 +96,9 @@ func pruefeNutzer(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusCreated)
 }
 
+// getRolle gibt die Rolle des Nutzers zurueck.
 func getRolle(res http.ResponseWriter, req *http.Request) {
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
@@ -111,7 +115,7 @@ func getRolle(res http.ResponseWriter, req *http.Request) {
 	}, http.StatusOK)
 }
 
-// deleteNutzer loescht den Nutzer, der die Loeschung angefragt hat.
+// deleteNutzer loescht den uebergebenen Nutzer, falls von Nutzer selbst oder von einem Admin angefragt.
 // Gibt auftretende Errors zurück, bspw. interne Berechnungsfehler oder unauthorized access.
 func deleteNutzer(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
@@ -127,7 +131,7 @@ func deleteNutzer(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		log.Println(err)
 		res.WriteHeader(401)

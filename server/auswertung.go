@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-// PostAuswertung fuehrt die CO2-Emissionen Berechnung fuer die uebertragene Umfrage durch und sendet einen
+// getAuswertung fuehrt die CO2-Emissionsberechnung fuer die uebertragene Umfrage durch und sendet einen
 // structs.AuswertungRes zurueck.
 func getAuswertung(res http.ResponseWriter, req *http.Request) {
 	var requestedUmfrageID primitive.ObjectID
@@ -63,7 +63,7 @@ func getAuswertung(res http.ResponseWriter, req *http.Request) {
 		}
 
 		// Pruefe, ob Nutzer Admin ist oder der Besitzer der Umfrage
-		nutzername, err = getUsernameFromToken(accessToken, req.Context())
+		nutzername, err = keycloak.GetUsernameFromToken(accessToken, req.Context())
 		if err != nil {
 			errorResponse(res, err, http.StatusBadRequest)
 			return
@@ -237,7 +237,7 @@ func binaereZahlerdatenFuerZaehler(alleZaehler []structs.ZaehlerUndZaehlerdaten)
 // 0 = Link Share deaktiviert, 1 = aktiviert.
 // Kann nicht durch einen Administrator geaendert werden, nur durch besitzenden Nutzer.
 func updateLinkShare(res http.ResponseWriter, req *http.Request) {
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return

@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
@@ -36,7 +37,7 @@ func postUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
@@ -94,7 +95,7 @@ func postUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 // getUmfrage empfaengt POST Request und sendet Umfrage struct fuer passende UmfrageID zurueck,
 // sofern auth Eigentuemer oder Admin
 func getUmfrage(res http.ResponseWriter, req *http.Request) {
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
@@ -123,7 +124,7 @@ func getUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrage, http.StatusOK)
 }
 
-// PostAllGebaeude sendet Response mit allen Gebaeuden in der Datenbank zurueck.
+// getAlleGebaeude sendet Response mit allen Gebaeuden in der Datenbank zurueck.
 func getAlleGebaeude(res http.ResponseWriter, req *http.Request) {
 	var err error
 	gebaeudeRes := structs.AlleGebaeudeRes{}
@@ -136,7 +137,7 @@ func getAlleGebaeude(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, gebaeudeRes, http.StatusOK)
 }
 
-// PostAllGebaeudeUndZaehler sendet Response mit allen Gebaeuden Nummern und den eingetragenen Zaehlern in der Datenbank zurueck.
+// getAlleGebaeudeUndZaehler sendet Response mit allen Gebaeuden Nummern und den eingetragenen Zaehlern in der Datenbank zurueck.
 // Zusaetzlich werden alle Zaehler mit Angabe, ob ein Wert für jedes von 2018 bis zum aktuellen Jahr vorhanden ist.
 func getAlleGebaeudeUndZaehler(res http.ResponseWriter, req *http.Request) {
 	var err error
@@ -164,7 +165,7 @@ func postInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	umfrageReq := structs.InsertUmfrage{}
 	umfrageRes := structs.UmfrageID{}
 
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
@@ -219,12 +220,12 @@ func postInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
-// PostDuplicateUmfrage dupliziert die Umfrage mit übergebener ObjectID
+// duplicateUmfrage dupliziert die Umfrage mit übergebener ObjectID
 // und sendet structs.UmfrageID mit neuer ObjectID zurück
 func duplicateUmfrage(res http.ResponseWriter, req *http.Request) {
 	umfrageRes := structs.UmfrageID{}
 
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
@@ -294,7 +295,7 @@ func deleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
 	umfrageReq := structs.DeleteUmfrage{}
 
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
@@ -336,10 +337,10 @@ func getAlleUmfragen(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfragenRes, http.StatusOK)
 }
 
-// PostAllUmfragenForUser sendet alle Umfragen, die dem authentifizierten Nutzer gehoeren
+// getAlleUmfragenVonNutzer sendet alle Umfragen, die dem authentifizierten Nutzer gehoeren
 // als structs.AlleUmfragen zurueck
 func getAlleUmfragenVonNutzer(res http.ResponseWriter, req *http.Request) {
-	nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return

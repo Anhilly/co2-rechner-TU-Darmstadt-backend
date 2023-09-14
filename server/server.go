@@ -1,9 +1,7 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
@@ -30,7 +28,7 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 
 	r.Use(middleware.Logger)
 
-	if mode == "dev" { // set values for authentication middleware
+	if mode == "dev" { // ssetzt Werte fuer authentication middleware
 		clientID = config.DevKeycloakClientID
 		clientSecret = config.DevKeycloakClientSecret
 		realm = config.DevKeycloakRealm
@@ -106,38 +104,7 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 	log.Fatalln(http.ListenAndServe(config.Port, r))
 }
 
-func getEmailFromToken(token string, ctx context.Context) (string, error) {
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, token, realm)
-	if err != nil {
-		return "", err
-	}
-
-	var email string
-	if userInfo.Email != nil {
-		email = *userInfo.Email
-	} else {
-		return "", errors.New("Cannot retrieve email from token")
-	}
-
-	return email, nil
-}
-
-func getUsernameFromToken(token string, ctx context.Context) (string, error) {
-	userInfo, err := keycloak.KeycloakClient.GetUserInfo(ctx, token, realm)
-	if err != nil {
-		return "", err
-	}
-
-	var nutzername string
-	if userInfo.PreferredUsername != nil {
-		nutzername = *userInfo.PreferredUsername
-	} else {
-		return "", errors.New("Cannot retrieve username from token")
-	}
-
-	return nutzername, nil
-}
-
+// keycloakAuthMiddleware prueft ob der Token gueltig ist.
 func keycloakAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
@@ -169,11 +136,12 @@ func keycloakAuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// checkAdminMiddleware prueft ob der Nutzer Admin ist.
 func checkAdminMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		nutzername, err := getUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], ctx)
+		nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], ctx)
 		if err != nil {
 			log.Println(err)
 			res.WriteHeader(401)
@@ -196,8 +164,9 @@ func checkAdminMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func welcome(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("OK"))
+// welcome gibt OK zurueck.
+func welcome(res http.ResponseWriter, req *http.Request) {
+	res.Write([]byte("OK"))
 }
 
 // sendResponse sendet Response zurueck, bei Marshal Fehler sende 500 Code Error
