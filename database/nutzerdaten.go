@@ -33,7 +33,7 @@ func NutzerdatenFind(username string) (structs.Nutzerdaten, error) {
 
 // NutzerdatenFind liefert einen Nutzerdaten struct zurueck, der die uebergegebene E-Mail hat,
 // falls ein solches Dokument in der Datenbank vorhanden ist.
-func NutzerdatenFindByEMail(mail string) (structs.Nutzerdaten, error) { // TODO: Tests
+func NutzerdatenFindByEMail(mail string) (structs.Nutzerdaten, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 

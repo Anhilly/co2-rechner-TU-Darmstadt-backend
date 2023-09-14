@@ -3,7 +3,6 @@ package tests
 import (
 	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -42,8 +41,7 @@ func TestUmfrageUpdate(t *testing.T) {
 	t.Run("UmfrageUpdate: Update von Umfragewerten", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		username := "anton@tobi.com"
-		token := server.GeneriereSessionToken(username)
+		username := "anton"
 
 		data := structs.InsertUmfrage{
 			Bezeichnung:       "TestUmfrageUpdated",
@@ -56,13 +54,9 @@ func TestUmfrageUpdate(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			Auth: structs.AuthToken{
-				Username:     username,
-				Sessiontoken: token,
-			},
 		}
 
-		id, err := database.UmfrageInsert(data)
+		id, err := database.UmfrageInsert(data, username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
 		updateData := structs.UpdateUmfrage{
@@ -98,7 +92,7 @@ func TestUmfrageUpdate(t *testing.T) {
 		}) // Ueberpruefung des geaenderten Elementes
 
 		// check that reference from user to umfrage is still correct
-		user, err := database.NutzerdatenFind(data.Auth.Username)
+		user, err := database.NutzerdatenFind(username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		idStillInUserRefs := false
 
@@ -145,8 +139,7 @@ func TestUmfrageShareUpdate(t *testing.T) {
 	t.Run("LinkShareUpdate: Update von LinkSharewerten", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		username := "anton@tobi.com"
-		token := server.GeneriereSessionToken(username)
+		username := "anton"
 
 		data := structs.InsertUmfrage{
 			Bezeichnung:       "TestUmfrageUpdated",
@@ -159,13 +152,9 @@ func TestUmfrageShareUpdate(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			Auth: structs.AuthToken{
-				Username:     username,
-				Sessiontoken: token,
-			},
 		}
 
-		oid, err := database.UmfrageInsert(data)
+		oid, err := database.UmfrageInsert(data, username)
 		is.NoErr(err)
 
 		refOid, err := database.UmfrageUpdateLinkShare(0, oid)
