@@ -39,3 +39,7 @@ Das Frontends und Backends müssen unabhängig von der Docker Compose lokal gest
 
 Fürs Setup muss eine dump der Datenbank in den Ordner `development/dump` gelegt werden. Zusätzlich muss eine `config.go` Datei erstellt und in den Ordner `config` abgelegt werden. Ein Beispiel für die `config.go` Datei ist in `config/config.go.example` zu finden. 
 
+Ob das Backend in `prod` oder `dev` Modus startet, wird über die Variable `mode` in `main.go` gesteuert. Die Variable kann entweder manuell oder per symbol substitution während link time gesetzt werden. 
+Für symbol substitution muss die folgende Flag gesetzt werden:
+- `-ldflags "-X main.Mode=dev"` für dev mode
+- `-ldflags "-X main.Mode=prod"` für prod mode
