@@ -48,12 +48,4 @@ const (
 	// Development mode
 	DevLogFilename = "./go.log"
 )
-
-// Mail configuration
-const (
-	SmtpServer = ""
-	SmtpPort = 0
-	WebserverAdresse = ""
-	Absender = ""
-)
 */

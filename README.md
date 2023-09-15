@@ -41,5 +41,5 @@ Fürs Setup muss eine dump der Datenbank in den Ordner `development/dump` gelegt
 
 Ob das Backend in `prod` oder `dev` Modus startet, wird über die Variable `mode` in `main.go` gesteuert. Die Variable kann entweder manuell oder per symbol substitution während link time gesetzt werden. 
 Für symbol substitution muss die folgende Flag gesetzt werden:
-- `-ldflags "-X main.Mode=dev"` für dev mode
-- `-ldflags "-X main.Mode=prod"` für prod mode
+- `-ldflags "-X main.mode=dev"` für dev mode
+- `-ldflags "-X main.mode=prod"` für prod mode
