@@ -30,39 +30,42 @@ func pruefeNutzer(res http.ResponseWriter, req *http.Request) {
 	// Pruefe, ob Nutzer mit E-Mail bereits existiert, um Account zu migrieren
 	email, err := keycloak.GetEmailFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
-		errorResponse(res, err, http.StatusInternalServerError)
-		return
+		log.Println(err)
 	}
 
-	nutzer, err := database.NutzerdatenFindByEMail(email)
-	if err == nil { // Nutzer fuer Migration gefunden
-		nutzer.Nutzername = nutzername // aendere Nutzername
+	if email != "" {
+		nutzer, err := database.NutzerdatenFindByEMail(email)
+		if err == nil { // Nutzer fuer Migration gefunden
+			nutzer.Nutzername = nutzername // aendere Nutzername
 
-		restorepath, err := database.CreateDump("pruefeNutzer")
-		if err != nil {
-			errorResponse(res, err, http.StatusInternalServerError)
-			return
-		}
-
-		err = database.NutzerdatenUpdate(nutzer)
-		if err != nil {
-			err2 := database.RestoreDump(restorepath)
-			if err2 != nil {
-				// Datenbank konnte nicht wiederhergestellt werden
-				log.Println(err2)
-			} else {
-				err := database.RemoveDump(restorepath)
-				if err != nil {
-					log.Println(err)
-				}
+			restorepath, err := database.CreateDump("pruefeNutzer")
+			if err != nil {
+				errorResponse(res, err, http.StatusInternalServerError)
+				return
 			}
-			// Konnte Nutzer nicht migrieren
-			errorResponse(res, err, http.StatusInternalServerError)
+
+			err = database.NutzerdatenUpdate(nutzer)
+			if err != nil {
+				err2 := database.RestoreDump(restorepath)
+				if err2 != nil {
+					// Datenbank konnte nicht wiederhergestellt werden
+					log.Println(err2)
+				} else {
+					err := database.RemoveDump(restorepath)
+					if err != nil {
+						log.Println(err)
+					}
+				}
+				// Konnte Nutzer nicht migrieren
+				errorResponse(res, err, http.StatusInternalServerError)
+				return
+			}
+
+			sendResponse(res, true, nil, http.StatusOK)
 			return
 		}
-
-		sendResponse(res, true, nil, http.StatusOK)
-		return
+	} else {
+		email = "noEmail"
 	}
 
 	// Neuen Nutzer erstellen
