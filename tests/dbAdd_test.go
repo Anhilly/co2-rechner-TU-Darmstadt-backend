@@ -14,13 +14,13 @@ import (
 func TestAdd(t *testing.T) {
 	is := is.NewRelaxed(t)
 
+	err := database.ConnectDatabase("dev")
+	is.NoErr(err)
+
 	dir, err := database.CreateDump("TestAdd")
 	is.NoErr(err)
 
 	fmt.Println(dir)
-
-	err = database.ConnectDatabase()
-	is.NoErr(err)
 
 	defer func(dir string) {
 		err := database.DisconnectDatabase()
@@ -931,10 +931,10 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("NutzerdatenAddUmfrageref: username = anton@tobi.com", func(t *testing.T) {
+	t.Run("NutzerdatenAddUmfrageref: username = anton", func(t *testing.T) {
 		is.NewRelaxed(t)
 
-		username := "anton@tobi.com"
+		username := "anton"
 		id := primitive.NewObjectID()
 		objID, _ := primitive.ObjectIDFromHex("61b1ceb3dfb93b34b1305b70")
 
@@ -948,13 +948,12 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 		updatedDoc, err := database.NutzerdatenFind(username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(updatedDoc, structs.Nutzerdaten{
-			NutzerID:        objID,
-			Nutzername:      "anton@tobi.com",
-			Passwort:        "test_pw",
-			Rolle:           0,
-			EmailBestaetigt: 1,
-			Revision:        1,
-			UmfrageRef:      []primitive.ObjectID{idVorhanden, id},
+			NutzerID:   objID,
+			EMail:      "anton@tobi.com",
+			Nutzername: "anton",
+			Rolle:      0,
+			Revision:   2,
+			UmfrageRef: []primitive.ObjectID{idVorhanden, id},
 		}) // Überprüfung des zurückgelieferten Elements
 	})
 
@@ -1004,7 +1003,7 @@ func TestUmfrageAddMitarbeiterUmfrageRef(t *testing.T) {
 			},
 			AuswertungFreigegeben: 0,
 			Revision:              1,
-			MitarbeiterUmfrageRef: []primitive.ObjectID{idVorhanden, referenz},
+			MitarbeiterumfrageRef: []primitive.ObjectID{idVorhanden, referenz},
 		}) // Überprüfung des zurückgelieferten Elements
 	})
 

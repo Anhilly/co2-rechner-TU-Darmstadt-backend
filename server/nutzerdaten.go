@@ -3,25 +3,121 @@ package server
 import (
 	"encoding/json"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
-	"github.com/go-chi/chi/v5"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
-// RouteNutzerdaten mounted alle aufrufbaren API Endpunkte unter */nutzerdaten
-func RouteNutzerdaten() chi.Router {
-	r := chi.NewRouter()
+// pruefeNutzer prueft, ob der Nutzer bereits existiert oder ob ein Nutzer migriert werden kann.
+// Gegebenfalls wird der Nutzer erstellt.
+func pruefeNutzer(res http.ResponseWriter, req *http.Request) {
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
 
-	r.Delete("/deleteNutzerdaten", DeleteNutzerdaten)
+	// Pruefe, ob Nutzer bereits existiert
+	_, err = database.NutzerdatenFind(nutzername)
+	if err == nil { // Nutzer existiert bereits
+		sendResponse(res, true, nil, http.StatusOK)
+		return
+	}
 
-	return r
+	// Pruefe, ob Nutzer mit E-Mail bereits existiert, um Account zu migrieren
+	email, err := keycloak.GetEmailFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	nutzer, err := database.NutzerdatenFindByEMail(email)
+	if err == nil { // Nutzer fuer Migration gefunden
+		nutzer.Nutzername = nutzername // aendere Nutzername
+
+		restorepath, err := database.CreateDump("pruefeNutzer")
+		if err != nil {
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
+
+		err = database.NutzerdatenUpdate(nutzer)
+		if err != nil {
+			err2 := database.RestoreDump(restorepath)
+			if err2 != nil {
+				// Datenbank konnte nicht wiederhergestellt werden
+				log.Println(err2)
+			} else {
+				err := database.RemoveDump(restorepath)
+				if err != nil {
+					log.Println(err)
+				}
+			}
+			// Konnte Nutzer nicht migrieren
+			errorResponse(res, err, http.StatusInternalServerError)
+			return
+		}
+
+		sendResponse(res, true, nil, http.StatusOK)
+		return
+	}
+
+	// Neuen Nutzer erstellen
+	restorepath, err := database.CreateDump("pruefeNutzer")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	_, err = database.NutzerdatenInsert(nutzername, email)
+	if err != nil {
+		err2 := database.RestoreDump(restorepath)
+		if err2 != nil {
+			// Datenbank konnte nicht wiederhergestellt werden
+			log.Println(err2)
+		} else {
+			err := database.RemoveDump(restorepath)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		// Konnte keinen neuen Nutzer erstellen
+		errorResponse(res, err, http.StatusConflict)
+		return
+	}
+
+	err = database.RemoveDump(restorepath)
+	if err != nil {
+		log.Println(err)
+	}
+
+	sendResponse(res, true, nil, http.StatusCreated)
 }
 
-// PostNutzerdatenDelete loescht den Nutzer, der die Loeschung angefragt hat.
+// getRolle gibt die Rolle des Nutzers zurueck.
+func getRolle(res http.ResponseWriter, req *http.Request) {
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	nutzer, err := database.NutzerdatenFind(nutzername)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	sendResponse(res, true, structs.PruefeRolleRes{
+		Rolle: nutzer.Rolle,
+	}, http.StatusOK)
+}
+
+// deleteNutzer loescht den uebergebenen Nutzer, falls von Nutzer selbst oder von einem Admin angefragt.
 // Gibt auftretende Errors zurück, bspw. interne Berechnungsfehler oder unauthorized access.
-func DeleteNutzerdaten(res http.ResponseWriter, req *http.Request) {
+func deleteNutzer(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
@@ -35,12 +131,16 @@ func DeleteNutzerdaten(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !AuthWithResponse(res, deleteNutzerdatenReq.Auth.Username, deleteNutzerdatenReq.Auth.Sessiontoken) {
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	if err != nil {
+		log.Println(err)
+		res.WriteHeader(401)
 		return
 	}
+
 	// check if user is admin if they do not want to delete themselves
-	if deleteNutzerdatenReq.Username != deleteNutzerdatenReq.Auth.Username {
-		nutzer, err := database.NutzerdatenFind(deleteNutzerdatenReq.Username)
+	if deleteNutzerdatenReq.Username != nutzername {
+		nutzer, err := database.NutzerdatenFind(nutzername)
 		if err != nil {
 			errorResponse(res, err, http.StatusInternalServerError)
 			return

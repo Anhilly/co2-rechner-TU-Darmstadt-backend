@@ -15,7 +15,7 @@ import (
 func TestComputationsSubfunctions(t *testing.T) {
 	is := is.NewRelaxed(t)
 
-	err := database.ConnectDatabase()
+	err := database.ConnectDatabase("dev")
 	is.NoErr(err)
 	defer func() {
 		err := database.DisconnectDatabase()
@@ -155,7 +155,7 @@ func TestZaehlerNormalfall(t *testing.T) { //nolint:funlen
 		is.Equal(ngf, 0.0)            // erwartetes Ergebnis: 0.0 (kein Gruppenzaehler)
 	})
 
-	t.Run("zaehlerNormalfall: kWh bleibt kWh (Kaeltezaehler)", func(t *testing.T) { //TODO: fix test after fixing bug in CSV parser
+	t.Run("zaehlerNormalfall: kWh bleibt kWh (Kaeltezaehler)", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var pkEnergie int32 = 6108

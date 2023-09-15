@@ -16,8 +16,7 @@
 .idea
 
 #Database Config
-/database/db_config.go
-
+/config/config.go
 
 *.crt
 
@@ -25,10 +24,10 @@
 
 *.key
 
-server/mail_config.go
-
 go_build_main_Linux_linux
 go_build_main_Linux_linux_GOARCH_amd64
+go_backend
 build/*
 /build/
 /go.log
+/development/dump/co2Rechner/

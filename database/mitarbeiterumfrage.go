@@ -76,7 +76,7 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 	}
 
 	// hole die IDs der assoziierten Mitarbeiterumfragen
-	umfrageRefs := umfrage.MitarbeiterUmfrageRef
+	umfrageRefs := umfrage.MitarbeiterumfrageRef
 
 	collection := client.Database(dbName).Collection(structs.MitarbeiterUmfrageCol)
 
@@ -102,9 +102,9 @@ func MitarbeiterUmfrageFindForUmfrage(umfrageID primitive.ObjectID) ([]structs.M
 	return results, nil
 }
 
-// MitarbeiterUmfrageFindMany liefert ein Array aus allen Mitarbeiterumfragen zurueck, deren ID in ids liegt.
+// MitarbeiterumfrageFindMany liefert ein Array aus allen Mitarbeiterumfragen zurueck, deren ID in ids liegt.
 // Wenn nicht alle IDs in ids in der DB gefunden wurden, wird der Fehler structs.ErrDokumenteNichtGefunden zurueckgegeben.
-func MitarbeiterUmfrageFindMany(ids []primitive.ObjectID) ([]structs.MitarbeiterUmfrage, error) {
+func MitarbeiterumfrageFindMany(ids []primitive.ObjectID) ([]structs.MitarbeiterUmfrage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -154,7 +154,7 @@ func MitarbeiterUmfrageInsert(data structs.InsertMitarbeiterUmfrage) (primitive.
 		return primitive.NilObjectID, err
 	}
 
-	mitarbeiterumfragen, err := MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
+	mitarbeiterumfragen, err := MitarbeiterumfrageFindMany(umfrage.MitarbeiterumfrageRef)
 	if err != nil {
 		return primitive.NilObjectID, err
 	}

@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/config"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -11,15 +12,41 @@ import (
 
 var client *mongo.Client
 
+var (
+	dbHost      = ""
+	dbPort      = ""
+	dbUsername  = ""
+	dbPassword  = ""
+	dbName      = ""
+	dbContainer = ""
+)
+
 // ConnectDatabase stellt eine Verbindung mit der Datenbank her mittels der Konstanten aus db_config.go.
 // Die Referenz zur Datenbank wird in der Variable client gespeichert
-func ConnectDatabase() error {
+func ConnectDatabase(mode string) error {
+	if mode == "dev" { // set values for database connection
+		dbHost = config.DevDBHost
+		dbPort = config.DevDBPort
+		dbUsername = config.DevDBUsername
+		dbPassword = config.DevDBPassword
+		dbName = config.DevDBName
+		dbContainer = config.DevDBContainer
+	} else if mode == "prod" {
+		dbHost = config.ProdDBHost
+		dbPort = config.ProdDBPort
+		dbUsername = config.ProdDBUsername
+		dbPassword = config.ProdDBPassword
+		dbName = config.ProdDBName
+		dbContainer = config.ProdDBContainer
+	} else {
+		log.Fatalln("Mode not specified")
+	}
+
 	var err error
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
-	client, err = mongo.NewClient(
-		options.Client().ApplyURI(containerName + "://" + username + ":" + password + "@" + serverAdress + ":" + port))
+	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://" + dbUsername + ":" + dbPassword + "@" + dbHost + ":" + dbPort))
 	if err != nil {
 		return err
 	}
