@@ -96,21 +96,6 @@ var ( // Fehler die bei der Authentifizierung auftreten
 	// Nutzer will Account mit bestehender Username registrieren
 	ErrInsertExistingAccount = errors.New("Account mit diesem Nutzernamen existiert bereits")
 
-	// Fehler das für Nutzer kein Sessiontoken registriert ist
-	ErrNutzerHatKeinenSessiontoken = errors.New("Benutzer hat keinen Sessiontoken registriert")
-
-	// Abgelaufener Sessiontoken
-	ErrAbgelaufenerSessiontoken = errors.New("Der Sessiontoken ist abgelaufen")
-
-	// Falsches Passwort beim Anmelden
-	ErrFalschesPasswortError = errors.New("Die Kombination aus Passwort und Nutzername stimmt nicht überein")
-
-	// Falscher Sessiontoken beim Authentifizieren
-	ErrFalscherSessiontoken = errors.New("Falscher Sessiontoken für diesen Benutzer")
-
 	// Nutzer nicht berechtigt oder kein Admin
 	ErrNutzerHatKeineBerechtigung = errors.New("Der Nutzer hat nicht die passende Berechtigung")
-
-	// Nutzer hat Mail nicht bestaetigt
-	ErrNutzerUnbestaetigteMail = errors.New("Bitte bestätigen Sie ihre E-Mail Adresse!")
 )

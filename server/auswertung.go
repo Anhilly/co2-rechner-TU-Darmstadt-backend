@@ -2,66 +2,81 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/co2computation"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
+	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/keycloak"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
-	"github.com/go-chi/chi/v5"
-	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
+	"strings"
 	"time"
 )
 
-// RouteAuswertung mounted alle aufrufbaren API Endpunkte unter */auswertung
-func RouteAuswertung() chi.Router {
-	r := chi.NewRouter()
-
-	r.Post("/", PostAuswertung)
-	r.Post("/updateSetLinkShare", UpdateSetLinkShare)
-	return r
-}
-
-// PostAuswertung fuehrt die CO2-Emissionen Berechnung fuer die uebertragene Umfrage durch und sendet einen
+// getAuswertung fuehrt die CO2-Emissionsberechnung fuer die uebertragene Umfrage durch und sendet einen
 // structs.AuswertungRes zurueck.
-func PostAuswertung(res http.ResponseWriter, req *http.Request) {
-	s, err := ioutil.ReadAll(req.Body)
+func getAuswertung(res http.ResponseWriter, req *http.Request) {
+	var requestedUmfrageID primitive.ObjectID
+	err := requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
-
-	auswertungReq := structs.RequestUmfrage{}
-	err = json.Unmarshal(s, &auswertungReq)
-	if err != nil {
-		errorResponse(res, err, http.StatusBadRequest)
-		return
-	}
-
-	var umfrageID = auswertungReq.UmfrageID
 
 	// hole Umfragen aus der Datenbank
-	umfrage, err := database.UmfrageFind(umfrageID)
+	umfrage, err := database.UmfrageFind(requestedUmfrageID)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
-	// Wenn Auswertung nicht fuers teilen freigegeben muss Nutzer authoritaet geprueft werden
+	// Wenn Auswertung nicht fuers teilen freigegeben muss Nutzer authentifiziert sein
+	var nutzername string
 	if umfrage.AuswertungFreigegeben == 0 {
-		// Authentifizierung
-		if !AuthWithResponse(res, auswertungReq.Auth.Username, auswertungReq.Auth.Sessiontoken) {
+		// Keycloak Authentifizierung
+		ctx := req.Context()
+
+		authHeader := req.Header.Get("Authorization")
+		if len(authHeader) < 1 {
+			res.WriteHeader(401)
 			return
 		}
-		nutzer, _ := database.NutzerdatenFind(auswertungReq.Auth.Username)
-		if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, auswertungReq.UmfrageID) {
+
+		accessToken := strings.Split(authHeader, " ")[1]
+
+		rptResult, err := keycloak.KeycloakClient.RetrospectToken(ctx, accessToken, clientID, clientSecret, realm)
+		if err != nil {
+			log.Println(err)
+			res.WriteHeader(403)
+			return
+		}
+
+		isTokenValid := *rptResult.Active
+
+		if !isTokenValid {
+			log.Println("Invalid Token")
+			res.WriteHeader(401)
+			return
+		}
+
+		// Pruefe, ob Nutzer Admin ist oder der Besitzer der Umfrage
+		nutzername, err = keycloak.GetUsernameFromToken(accessToken, req.Context())
+		if err != nil {
+			errorResponse(res, err, http.StatusBadRequest)
+			return
+		}
+
+		nutzer, _ := database.NutzerdatenFind(nutzername)
+		if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, requestedUmfrageID) {
 			errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 			return
 		}
 	}
 
-	mitarbeiterumfragen, err := database.MitarbeiterUmfrageFindMany(umfrage.MitarbeiterUmfrageRef)
+	mitarbeiterumfragen, err := database.MitarbeiterumfrageFindMany(umfrage.MitarbeiterumfrageRef)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -218,10 +233,16 @@ func binaereZahlerdatenFuerZaehler(alleZaehler []structs.ZaehlerUndZaehlerdaten)
 	return zaehlerUndZaehlerdaten
 }
 
-// UpdateSetLinkShare empfaengt ein POST Update Request und setzt den LinkSharing Status auf den empfangenen Wert.
+// updateLinkShare empfaengt ein POST Update Request und setzt den LinkSharing Status auf den empfangenen Wert.
 // 0 = Link Share deaktiviert, 1 = aktiviert.
 // Kann nicht durch einen Administrator geaendert werden, nur durch besitzenden Nutzer.
-func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
+func updateLinkShare(res http.ResponseWriter, req *http.Request) {
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
 	s, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
@@ -242,10 +263,7 @@ func UpdateSetLinkShare(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Authentifizierung
-	if !AuthWithResponse(res, linkshareReq.Auth.Username, linkshareReq.Auth.Sessiontoken) {
-		return
-	}
-	nutzer, _ := database.NutzerdatenFind(linkshareReq.Auth.Username)
+	nutzer, _ := database.NutzerdatenFind(nutzername)
 	if nutzer.Rolle != structs.IDRolleAdmin && !isOwnerOfUmfrage(nutzer.UmfrageRef, linkshareReq.UmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return

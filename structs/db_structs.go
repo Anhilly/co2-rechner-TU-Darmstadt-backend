@@ -128,13 +128,12 @@ type Pendelweg struct {
 
 // Collection nutzerdaten
 type Nutzerdaten struct {
-	NutzerID        primitive.ObjectID   `json:"_id" bson:"_id"`
-	Nutzername      string               `json:"nutzername" bson:"nutzername"`
-	Passwort        string               `json:"passwort" bson:"passwort"`
-	Rolle           int32                `json:"rolle" bson:"rolle"`
-	EmailBestaetigt int32                `json:"emailBestaetigt" bson:"emailBestaetigt"`
-	Revision        int32                `json:"revision" bson:"revision"`
-	UmfrageRef      []primitive.ObjectID `json:"umfrageRef" bson:"umfrageRef"`
+	NutzerID   primitive.ObjectID   `json:"_id" bson:"_id"`
+	Nutzername string               `json:"nutzername" bson:"nutzername"`
+	EMail      string               `json:"email" bson:"email"`
+	Rolle      int32                `json:"rolle" bson:"rolle"`
+	Revision   int32                `json:"revision" bson:"revision"`
+	UmfrageRef []primitive.ObjectID `json:"umfrageRef" bson:"umfrageRef"`
 }
 
 // Collection umfrage
@@ -147,7 +146,7 @@ type Umfrage struct {
 	ITGeraete             []UmfrageITGeraete   `json:"itGeraete" bson:"itGeraete"`
 	AuswertungFreigegeben int32                `json:"auswertungFreigegeben" bson:"auswertungFreigegeben"`
 	Revision              int32                `json:"revision" bson:"revision"`
-	MitarbeiterUmfrageRef []primitive.ObjectID `json:"mitarbeiterUmfrageRef" bson:"mitarbeiterUmfrageRef"`
+	MitarbeiterumfrageRef []primitive.ObjectID `json:"mitarbeiterUmfrageRef" bson:"mitarbeiterUmfrageRef"`
 }
 
 type UmfrageGebaeude struct {

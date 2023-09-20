@@ -3,7 +3,6 @@ package tests
 import (
 	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
-	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/server"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"github.com/matryer/is"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,13 +13,13 @@ import (
 func TestDelete(t *testing.T) {
 	is := is.NewRelaxed(t)
 
+	err := database.ConnectDatabase("dev")
+	is.NoErr(err)
+
 	dir, err := database.CreateDump("TestDelete")
 	is.NoErr(err)
 
 	fmt.Println(dir)
-
-	err = database.ConnectDatabase()
-	is.NoErr(err)
 
 	defer func(dir string) {
 		err := database.DisconnectDatabase()
@@ -42,7 +41,7 @@ func TestUmfrageDelete(t *testing.T) {
 	//Normalfall
 	t.Run("UmfrageDelete umfrageID vorhanden ohne MitarbeiterUmfragen", func(t *testing.T) {
 		is := is.NewRelaxed(t)
-		username := "anton@tobi.com"
+		username := "anton"
 
 		data := structs.InsertUmfrage{
 			Mitarbeiteranzahl: 42,
@@ -54,14 +53,10 @@ func TestUmfrageDelete(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			Auth: structs.AuthToken{
-				Username:     username,
-				Sessiontoken: server.GeneriereSessionToken(username),
-			},
 		}
 
-		objectID, err := database.UmfrageInsert(data) // Neuen Eintrag erstellen
-		is.NoErr(err)                                 // Kein Fehler im Normalfall
+		objectID, err := database.UmfrageInsert(data, username) // Neuen Eintrag erstellen
+		is.NoErr(err)                                           // Kein Fehler im Normalfall
 
 		err = database.UmfrageDelete(username, objectID) // Eintrag loeschen
 		is.NoErr(err)                                    // Kein Fehler im Normalfall
@@ -73,7 +68,7 @@ func TestUmfrageDelete(t *testing.T) {
 
 	t.Run("UmfrageDelete umfrageID vorhanden mit Mitarbeiterumfragen", func(t *testing.T) {
 		is := is.NewRelaxed(t)
-		username := "anton@tobi.com"
+		username := "anton"
 
 		data := structs.InsertUmfrage{
 			Mitarbeiteranzahl: 42,
@@ -85,14 +80,10 @@ func TestUmfrageDelete(t *testing.T) {
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 6, Anzahl: 30},
 			},
-			Auth: structs.AuthToken{
-				Username:     username,
-				Sessiontoken: server.GeneriereSessionToken(username),
-			},
 		}
 
-		objectID, err := database.UmfrageInsert(data) // Neuen Eintrag erstellen
-		is.NoErr(err)                                 // Kein Fehler im Normalfall
+		objectID, err := database.UmfrageInsert(data, username) // Neuen Eintrag erstellen
+		is.NoErr(err)                                           // Kein Fehler im Normalfall
 
 		// Fuege zwei Mitarbeiterumfragen ein
 		var mitarbeiterID [2]primitive.ObjectID
@@ -148,7 +139,7 @@ func TestUmfrageDelete(t *testing.T) {
 		err := idUmfrage.UnmarshalText([]byte("61b23e9835aa64762baf76a9"))
 		is.NoErr(err)
 
-		err = database.UmfrageDelete("anton@tobi.com", idUmfrage)
+		err = database.UmfrageDelete("anton", idUmfrage)
 		is.Equal(err, mongo.ErrNoDocuments) // Eintrag konnte nicht gefunden
 	})
 
@@ -159,7 +150,7 @@ func TestUmfrageDelete(t *testing.T) {
 		err := idUmfrage.UnmarshalText([]byte("61dc0c543e48998484eefaea"))
 		is.NoErr(err)
 
-		err = database.UmfrageDelete("anton@tobi.com", idUmfrage)
+		err = database.UmfrageDelete("anton", idUmfrage)
 		is.Equal(err, structs.ErrObjectIDNichtGefunden) // Eintrag konnte nicht gefunden
 	})
 }
@@ -202,7 +193,7 @@ func TestUmfrageDeleteMitarbeiterUmfrage(t *testing.T) {
 		umfrageAfterDeletion, err := database.UmfrageFind(idUmfrage)
 		is.NoErr(err)
 
-		for _, mitarbeiterRef := range umfrageAfterDeletion.MitarbeiterUmfrageRef {
+		for _, mitarbeiterRef := range umfrageAfterDeletion.MitarbeiterumfrageRef {
 			is.Equal(mitarbeiterRef == idMitarbeiterumfrage, false)
 		}
 	})
@@ -227,7 +218,7 @@ func TestNutzerdatenDelete(t *testing.T) {
 	t.Run("NutzerdatenDelete username vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		username := "lorem_ipsum_mustermann"
+		username := "lorem"
 
 		err := database.NutzerdatenDelete(username)
 		is.NoErr(err) // kein Error im Normalfall
@@ -262,7 +253,7 @@ func TestNutzerdatenDelete(t *testing.T) {
 			is.Equal(err, mongo.ErrNoDocuments)
 
 			// mitarbeiterUmfragen koennen nicht mehr gefunden werden
-			for _, mitarbeiterUmfrageID := range umfrage.MitarbeiterUmfrageRef {
+			for _, mitarbeiterUmfrageID := range umfrage.MitarbeiterumfrageRef {
 				_, err = database.MitarbeiterUmfrageFind(mitarbeiterUmfrageID)
 				is.Equal(err, mongo.ErrNoDocuments)
 			}

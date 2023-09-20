@@ -14,13 +14,13 @@ import (
 func TestFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
+	err := database.ConnectDatabase("dev")
+	is.NoErr(err)
+
 	dir, err := database.CreateDump("TestFind")
 	is.NoErr(err)
 
 	fmt.Println(dir)
-
-	err = database.ConnectDatabase()
-	is.NoErr(err)
 
 	defer func() {
 		err := database.DisconnectDatabase()
@@ -39,6 +39,7 @@ func TestFind(t *testing.T) {
 	t.Run("TestTestUmfrageFind", TestUmfrageFind)
 	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
+	t.Run("TestNutzerdatenFindByEMail", TestNutzerdatenFindByEMail)
 	t.Run("TestGebaeudeAlleNr", TestGebaeudeAlleNr)
 	t.Run("TestGebaeudeAlleNrUndZaehlerRef", TestGebaeudeAlleNrUndZaehlerRef)
 	t.Run("TestZaehlerAlleZaehlerUndDaten", TestZaehlerAlleZaehlerUndDaten)
@@ -719,7 +720,7 @@ func TestUmfrageFind(t *testing.T) {
 				},
 				AuswertungFreigegeben: 0,
 				Revision:              1,
-				MitarbeiterUmfrageRef: []primitive.ObjectID{idMitarbeiterumfrage},
+				MitarbeiterumfrageRef: []primitive.ObjectID{idMitarbeiterumfrage},
 			}) // Überprüfung des zurückgelieferten Elements
 	})
 
@@ -784,7 +785,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("MitarbeiterUmfrageFindMany: einzelne ID", func(t *testing.T) {
+	t.Run("MitarbeiterumfrageFindMany: einzelne ID", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var id primitive.ObjectID
@@ -793,7 +794,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 
 		ids := []primitive.ObjectID{id}
 
-		data, err := database.MitarbeiterUmfrageFindMany(ids)
+		data, err := database.MitarbeiterumfrageFindMany(ids)
 
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data,
@@ -813,7 +814,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 			}}) // Überprüfung des zurückgelieferten Elements
 	})
 
-	t.Run("MitarbeiterUmfrageFindMany: mehrere IDs", func(t *testing.T) {
+	t.Run("MitarbeiterumfrageFindMany: mehrere IDs", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var id primitive.ObjectID
@@ -829,7 +830,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 
 		ids := []primitive.ObjectID{id, id2}
 
-		data, err := database.MitarbeiterUmfrageFindMany(ids)
+		data, err := database.MitarbeiterumfrageFindMany(ids)
 
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data, []structs.MitarbeiterUmfrage{{
@@ -858,12 +859,12 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 	})
 
 	// Errortests
-	t.Run("MitarbeiterUmfrageFindMany: zu wenige Dokumente", func(t *testing.T) {
+	t.Run("MitarbeiterumfrageFindMany: zu wenige Dokumente", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
 
-		data, err := database.MitarbeiterUmfrageFindMany(ids)
+		data, err := database.MitarbeiterumfrageFindMany(ids)
 
 		is.Equal(err, structs.ErrDokumenteNichtGefunden) // Funktion wirft ErrDokumenteNichtGefunden
 		is.Equal(data, nil)                              // Bei einem Fehler soll nil zurückgeliefert werden
@@ -874,10 +875,10 @@ func TestNutzerdatenFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("NutzerdatenFind: username = anton@tobi.com", func(t *testing.T) {
+	t.Run("NutzerdatenFind: username = anton", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		username := "anton@tobi.com"
+		username := "anton"
 		var idUmfrage primitive.ObjectID
 		err := idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
 		is.NoErr(err)
@@ -887,13 +888,12 @@ func TestNutzerdatenFind(t *testing.T) {
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(data,
 			structs.Nutzerdaten{
-				NutzerID:        objID,
-				Nutzername:      "anton@tobi.com",
-				Passwort:        "test_pw",
-				Rolle:           0,
-				EmailBestaetigt: 1,
-				Revision:        1,
-				UmfrageRef:      []primitive.ObjectID{idUmfrage},
+				NutzerID:   objID,
+				EMail:      "anton@tobi.com",
+				Nutzername: "anton",
+				Rolle:      0,
+				Revision:   2,
+				UmfrageRef: []primitive.ObjectID{idUmfrage},
 			}) // Überprüfung des zurückgelieferten Elements
 	})
 
@@ -904,6 +904,46 @@ func TestNutzerdatenFind(t *testing.T) {
 		username := "0"
 
 		data, err := database.NutzerdatenFind(username)
+
+		is.Equal(err, mongo.ErrNoDocuments)   // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Nutzerdaten{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestNutzerdatenFindByEMail(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("NutzerdatenFind: email = anton@tobi.com", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		email := "anton@tobi.com"
+		var idUmfrage primitive.ObjectID
+		err := idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		is.NoErr(err)
+		objID, _ := primitive.ObjectIDFromHex("61b1ceb3dfb93b34b1305b70")
+
+		data, err := database.NutzerdatenFindByEMail(email)
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			structs.Nutzerdaten{
+				NutzerID:   objID,
+				EMail:      "anton@tobi.com",
+				Nutzername: "anton",
+				Rolle:      0,
+				Revision:   2,
+				UmfrageRef: []primitive.ObjectID{idUmfrage},
+			}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	// Errortests
+	t.Run("MitarbeiterUmfrageFind: username = 0 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		email := "0"
+
+		data, err := database.NutzerdatenFindByEMail(email)
 
 		is.Equal(err, mongo.ErrNoDocuments)   // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Nutzerdaten{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
@@ -1041,8 +1081,8 @@ func TestAlleUmfragenForUser(t *testing.T) {
 	t.Run("AlleUmfragenForUser: liefert alle existenten Umfragen zurueck, die mit gegebenem User assoziiert sind.", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		userMail := "anton@tobi.com"
-		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
+		username := "anton"
+		alleUmfragen, err := database.AlleUmfragenForUser(username)
 		is.NoErr(err)                  // kein Error seitens der Datenbank
 		is.True(len(alleUmfragen) > 0) // Slice ist nicht leer
 
@@ -1054,8 +1094,8 @@ func TestAlleUmfragenForUser(t *testing.T) {
 	t.Run("AlleUmfragenForUser: Keine Umfragen mit User assoziiert", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		userMail := "lorem_ipsum_mustermann"
-		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
+		username := "lorem"
+		alleUmfragen, err := database.AlleUmfragenForUser(username)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(alleUmfragen, []structs.Umfrage{})
 	})
@@ -1064,8 +1104,8 @@ func TestAlleUmfragenForUser(t *testing.T) {
 	t.Run("AlleUmfragenForUser: User existiert nicht", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		userMail := "KaeptnBlaubaer"
-		alleUmfragen, err := database.AlleUmfragenForUser(userMail)
+		username := "KaeptnBlaubaer"
+		alleUmfragen, err := database.AlleUmfragenForUser(username)
 		is.Equal(alleUmfragen, nil)
 		is.Equal(err, mongo.ErrNoDocuments)
 	})

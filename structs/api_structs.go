@@ -35,28 +35,24 @@ type UmfrageID struct {
 
 // Structs für Request JSONs zum Hinzufuegen und Aendern von Daten der Datenbank
 type AddCO2Faktor struct {
-	Auth                AuthToken `json:"authToken"`
-	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
-	IDVertrag           int32     `json:"idVertrag"`
-	Jahr                int32     `json:"jahr"`
-	Wert                int32     `json:"wert"`
+	IDEnergieversorgung int32 `json:"idEnergieversorgung"`
+	IDVertrag           int32 `json:"idVertrag"`
+	Jahr                int32 `json:"jahr"`
+	Wert                int32 `json:"wert"`
 }
 
 type AddZaehlerdaten struct {
-	Auth                AuthToken `json:"authToken"`
-	PKEnergie           int32     `json:"pkEnergie"`
-	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
-	Jahr                int32     `json:"jahr"`
-	Wert                float64   `json:"wert"`
+	PKEnergie           int32   `json:"pkEnergie"`
+	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
+	Jahr                int32   `json:"jahr"`
+	Wert                float64 `json:"wert"`
 }
 
 type AddStandardZaehlerdaten struct {
-	Auth AuthToken `json:"authToken"`
-	Jahr int32     `json:"jahr"`
+	Jahr int32 `json:"jahr"`
 }
 
 type AddZaehlerdatenCSV struct {
-	Auth                AuthToken `json:"authToken"`
 	PKEnergie           []int32   `json:"pkEnergie"`
 	IDEnergieversorgung []int32   `json:"idEnergieversorgung"`
 	Jahr                int32     `json:"jahr"`
@@ -64,16 +60,14 @@ type AddZaehlerdatenCSV struct {
 }
 
 type InsertZaehler struct {
-	Auth                AuthToken `json:"authToken"`
-	PKEnergie           int32     `json:"pkEnergie"`
-	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
-	Bezeichnung         string    `json:"bezeichnung"`
-	Einheit             string    `json:"einheit"`
-	GebaeudeRef         []int32   `json:"gebaeudeRef"`
+	PKEnergie           int32   `json:"pkEnergie"`
+	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
+	Bezeichnung         string  `json:"bezeichnung"`
+	Einheit             string  `json:"einheit"`
+	GebaeudeRef         []int32 `json:"gebaeudeRef"`
 }
 
 type InsertGebaeude struct {
-	Auth                 AuthToken       `json:"authToken"`
 	Nr                   int32           `json:"nr"`
 	Bezeichnung          string          `json:"bezeichnung"`
 	Flaeche              GebaeudeFlaeche `json:"flaeche"`
@@ -83,16 +77,14 @@ type InsertGebaeude struct {
 }
 
 type AddVersorger struct {
-	Auth                AuthToken `json:"authToken"`
-	Nr                  int32     `json:"nr"`
-	Jahr                int32     `json:"jahr"`
-	IDEnergieversorgung int32     `json:"idEnergieversorgung"`
-	IDVertrag           int32     `json:"idVertrag"`
+	Nr                  int32 `json:"nr"`
+	Jahr                int32 `json:"jahr"`
+	IDEnergieversorgung int32 `json:"idEnergieversorgung"`
+	IDVertrag           int32 `json:"idVertrag"`
 }
 
 type AddStandardVersorger struct {
-	Auth AuthToken `json:"authToken"`
-	Jahr int32     `json:"jahr"`
+	Jahr int32 `json:"jahr"`
 }
 
 type InsertUmfrage struct {
@@ -101,7 +93,6 @@ type InsertUmfrage struct {
 	Jahr              int32              `json:"jahr"`
 	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
 	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
-	Auth              AuthToken          `json:"authToken"`
 }
 
 type AlleUmfragen struct {
@@ -112,29 +103,13 @@ type AlleMitarbeiterUmfragenForUmfrage struct {
 	MitarbeiterUmfragen []MitarbeiterUmfrage `json:"mitarbeiterUmfragen"`
 }
 
-// Nutzer Authentifikation Token
-type AuthToken struct {
-	Username     string `json:"username"`
-	Sessiontoken string `json:"sessiontoken"`
-}
-
 type UpdateUmfrage struct {
-	Auth              AuthToken          `json:"authToken"`
 	UmfrageID         primitive.ObjectID `json:"umfrageID"`
 	Bezeichnung       string             `json:"bezeichnung"`
 	Mitarbeiteranzahl int32              `json:"mitarbeiteranzahl"`
 	Jahr              int32              `json:"jahr"`
 	Gebaeude          []UmfrageGebaeude  `json:"gebaeude"`
 	ITGeraete         []UmfrageITGeraete `json:"itGeraete"`
-}
-
-type UpdateMitarbeiterUmfrage struct {
-	Auth        AuthToken            `json:"authToken"`
-	UmfrageID   primitive.ObjectID   `json:"umfrageID"`
-	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
-	TageImBuero int32                `json:"tageImBuero"`
-	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
-	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
 }
 
 type InsertMitarbeiterUmfrage struct {
@@ -161,27 +136,11 @@ type UmfrageSharedResultsRes struct {
 
 type DeleteUmfrage struct {
 	UmfrageID primitive.ObjectID `json:"umfrageID"`
-	Auth      AuthToken          `json:"authToken"`
-}
-
-type RequestUmfrage struct {
-	UmfrageID primitive.ObjectID `json:"umfrageID"`
-	Auth      AuthToken          `json:"authToken"`
-}
-
-type DuplicateUmfrage struct {
-	UmfrageID primitive.ObjectID `json:"umfrageID"`
-	Auth      AuthToken          `json:"authToken"`
 }
 
 type RequestLinkShare struct {
 	UmfrageID    primitive.ObjectID `json:"umfrageID"`
 	Freigabewert int32              `json:"freigabewert"`
-	Auth         AuthToken          `json:"authToken"`
-}
-
-type RequestAuth struct {
-	Auth AuthToken `json:"authToken"`
 }
 
 type AuswertungRes struct {
@@ -222,40 +181,6 @@ type AuswertungRes struct {
 	UmfrageGebaeude       []UmfrageGebaeude                 `json:"umfrageGebaeude"`
 }
 
-// Requests zur Authentifizierung und Abmeldung
-type AuthReq struct { // wird fuer Anmeldung und Registrierung verwendet
-	Username string `json:"username"`
-	Passwort string `json:"password"`
-}
-
-type PasswortAendernReq struct { // wird fuer Anmeldung und Registrierung verwendet
-	Auth          AuthToken `json:"authToken"`
-	Passwort      string    `json:"passwort"`
-	NeuesPasswort string    `json:"neuesPasswort"`
-}
-
-type PasswortVergessenReq struct {
-	Username string `json:"username"`
-}
-
-type EmailBestaetigung struct {
-	UserID primitive.ObjectID `json:"nutzerID"`
-}
-
-type AbmeldungReq struct {
-	Username string `json:"username"`
-}
-
-type PruefeSessionReq struct {
-	Username     string `json:"username"`
-	Sessiontoken string `json:"sessiontoken"`
-}
-
-type PruefeSessionRes struct {
-	Rolle           int32 `json:"rolle"`
-	EmailBestaetigt int32 `json:"emailBestaetigt"`
-}
-
 // Responses basieren auf generischen Response Format, in dem die spezifischen Inhalte gekapselt sind
 type Response struct {
 	Status string      `json:"status"`
@@ -263,23 +188,12 @@ type Response struct {
 	Error  interface{} `json:"error"` // Typisch nil, wenn kein Error
 }
 
-type AbmeldeRes struct {
-	Message string `json:"message"`
-}
-
-type RegistrierungRes struct {
-	Message string `json:"message"`
-}
-
-type AuthRes struct {
-	Message      string `json:"message"`
-	Sessiontoken string `json:"sessiontoken"`
-	Rolle        int32  `json:"rolle"`
-}
-
 type DeleteNutzerdatenReq struct {
-	Auth     AuthToken `json:"authToken"`
-	Username string    `json:"username"`
+	Username string `json:"username"`
+}
+
+type PruefeRolleRes struct {
+	Rolle int32 `json:"rolle"`
 }
 
 type Error struct {
