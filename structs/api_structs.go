@@ -200,3 +200,9 @@ type Error struct {
 	Code    int32  `json:"code"`
 	Message string `json:"message"`
 }
+
+// Hilfs-Struct für die Auswertung der Umfrage
+type AllePendelwege struct {
+	Pendelwege  []UmfragePendelweg
+	TageImBuero int32
+}

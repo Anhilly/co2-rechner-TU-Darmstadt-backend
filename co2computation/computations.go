@@ -96,15 +96,9 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 
 // BerechnePendelweg berechnet die Gesamtemissionen auf Basis der gegebenen Pendelwege und der Tage im Büro.
 // Ergebniseinheit: g
-func BerechnePendelweg(pendelwegDaten []structs.UmfragePendelweg, tageImBuero int32) (float64, error) {
+func BerechnePendelweg(allePendelwege []structs.AllePendelwege) (float64, error) {
 	var emissionen float64
 	const arbeitstage2020 = 230 // Arbeitstage in 2020, konstant(?)
-
-	if tageImBuero == 0 {
-		return 0, nil
-	}
-
-	arbeitstage := int32(float64(tageImBuero) / 5.0 * arbeitstage2020)
 
 	// alle Daten zu Pendelwegen aus der Datenbank holen
 	allePendelwegMedien, err := database.PendelwegFindAll()
@@ -116,26 +110,34 @@ func BerechnePendelweg(pendelwegDaten []structs.UmfragePendelweg, tageImBuero in
 		medien[pendelwegMedium.IDPendelweg] = pendelwegMedium
 	}
 
-	for _, weg := range pendelwegDaten {
-		if weg.Strecke == 0 {
-			continue
-		} else if weg.Strecke < 0 {
-			return 0, structs.ErrStreckeNegativ
+	for _, pendelwegDaten := range allePendelwege {
+		if pendelwegDaten.TageImBuero == 0 {
+			return 0, nil
 		}
 
-		if weg.Personenanzahl < 1 {
-			return 0, structs.ErrPersonenzahlZuKlein
-		}
+		arbeitstage := int32(float64(pendelwegDaten.TageImBuero) / 5.0 * arbeitstage2020)
 
-		medium, ok := medien[weg.IDPendelweg]
-		if !ok {
-			return 0, mongo.ErrNoDocuments
-		}
+		for _, weg := range pendelwegDaten.Pendelwege {
+			if weg.Strecke == 0 {
+				continue
+			} else if weg.Strecke < 0 {
+				return 0, structs.ErrStreckeNegativ
+			}
 
-		if medium.Einheit == structs.EinheitgPkm {
-			emissionen += float64(arbeitstage*2*weg.Strecke*medium.CO2Faktor) / float64(weg.Personenanzahl)
-		} else {
-			return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechnePendelweg", medium.Einheit)
+			if weg.Personenanzahl < 1 {
+				return 0, structs.ErrPersonenzahlZuKlein
+			}
+
+			medium, ok := medien[weg.IDPendelweg]
+			if !ok {
+				return 0, mongo.ErrNoDocuments
+			}
+
+			if medium.Einheit == structs.EinheitgPkm {
+				emissionen += float64(arbeitstage*2*weg.Strecke*medium.CO2Faktor) / float64(weg.Personenanzahl)
+			} else {
+				return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechnePendelweg", medium.Einheit)
+			}
 		}
 	}
 

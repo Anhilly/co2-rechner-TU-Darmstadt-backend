@@ -150,8 +150,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 
 		var pendelwegDaten []structs.UmfragePendelweg = nil
 		var tageImBuero int32 = 1
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.NoErr(err)             // Normalfall wirft keine Errors
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
@@ -163,7 +169,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 		pendelwegDaten := []structs.UmfragePendelweg{}
 		var tageImBuero int32 = 1
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
+
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.NoErr(err)             // Normalfall wirft keine Errors
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
@@ -176,8 +189,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 			{IDPendelweg: 1, Strecke: 1, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 0
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.NoErr(err)             // Normalfall wirft keine Errors
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (kein Pendelweg = keine Emissionen)
@@ -188,8 +207,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 
 		pendelwegDaten := []structs.UmfragePendelweg{}
 		var tageImBuero int32 = 0
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.NoErr(err)             // Normalfall wirft keine Errors
 		is.Equal(emissionen, 0.0) // erwartetes Ergebnis: 0.0 (bei leerer Eingabe keine Emissionen)
@@ -202,8 +227,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 			{IDPendelweg: 1, Strecke: 10, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 1
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.NoErr(err)                // Normalfall wirft keine Errors
 		is.Equal(emissionen, 3680.0) // erwartetes Ergebnis: 3680.0
@@ -216,8 +247,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 			{IDPendelweg: 12, Strecke: 20, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 3
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.NoErr(err)             //Normalfall wirft keinen Error
 		is.Equal(emissionen, 0.0) // erwartet Ergebnis 0, da Fussgaenger
@@ -231,8 +268,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 			{IDPendelweg: 1, Strecke: 10, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 1
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.NoErr(err)                // Normalfall wirft keine Errors
 		is.Equal(emissionen, 3680.0) // erwartetes Ergebnis: 3680.0
@@ -245,8 +288,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 			{IDPendelweg: 1, Strecke: 10, Personenanzahl: 3},
 		}
 		var tageImBuero int32 = 1
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.NoErr(err)                 // Normalfall wirft keine Errors
 		is.Equal(emissionen, 1226.67) // erwartetes Ergebnis: 1226.67
@@ -263,8 +312,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 			{IDPendelweg: 5, Strecke: 5, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 3
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.NoErr(err)                   // Normalfall wirft keine Errors
 		is.Equal(emissionen, 2181504.0) // erwartetes Ergebnis: 2181504.0
@@ -278,8 +333,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 			{IDPendelweg: 100, Strecke: 1, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 1
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(emissionen, 0.0)           // Fehlerfall liefert 0.0
@@ -292,8 +353,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 			{IDPendelweg: 1, Strecke: 1, Personenanzahl: 0},
 		}
 		var tageImBuero int32 = 1
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.Equal(err, structs.ErrPersonenzahlZuKlein) // Funktion wirft ErrPersonenzahlZuKlein
 		is.Equal(emissionen, 0.0)                     // Fehlerfall liefert 0.0
@@ -306,8 +373,14 @@ func TestBerechnePendelweg(t *testing.T) { //nolint:funlen
 			{IDPendelweg: 1, Strecke: -100, Personenanzahl: 1},
 		}
 		var tageImBuero int32 = 1
+		var allePendelwege = []structs.AllePendelwege{
+			{
+				Pendelwege:  pendelwegDaten,
+				TageImBuero: tageImBuero,
+			},
+		}
 
-		emissionen, err := co2computation.BerechnePendelweg(pendelwegDaten, tageImBuero)
+		emissionen, err := co2computation.BerechnePendelweg(allePendelwege)
 
 		is.Equal(err, structs.ErrStreckeNegativ) // Funktion wirft ErrStreckeNegativ
 		is.Equal(emissionen, 0.0)                // Fehlerfall liefert 0.0
