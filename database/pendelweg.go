@@ -28,3 +28,27 @@ func PendelwegFind(idPendelweg int32) (structs.Pendelweg, error) {
 
 	return data, nil
 }
+
+// PendelwegFindAll liefert einen Slice aller Pendelweg structs.
+func PendelwegFindAll() ([]structs.Pendelweg, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.PendelwegCol)
+
+	var data []structs.Pendelweg
+	cursor, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+	err = cursor.All(ctx, &data)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+
+	return data, nil
+}

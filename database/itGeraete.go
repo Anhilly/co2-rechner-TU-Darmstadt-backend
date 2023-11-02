@@ -27,3 +27,27 @@ func ITGeraeteFind(idITGeraete int32) (structs.ITGeraete, error) {
 
 	return data, nil
 }
+
+// ITGeraeteFindAll liefert einen Slice aller IT-Geraete structs.
+func ITGeraeteFindAll() ([]structs.ITGeraete, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.ITGeraeteCol)
+
+	var data []structs.ITGeraete
+	cursor, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+	err = cursor.All(ctx, &data)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+
+	return data, nil
+}

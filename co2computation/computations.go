@@ -4,13 +4,26 @@ import (
 	"fmt"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/database"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
+	"go.mongodb.org/mongo-driver/mongo"
 	"math"
 )
 
 // BerechneDienstreisen berechnet die Gesamtemissionen für den übergebenen Slice an Dienstreisen.
 // Ergebniseinheit: g
 func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float64, error) {
-	var emissionen float64
+	var emissionen float64 = 0
+	var emissionenGesamt float64 = 0
+	var emissionenAufgeteilt = make(map[string]float64)
+
+	// alle Daten zu Dienstreisen aus der Datenbank holen
+	dienstreisenMedien, err := database.DienstreisenFindAll()
+	if err != nil {
+		return 0, err
+	}
+	var medien = make(map[int32]structs.Dienstreisen)
+	for _, dienstreiseMedium := range dienstreisenMedien {
+		medien[dienstreiseMedium.IDDienstreisen] = dienstreiseMedium
+	}
 
 	for _, dienstreise := range dienstreisenDaten {
 		var co2Faktor int32 = -1 // zur Überprüfung, ob der CO2Faktor umgesetzt wurde
@@ -21,9 +34,9 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 			return 0, structs.ErrStreckeNegativ
 		}
 
-		medium, err := database.DienstreisenFind(dienstreise.IDDienstreise)
-		if err != nil {
-			return 0, err
+		medium, ok := medien[dienstreise.IDDienstreise]
+		if !ok {
+			return 0, mongo.ErrNoDocuments
 		}
 
 		// muss explizit behandelt werden, da je nach Medium der CO2 Faktor anders bestimmt wird
@@ -53,13 +66,32 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 		}
 
 		if medium.Einheit == structs.EinheitgPkm {
-			emissionen += float64(co2Faktor * dienstreise.Strecke * 2) //nolint:gomnd
+			emissionen = float64(co2Faktor * dienstreise.Strecke * 2) //nolint:gomnd
+			emissionenGesamt += emissionen
+
+			// Aufteilung der Emissionen nach Medium und Streckentyp
+			var identifier string
+			switch medium.IDDienstreisen {
+			case structs.IDDienstreiseBahn:
+				identifier = medium.Medium
+			case structs.IDDienstreiseAuto:
+				identifier = fmt.Sprintf("%s-%s", medium.Medium, dienstreise.Tankart)
+			case structs.IDDienstreiseFlugzeug:
+				identifier = fmt.Sprintf("%s-%s", medium.Medium, dienstreise.Streckentyp)
+			}
+
+			e, ok := emissionenAufgeteilt[identifier]
+			if ok {
+				emissionenAufgeteilt[identifier] = e + emissionen
+			} else {
+				emissionenAufgeteilt[identifier] = emissionen
+			}
 		} else {
 			return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechneDienstreisen", medium.Einheit)
 		}
 	}
 
-	return math.Round(emissionen*100) / 100, nil
+	return math.Round(emissionenGesamt*100) / 100, nil
 }
 
 // BerechnePendelweg berechnet die Gesamtemissionen auf Basis der gegebenen Pendelwege und der Tage im Büro.
@@ -74,6 +106,16 @@ func BerechnePendelweg(pendelwegDaten []structs.UmfragePendelweg, tageImBuero in
 
 	arbeitstage := int32(float64(tageImBuero) / 5.0 * arbeitstage2020)
 
+	// alle Daten zu Pendelwegen aus der Datenbank holen
+	allePendelwegMedien, err := database.PendelwegFindAll()
+	if err != nil {
+		return 0, err
+	}
+	var medien = make(map[int32]structs.Pendelweg)
+	for _, pendelwegMedium := range allePendelwegMedien {
+		medien[pendelwegMedium.IDPendelweg] = pendelwegMedium
+	}
+
 	for _, weg := range pendelwegDaten {
 		if weg.Strecke == 0 {
 			continue
@@ -85,9 +127,9 @@ func BerechnePendelweg(pendelwegDaten []structs.UmfragePendelweg, tageImBuero in
 			return 0, structs.ErrPersonenzahlZuKlein
 		}
 
-		medium, err := database.PendelwegFind(weg.IDPendelweg)
-		if err != nil {
-			return 0, err
+		medium, ok := medien[weg.IDPendelweg]
+		if !ok {
+			return 0, mongo.ErrNoDocuments
 		}
 
 		if medium.Einheit == structs.EinheitgPkm {
@@ -105,6 +147,16 @@ func BerechnePendelweg(pendelwegDaten []structs.UmfragePendelweg, tageImBuero in
 func BerechneITGeraete(itGeraeteDaten []structs.UmfrageITGeraete) (float64, error) {
 	var emissionen float64
 
+	// alle Daten zu IT-Geraeten aus der Datenbank holen
+	alleITGeraete, err := database.ITGeraeteFindAll()
+	if err != nil {
+		return 0, err
+	}
+	var kategorien = make(map[int32]structs.ITGeraete)
+	for _, itGeraete := range alleITGeraete {
+		kategorien[itGeraete.IDITGerate] = itGeraete
+	}
+
 	for _, itGeraet := range itGeraeteDaten {
 		if itGeraet.Anzahl == 0 {
 			continue
@@ -112,9 +164,9 @@ func BerechneITGeraete(itGeraeteDaten []structs.UmfrageITGeraete) (float64, erro
 			return 0, structs.ErrAnzahlNegativ
 		}
 
-		kategorie, err := database.ITGeraeteFind(itGeraet.IDITGeraete)
-		if err != nil {
-			return 0, err
+		kategorie, ok := kategorien[itGeraet.IDITGeraete]
+		if !ok {
+			return 0, mongo.ErrNoDocuments
 		}
 
 		if kategorie.Einheit == structs.EinheitgStueck {

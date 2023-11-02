@@ -133,22 +133,18 @@ func getAuswertung(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	var alleDiensreisen []structs.UmfrageDienstreise
+	var alleITGerate []structs.UmfrageITGeraete
+	//var allePendelwege []structs.UmfragePendelweg
+
 	for _, mitarbeiterumfrage := range mitarbeiterumfragen {
+		var emission float64
+
 		// IT-Geraete
-		emission, err := co2computation.BerechneITGeraete(mitarbeiterumfrage.ITGeraete)
-		if err != nil {
-			errorResponse(res, err, http.StatusInternalServerError)
-			return
-		}
-		auswertung.EmissionenITGeraeteMitarbeiter += emission
+		alleITGerate = append(alleITGerate, mitarbeiterumfrage.ITGeraete...)
 
 		// Dienstreisen
-		emission, err = co2computation.BerechneDienstreisen(mitarbeiterumfrage.Dienstreise)
-		if err != nil {
-			errorResponse(res, err, http.StatusInternalServerError)
-			return
-		}
-		auswertung.EmissionenDienstreisen += emission
+		alleDiensreisen = append(alleDiensreisen, mitarbeiterumfrage.Dienstreise...)
 
 		// Pendelwege
 		emission, err = co2computation.BerechnePendelweg(mitarbeiterumfrage.Pendelweg, mitarbeiterumfrage.TageImBuero)
@@ -158,6 +154,21 @@ func getAuswertung(res http.ResponseWriter, req *http.Request) {
 		}
 		auswertung.EmissionenPendelwege += emission
 	}
+
+	emission, err := co2computation.BerechneITGeraete(alleITGerate)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	auswertung.EmissionenITGeraeteMitarbeiter += emission
+
+	// Dienstreisen
+	emission, err = co2computation.BerechneDienstreisen(alleDiensreisen)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	auswertung.EmissionenDienstreisen += emission
 
 	// Hochrechnung der Mitarbeiteremissionen
 	if auswertung.Umfragenanzahl != 0 { // Hochrechnung nur falls Mitarbeiterumfragen vorhanden
