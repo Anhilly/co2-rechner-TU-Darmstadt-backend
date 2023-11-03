@@ -127,7 +127,9 @@ func getAuswertung(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// andere Emissionen
-	auswertung.EmissionenITGeraeteHauptverantwortlicher, err = co2computation.BerechneITGeraete(umfrage.ITGeraete)
+	var emissionenAufgeteiltITGeraete map[string]float64
+
+	auswertung.EmissionenITGeraeteHauptverantwortlicher, emissionenAufgeteiltITGeraete, err = co2computation.BerechneITGeraete(umfrage.ITGeraete)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
@@ -144,29 +146,42 @@ func getAuswertung(res http.ResponseWriter, req *http.Request) {
 		allePendelwege = append(allePendelwege, structs.AllePendelwege{mitarbeiterumfrage.Pendelweg, mitarbeiterumfrage.TageImBuero})
 	}
 
+	var emissionenAufgeteilt map[string]float64
+
 	// IT-Geraete
-	emission, err := co2computation.BerechneITGeraete(alleITGerate)
+	emission, emissionenAufgeteilt, err := co2computation.BerechneITGeraete(alleITGerate)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 	auswertung.EmissionenITGeraeteMitarbeiter = emission
+	for key, value := range emissionenAufgeteiltITGeraete {
+		e, ok := emissionenAufgeteilt[key]
+		if ok {
+			emissionenAufgeteilt[key] = e + value
+		} else {
+			emissionenAufgeteilt[key] = value
+		}
+	}
+	auswertung.EmissionenITGeraeteAufgeteilt = emissionenAufgeteilt
 
 	// Dienstreisen
-	emission, err = co2computation.BerechneDienstreisen(alleDiensreisen)
+	emission, emissionenAufgeteilt, err = co2computation.BerechneDienstreisen(alleDiensreisen)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 	auswertung.EmissionenDienstreisen = emission
+	auswertung.EmissionenDienstreisenAufgeteilt = emissionenAufgeteilt
 
 	// Pendelwege
-	emission, err = co2computation.BerechnePendelweg(allePendelwege)
+	emission, emissionenAufgeteilt, err = co2computation.BerechnePendelweg(allePendelwege)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 	auswertung.EmissionenPendelwege = emission
+	auswertung.EmissionenPendelwegeAufgeteilt = emissionenAufgeteilt
 
 	// Hochrechnung der Mitarbeiteremissionen
 	if auswertung.Umfragenanzahl != 0 { // Hochrechnung nur falls Mitarbeiterumfragen vorhanden

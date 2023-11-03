@@ -10,7 +10,7 @@ import (
 
 // BerechneDienstreisen berechnet die Gesamtemissionen für den übergebenen Slice an Dienstreisen.
 // Ergebniseinheit: g
-func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float64, error) {
+func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float64, map[string]float64, error) {
 	var emissionen float64 = 0
 	var emissionenGesamt float64 = 0
 	var emissionenAufgeteilt = make(map[string]float64)
@@ -18,7 +18,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 	// alle Daten zu Dienstreisen aus der Datenbank holen
 	dienstreisenMedien, err := database.DienstreisenFindAll()
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	var medien = make(map[int32]structs.Dienstreisen)
 	for _, dienstreiseMedium := range dienstreisenMedien {
@@ -31,12 +31,12 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 		if dienstreise.Strecke == 0 {
 			continue
 		} else if dienstreise.Strecke < 0 {
-			return 0, structs.ErrStreckeNegativ
+			return 0, nil, structs.ErrStreckeNegativ
 		}
 
 		medium, ok := medien[dienstreise.IDDienstreise]
 		if !ok {
-			return 0, mongo.ErrNoDocuments
+			return 0, nil, mongo.ErrNoDocuments
 		}
 
 		// muss explizit behandelt werden, da je nach Medium der CO2 Faktor anders bestimmt wird
@@ -50,7 +50,7 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 				}
 			}
 			if co2Faktor == -1 {
-				return 0, structs.ErrTankartUnbekannt
+				return 0, nil, structs.ErrTankartUnbekannt
 			}
 		case structs.IDDienstreiseFlugzeug: // Flugzeug
 			for _, faktor := range medium.CO2Faktor {
@@ -59,10 +59,10 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 				}
 			}
 			if co2Faktor == -1 {
-				return 0, structs.ErrStreckentypUnbekannt
+				return 0, nil, structs.ErrStreckentypUnbekannt
 			}
 		default:
-			return 0, structs.ErrBerechnungUnbekannt
+			return 0, nil, structs.ErrBerechnungUnbekannt
 		}
 
 		if medium.Einheit == structs.EinheitgPkm {
@@ -87,23 +87,27 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 				emissionenAufgeteilt[identifier] = emissionen
 			}
 		} else {
-			return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechneDienstreisen", medium.Einheit)
+			return 0, nil, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechneDienstreisen", medium.Einheit)
 		}
 	}
 
-	return math.Round(emissionenGesamt*100) / 100, nil
+	// TODO: Runden auf 2 Nachkommastellen
+
+	return math.Round(emissionenGesamt*100) / 100, emissionenAufgeteilt, nil
 }
 
 // BerechnePendelweg berechnet die Gesamtemissionen auf Basis der gegebenen Pendelwege und der Tage im Büro.
 // Ergebniseinheit: g
-func BerechnePendelweg(allePendelwege []structs.AllePendelwege) (float64, error) {
+func BerechnePendelweg(allePendelwege []structs.AllePendelwege) (float64, map[string]float64, error) {
 	var emissionen float64
+	var emissionenGesamt float64
+	var emissionenAufgeteilt = make(map[string]float64)
 	const arbeitstage2020 = 230 // Arbeitstage in 2020, konstant(?)
 
 	// alle Daten zu Pendelwegen aus der Datenbank holen
 	allePendelwegMedien, err := database.PendelwegFindAll()
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	var medien = make(map[int32]structs.Pendelweg)
 	for _, pendelwegMedium := range allePendelwegMedien {
@@ -112,7 +116,7 @@ func BerechnePendelweg(allePendelwege []structs.AllePendelwege) (float64, error)
 
 	for _, pendelwegDaten := range allePendelwege {
 		if pendelwegDaten.TageImBuero == 0 {
-			return 0, nil
+			continue
 		}
 
 		arbeitstage := int32(float64(pendelwegDaten.TageImBuero) / 5.0 * arbeitstage2020)
@@ -121,38 +125,49 @@ func BerechnePendelweg(allePendelwege []structs.AllePendelwege) (float64, error)
 			if weg.Strecke == 0 {
 				continue
 			} else if weg.Strecke < 0 {
-				return 0, structs.ErrStreckeNegativ
+				return 0, nil, structs.ErrStreckeNegativ
 			}
 
 			if weg.Personenanzahl < 1 {
-				return 0, structs.ErrPersonenzahlZuKlein
+				return 0, nil, structs.ErrPersonenzahlZuKlein
 			}
 
 			medium, ok := medien[weg.IDPendelweg]
 			if !ok {
-				return 0, mongo.ErrNoDocuments
+				return 0, nil, mongo.ErrNoDocuments
 			}
 
 			if medium.Einheit == structs.EinheitgPkm {
-				emissionen += float64(arbeitstage*2*weg.Strecke*medium.CO2Faktor) / float64(weg.Personenanzahl)
+				emissionen = float64(arbeitstage*2*weg.Strecke*medium.CO2Faktor) / float64(weg.Personenanzahl)
 			} else {
-				return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechnePendelweg", medium.Einheit)
+				return 0, nil, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechnePendelweg", medium.Einheit)
+			}
+
+			emissionenGesamt += emissionen
+			e, ok := emissionenAufgeteilt[medium.Medium]
+			if ok {
+				emissionenAufgeteilt[medium.Medium] = e + emissionen
+			} else {
+				emissionenAufgeteilt[medium.Medium] = emissionen
 			}
 		}
 	}
+	// TODO: Runden auf 2 Nachkommastellen
 
-	return math.Round(emissionen*100) / 100, nil
+	return math.Round(emissionenGesamt*100) / 100, emissionenAufgeteilt, nil
 }
 
 // BerechneITGeraete berechnet Emissionen pro Jahr für den Slice an IT-Geräten.
 // Ergebniseinheit: g
-func BerechneITGeraete(itGeraeteDaten []structs.UmfrageITGeraete) (float64, error) {
-	var emissionen float64
+func BerechneITGeraete(itGeraeteDaten []structs.UmfrageITGeraete) (float64, map[string]float64, error) {
+	var emissionen float64 = 0
+	var emissionenGesamt float64 = 0
+	var emissionenAufgeteilt = make(map[string]float64)
 
 	// alle Daten zu IT-Geraeten aus der Datenbank holen
 	alleITGeraete, err := database.ITGeraeteFindAll()
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	var kategorien = make(map[int32]structs.ITGeraete)
 	for _, itGeraete := range alleITGeraete {
@@ -163,24 +178,33 @@ func BerechneITGeraete(itGeraeteDaten []structs.UmfrageITGeraete) (float64, erro
 		if itGeraet.Anzahl == 0 {
 			continue
 		} else if itGeraet.Anzahl < 0 {
-			return 0, structs.ErrAnzahlNegativ
+			return 0, nil, structs.ErrAnzahlNegativ
 		}
 
 		kategorie, ok := kategorien[itGeraet.IDITGeraete]
 		if !ok {
-			return 0, mongo.ErrNoDocuments
+			return 0, nil, mongo.ErrNoDocuments
 		}
 
 		if kategorie.Einheit == structs.EinheitgStueck {
 			if kategorie.IDITGerate == 8 || kategorie.IDITGerate == 10 { // Druckerpatronen und Toner
-				emissionen += float64(itGeraet.Anzahl * kategorie.CO2FaktorGesamt)
+				emissionen = float64(itGeraet.Anzahl * kategorie.CO2FaktorGesamt)
 			} else { // alle anderen IT Geräte
-				emissionen += float64(itGeraet.Anzahl * kategorie.CO2FaktorJahr)
+				emissionen = float64(itGeraet.Anzahl * kategorie.CO2FaktorJahr)
+			}
+
+			emissionenGesamt += emissionen
+			e, ok := emissionenAufgeteilt[kategorie.Kategorie]
+			if ok {
+				emissionenAufgeteilt[kategorie.Kategorie] = e + emissionen
+			} else {
+				emissionenAufgeteilt[kategorie.Kategorie] = emissionen
 			}
 		} else {
-			return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechneITGeraete", kategorie.Einheit)
+			return 0, nil, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechneITGeraete", kategorie.Einheit)
 		}
 	}
 
-	return math.Round(emissionen*100) / 100, nil
+	// TODO: Runden auf 2 Nachkommastellen
+	return math.Round(emissionenGesamt*100) / 100, emissionenAufgeteilt, nil
 }

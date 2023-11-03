@@ -154,17 +154,20 @@ type AuswertungRes struct {
 	AuswertungFreigegeben int32              `json:"auswertungFreigegeben"`
 
 	// Berechnete Werte fuer Auswertung
-	EmissionenWaerme                         float64 `json:"emissionenWaerme"`
-	EmissionenStrom                          float64 `json:"emissionenStrom"`
-	EmissionenKaelte                         float64 `json:"emissionenKaelte"`
-	EmissionenEnergie                        float64 `json:"emissionenEnergie"`
-	EmissionenITGeraeteHauptverantwortlicher float64 `json:"emissionenITGeraeteHauptverantwortlicher"`
-	EmissionenITGeraeteMitarbeiter           float64 `json:"emissionenITGeraeteMitarbeiter"`
-	EmissionenITGeraete                      float64 `json:"emissionenITGeraete"`
-	EmissionenDienstreisen                   float64 `json:"emissionenDienstreisen"`
-	EmissionenPendelwege                     float64 `json:"emissionenPendelwege"`
-	EmissionenGesamt                         float64 `json:"emissionenGesamt"`
-	EmissionenProMitarbeiter                 float64 `json:"emissionenProMitarbeiter"`
+	EmissionenWaerme                         float64            `json:"emissionenWaerme"`
+	EmissionenStrom                          float64            `json:"emissionenStrom"`
+	EmissionenKaelte                         float64            `json:"emissionenKaelte"`
+	EmissionenEnergie                        float64            `json:"emissionenEnergie"`
+	EmissionenITGeraeteHauptverantwortlicher float64            `json:"emissionenITGeraeteHauptverantwortlicher"`
+	EmissionenITGeraeteMitarbeiter           float64            `json:"emissionenITGeraeteMitarbeiter"`
+	EmissionenITGeraete                      float64            `json:"emissionenITGeraete"`
+	EmissionenDienstreisen                   float64            `json:"emissionenDienstreisen"`
+	EmissionenPendelwege                     float64            `json:"emissionenPendelwege"`
+	EmissionenGesamt                         float64            `json:"emissionenGesamt"`
+	EmissionenProMitarbeiter                 float64            `json:"emissionenProMitarbeiter"`
+	EmissionenDienstreisenAufgeteilt         map[string]float64 `json:"emissionenDienstreisenAufgeteilt"`
+	EmissionenPendelwegeAufgeteilt           map[string]float64 `json:"emissionenPendelwegeAufgeteilt"`
+	EmissionenITGeraeteAufgeteilt            map[string]float64 `json:"emissionenITGeraeteAufgeteilt"`
 
 	// Berechneter Gesamtverbrauch
 	VerbrauchWearme  float64 `json:"verbrauchWaerme"`
