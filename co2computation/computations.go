@@ -73,11 +73,11 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 			var identifier string
 			switch medium.IDDienstreisen {
 			case structs.IDDienstreiseBahn:
-				identifier = medium.Medium
+				identifier = fmt.Sprintf("%d", medium.IDDienstreisen)
 			case structs.IDDienstreiseAuto:
-				identifier = fmt.Sprintf("%s-%s", medium.Medium, dienstreise.Tankart)
+				identifier = fmt.Sprintf("%d-%s", medium.IDDienstreisen, dienstreise.Tankart)
 			case structs.IDDienstreiseFlugzeug:
-				identifier = fmt.Sprintf("%s-%s", medium.Medium, dienstreise.Streckentyp)
+				identifier = fmt.Sprintf("%d-%s", medium.IDDienstreisen, dienstreise.Streckentyp)
 			}
 
 			e, ok := emissionenAufgeteilt[identifier]
@@ -91,17 +91,19 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 		}
 	}
 
-	// TODO: Runden auf 2 Nachkommastellen
+	for key, value := range emissionenAufgeteilt {
+		emissionenAufgeteilt[key] = math.Round(value*100) / 100
+	}
 
 	return math.Round(emissionenGesamt*100) / 100, emissionenAufgeteilt, nil
 }
 
 // BerechnePendelweg berechnet die Gesamtemissionen auf Basis der gegebenen Pendelwege und der Tage im Büro.
 // Ergebniseinheit: g
-func BerechnePendelweg(allePendelwege []structs.AllePendelwege) (float64, map[string]float64, error) {
+func BerechnePendelweg(allePendelwege []structs.AllePendelwege) (float64, map[int32]float64, error) {
 	var emissionen float64
 	var emissionenGesamt float64
-	var emissionenAufgeteilt = make(map[string]float64)
+	var emissionenAufgeteilt = make(map[int32]float64)
 	const arbeitstage2020 = 230 // Arbeitstage in 2020, konstant(?)
 
 	// alle Daten zu Pendelwegen aus der Datenbank holen
@@ -144,25 +146,28 @@ func BerechnePendelweg(allePendelwege []structs.AllePendelwege) (float64, map[st
 			}
 
 			emissionenGesamt += emissionen
-			e, ok := emissionenAufgeteilt[medium.Medium]
+			e, ok := emissionenAufgeteilt[medium.IDPendelweg]
 			if ok {
-				emissionenAufgeteilt[medium.Medium] = e + emissionen
+				emissionenAufgeteilt[medium.IDPendelweg] = e + emissionen
 			} else {
-				emissionenAufgeteilt[medium.Medium] = emissionen
+				emissionenAufgeteilt[medium.IDPendelweg] = emissionen
 			}
 		}
 	}
-	// TODO: Runden auf 2 Nachkommastellen
+
+	for key, value := range emissionenAufgeteilt {
+		emissionenAufgeteilt[key] = math.Round(value*100) / 100
+	}
 
 	return math.Round(emissionenGesamt*100) / 100, emissionenAufgeteilt, nil
 }
 
 // BerechneITGeraete berechnet Emissionen pro Jahr für den Slice an IT-Geräten.
 // Ergebniseinheit: g
-func BerechneITGeraete(itGeraeteDaten []structs.UmfrageITGeraete) (float64, map[string]float64, error) {
+func BerechneITGeraete(itGeraeteDaten []structs.UmfrageITGeraete) (float64, map[int32]float64, error) {
 	var emissionen float64 = 0
 	var emissionenGesamt float64 = 0
-	var emissionenAufgeteilt = make(map[string]float64)
+	var emissionenAufgeteilt = make(map[int32]float64)
 
 	// alle Daten zu IT-Geraeten aus der Datenbank holen
 	alleITGeraete, err := database.ITGeraeteFindAll()
@@ -194,17 +199,20 @@ func BerechneITGeraete(itGeraeteDaten []structs.UmfrageITGeraete) (float64, map[
 			}
 
 			emissionenGesamt += emissionen
-			e, ok := emissionenAufgeteilt[kategorie.Kategorie]
+			e, ok := emissionenAufgeteilt[kategorie.IDITGerate]
 			if ok {
-				emissionenAufgeteilt[kategorie.Kategorie] = e + emissionen
+				emissionenAufgeteilt[kategorie.IDITGerate] = e + emissionen
 			} else {
-				emissionenAufgeteilt[kategorie.Kategorie] = emissionen
+				emissionenAufgeteilt[kategorie.IDITGerate] = emissionen
 			}
 		} else {
 			return 0, nil, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "BerechneITGeraete", kategorie.Einheit)
 		}
 	}
 
-	// TODO: Runden auf 2 Nachkommastellen
+	for key, value := range emissionenAufgeteilt {
+		emissionenAufgeteilt[key] = math.Round(value*100) / 100
+	}
+
 	return math.Round(emissionenGesamt*100) / 100, emissionenAufgeteilt, nil
 }

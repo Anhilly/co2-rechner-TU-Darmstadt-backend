@@ -166,8 +166,8 @@ type AuswertungRes struct {
 	EmissionenGesamt                         float64            `json:"emissionenGesamt"`
 	EmissionenProMitarbeiter                 float64            `json:"emissionenProMitarbeiter"`
 	EmissionenDienstreisenAufgeteilt         map[string]float64 `json:"emissionenDienstreisenAufgeteilt"`
-	EmissionenPendelwegeAufgeteilt           map[string]float64 `json:"emissionenPendelwegeAufgeteilt"`
-	EmissionenITGeraeteAufgeteilt            map[string]float64 `json:"emissionenITGeraeteAufgeteilt"`
+	EmissionenPendelwegeAufgeteilt           map[int32]float64  `json:"emissionenPendelwegeAufgeteilt"`
+	EmissionenITGeraeteAufgeteilt            map[int32]float64  `json:"emissionenITGeraeteAufgeteilt"`
 
 	// Berechneter Gesamtverbrauch
 	VerbrauchWearme  float64 `json:"verbrauchWaerme"`
