@@ -20,6 +20,9 @@ func SetupKeycloakClient(mode string) error {
 	} else if mode == "dev" {
 		KeycloakClient = gocloak.NewClient(config.DevKeycloakUrl)
 		realm = config.DevKeycloakRealm
+	} else if mode == "test" {
+		KeycloakClient = gocloak.NewClient(config.TestKeycloakUrl)
+		realm = config.TestKeycloakRealm
 	} else {
 		return errors.New("MODE not set")
 	}
