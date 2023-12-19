@@ -38,6 +38,13 @@ func ConnectDatabase(mode string) error {
 		dbPassword = config.ProdDBPassword
 		dbName = config.ProdDBName
 		dbContainer = config.ProdDBContainer
+	} else if mode == "test" {
+		dbHost = config.TestDBHost
+		dbPort = config.TestDBPort
+		dbUsername = config.TestDBUsername
+		dbPassword = config.TestDBPassword
+		dbName = config.TestDBName
+		dbContainer = config.TestDBContainer
 	} else {
 		log.Fatalln("Mode not specified")
 	}

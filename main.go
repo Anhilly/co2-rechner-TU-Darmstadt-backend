@@ -20,6 +20,9 @@ func main() {
 	} else if mode == "dev" {
 		print("dev mode")
 		filename = config.DevLogFilename
+	} else if mode == "test" {
+		print("test mode")
+		filename = config.TestLogFilename
 	} else {
 		panic("MODE not set")
 	}
