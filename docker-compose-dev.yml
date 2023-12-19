@@ -1,4 +1,4 @@
-name: co2Rechner-dev-environment
+name: co2rechner-dev-environment
 services:
   web:
     image: nginx

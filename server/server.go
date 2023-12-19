@@ -18,6 +18,7 @@ var (
 	clientID     = ""
 	clientSecret = ""
 	realm        = ""
+	port         = ""
 )
 
 // StartServer started den Router und mounted alle Subseiten.
@@ -32,10 +33,17 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		clientID = config.DevKeycloakClientID
 		clientSecret = config.DevKeycloakClientSecret
 		realm = config.DevKeycloakRealm
+		port = config.DevPort
 	} else if mode == "prod" {
 		clientID = config.ProdKeycloakClientID
 		clientSecret = config.ProdKeycloakClientSecret
 		realm = config.ProdKeycloakRealm
+		port = config.ProdPort
+	} else if mode == "test" {
+		clientID = config.TestKeycloakClientID
+		clientSecret = config.TestKeycloakClientSecret
+		realm = config.TestKeycloakRealm
+		port = config.TestPort
 	} else {
 		log.Fatalln("Mode not specified")
 	}
@@ -101,7 +109,7 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 	r.Get("/auswertung", getAuswertung)
 
 	log.Println("Server Started")
-	log.Fatalln(http.ListenAndServe(config.Port, r))
+	log.Fatalln(http.ListenAndServe(port, r))
 }
 
 // keycloakAuthMiddleware prueft ob der Token gueltig ist.
