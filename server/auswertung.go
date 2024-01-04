@@ -127,45 +127,79 @@ func getAuswertung(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// andere Emissionen
-	auswertung.EmissionenITGeraeteHauptverantwortlicher, err = co2computation.BerechneITGeraete(umfrage.ITGeraete)
+	var emissionenAufgeteiltITGeraeteHauptverantwortlicher map[int32]float64
+
+	auswertung.EmissionenITGeraeteHauptverantwortlicher, emissionenAufgeteiltITGeraeteHauptverantwortlicher, err = co2computation.BerechneITGeraete(umfrage.ITGeraete)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
+	auswertung.EmissionenITGeraeteAufgeteilt = emissionenAufgeteiltITGeraeteHauptverantwortlicher
+
+	// aggregiere alle Daten aus den Mitarbeiterumfragen
+	var alleDiensreisen []structs.UmfrageDienstreise
+	var alleITGerate []structs.UmfrageITGeraete
+	var allePendelwege []structs.AllePendelwege
 
 	for _, mitarbeiterumfrage := range mitarbeiterumfragen {
-		// IT-Geraete
-		emission, err := co2computation.BerechneITGeraete(mitarbeiterumfrage.ITGeraete)
-		if err != nil {
-			errorResponse(res, err, http.StatusInternalServerError)
-			return
-		}
-		auswertung.EmissionenITGeraeteMitarbeiter += emission
-
-		// Dienstreisen
-		emission, err = co2computation.BerechneDienstreisen(mitarbeiterumfrage.Dienstreise)
-		if err != nil {
-			errorResponse(res, err, http.StatusInternalServerError)
-			return
-		}
-		auswertung.EmissionenDienstreisen += emission
-
-		// Pendelwege
-		emission, err = co2computation.BerechnePendelweg(mitarbeiterumfrage.Pendelweg, mitarbeiterumfrage.TageImBuero)
-		if err != nil {
-			errorResponse(res, err, http.StatusInternalServerError)
-			return
-		}
-		auswertung.EmissionenPendelwege += emission
+		alleITGerate = append(alleITGerate, mitarbeiterumfrage.ITGeraete...)
+		alleDiensreisen = append(alleDiensreisen, mitarbeiterumfrage.Dienstreise...)
+		allePendelwege = append(allePendelwege, structs.AllePendelwege{mitarbeiterumfrage.Pendelweg, mitarbeiterumfrage.TageImBuero})
 	}
+
+	// IT-Geraete
+	emission, emissionenAufgeteiltITGeraeteMitarbeiter, err := co2computation.BerechneITGeraete(alleITGerate)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	auswertung.EmissionenITGeraeteMitarbeiter = emission
+
+	// Dienstreisen
+	emission, emissionenAufgeteiltDienstreisen, err := co2computation.BerechneDienstreisen(alleDiensreisen)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	auswertung.EmissionenDienstreisen = emission
+	auswertung.EmissionenDienstreisenAufgeteilt = emissionenAufgeteiltDienstreisen
+
+	// Pendelwege
+	emission, emissionenAufgeteiltPendelwege, err := co2computation.BerechnePendelweg(allePendelwege)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+	auswertung.EmissionenPendelwege = emission
+	auswertung.EmissionenPendelwegeAufgeteilt = emissionenAufgeteiltPendelwege
 
 	// Hochrechnung der Mitarbeiteremissionen
 	if auswertung.Umfragenanzahl != 0 { // Hochrechnung nur falls Mitarbeiterumfragen vorhanden
-		factor := (float64(auswertung.Mitarbeiteranzahl) / float64(auswertung.Umfragenanzahl))
+		factor := float64(auswertung.Mitarbeiteranzahl) / float64(auswertung.Umfragenanzahl)
 
 		auswertung.EmissionenITGeraeteMitarbeiter = math.Round(auswertung.EmissionenITGeraeteMitarbeiter*factor*100) / 100 // Rundung auf 2 Nachkommastellen
 		auswertung.EmissionenPendelwege = math.Round(auswertung.EmissionenPendelwege*factor*100) / 100
 		auswertung.EmissionenDienstreisen = math.Round(auswertung.EmissionenDienstreisen*factor*100) / 100
+
+		for key, value := range auswertung.EmissionenDienstreisenAufgeteilt {
+			auswertung.EmissionenDienstreisenAufgeteilt[key] = math.Round(value*factor*100) / 100
+		}
+		for key, value := range auswertung.EmissionenPendelwegeAufgeteilt {
+			auswertung.EmissionenPendelwegeAufgeteilt[key] = math.Round(value*factor*100) / 100
+		}
+		for key, value := range emissionenAufgeteiltITGeraeteMitarbeiter {
+			emissionenAufgeteiltITGeraeteMitarbeiter[key] = math.Round(value*factor*100) / 100
+		}
+	}
+
+	// Zusammenfassung der Emissionen
+	for key, value := range emissionenAufgeteiltITGeraeteMitarbeiter {
+		e, ok := auswertung.EmissionenITGeraeteAufgeteilt[key]
+		if ok {
+			auswertung.EmissionenITGeraeteAufgeteilt[key] = e + value
+		} else {
+			auswertung.EmissionenITGeraeteAufgeteilt[key] = value
+		}
 	}
 
 	auswertung.EmissionenITGeraete = auswertung.EmissionenITGeraeteMitarbeiter + auswertung.EmissionenITGeraeteHauptverantwortlicher

@@ -69,6 +69,7 @@ func TestBinaereZahlerdatenFuerZaehler(t *testing.T) {
 					{Jahr: 2021, Vorhanden: true},
 					{Jahr: 2022, Vorhanden: true},
 					{Jahr: 2023, Vorhanden: false},
+					{Jahr: 2024, Vorhanden: false},
 				},
 			},
 		})
@@ -109,6 +110,7 @@ func TestBinaereZahlerdatenFuerZaehler(t *testing.T) {
 					{Jahr: 2021, Vorhanden: true},
 					{Jahr: 2022, Vorhanden: true},
 					{Jahr: 2023, Vorhanden: false},
+					{Jahr: 2024, Vorhanden: false},
 				},
 			},
 		})
@@ -175,6 +177,7 @@ func TestBinaereZahlerdatenFuerZaehler(t *testing.T) {
 					{Jahr: 2021, Vorhanden: true},
 					{Jahr: 2022, Vorhanden: true},
 					{Jahr: 2023, Vorhanden: false},
+					{Jahr: 2024, Vorhanden: false},
 				},
 			},
 			{
@@ -186,6 +189,7 @@ func TestBinaereZahlerdatenFuerZaehler(t *testing.T) {
 					{Jahr: 2021, Vorhanden: true},
 					{Jahr: 2022, Vorhanden: false},
 					{Jahr: 2023, Vorhanden: false},
+					{Jahr: 2024, Vorhanden: false},
 				},
 			},
 			{
@@ -197,6 +201,7 @@ func TestBinaereZahlerdatenFuerZaehler(t *testing.T) {
 					{Jahr: 2021, Vorhanden: false},
 					{Jahr: 2022, Vorhanden: true},
 					{Jahr: 2023, Vorhanden: false},
+					{Jahr: 2024, Vorhanden: false},
 				},
 			},
 		})
