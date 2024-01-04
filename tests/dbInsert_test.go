@@ -86,6 +86,7 @@ func TestGebaeudeInsert(t *testing.T) {
 				{Jahr: 2021, IDVertrag: 1},
 				{Jahr: 2022, IDVertrag: 1},
 				{Jahr: 2023, IDVertrag: 1},
+				{Jahr: 2024, IDVertrag: 1},
 			},
 			Waermeversorger: []structs.Versoger{
 				{Jahr: 2018, IDVertrag: 1},
@@ -94,6 +95,7 @@ func TestGebaeudeInsert(t *testing.T) {
 				{Jahr: 2021, IDVertrag: 1},
 				{Jahr: 2022, IDVertrag: 1},
 				{Jahr: 2023, IDVertrag: 1},
+				{Jahr: 2024, IDVertrag: 1},
 			},
 			Kaelteversorger: []structs.Versoger{
 				{Jahr: 2018, IDVertrag: 1},
@@ -102,6 +104,7 @@ func TestGebaeudeInsert(t *testing.T) {
 				{Jahr: 2021, IDVertrag: 1},
 				{Jahr: 2022, IDVertrag: 1},
 				{Jahr: 2023, IDVertrag: 1},
+				{Jahr: 2024, IDVertrag: 1},
 			},
 			KaelteRef: []int32{},
 			WaermeRef: []int32{},
@@ -156,6 +159,7 @@ func TestGebaeudeInsert(t *testing.T) {
 				{Jahr: 2021, IDVertrag: 1},
 				{Jahr: 2022, IDVertrag: 1},
 				{Jahr: 2023, IDVertrag: 2},
+				{Jahr: 2024, IDVertrag: 1},
 			},
 			Waermeversorger: []structs.Versoger{
 				{Jahr: 2018, IDVertrag: 2},
@@ -164,6 +168,7 @@ func TestGebaeudeInsert(t *testing.T) {
 				{Jahr: 2021, IDVertrag: 1},
 				{Jahr: 2022, IDVertrag: 1},
 				{Jahr: 2023, IDVertrag: 1},
+				{Jahr: 2024, IDVertrag: 1},
 			},
 			Kaelteversorger: []structs.Versoger{
 				{Jahr: 2018, IDVertrag: 1},
@@ -172,6 +177,7 @@ func TestGebaeudeInsert(t *testing.T) {
 				{Jahr: 2021, IDVertrag: 2},
 				{Jahr: 2022, IDVertrag: 1},
 				{Jahr: 2023, IDVertrag: 1},
+				{Jahr: 2024, IDVertrag: 1},
 			},
 			KaelteRef: []int32{},
 			WaermeRef: []int32{},
