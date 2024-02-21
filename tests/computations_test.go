@@ -533,15 +533,15 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 		is := is.NewRelaxed(t)
 
 		dienstreisenDaten := []structs.UmfrageDienstreise{
-			{IDDienstreise: 3, Strecke: 100, Streckentyp: "Kurzstrecke"},
+			{IDDienstreise: 3, Strecke: 100, Streckentyp: "Kurzstrecke", Klasse: "average"},
 		}
 
 		emissionen, emissionenAufgeteilt, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
-		is.NoErr(err)                  // Normalfall wirft keine Errors
-		is.Equal(emissionen, 177600.0) // erwartetes Ergebnis: 177600.0
+		is.NoErr(err)                 // Normalfall wirft keine Errors
+		is.Equal(emissionen, 30600.0) // erwartetes Ergebnis: 177600.0
 		is.Equal(emissionenAufgeteilt, map[string]float64{
-			"3-Kurzstrecke": 177600.0,
+			"3-Kurzstrecke": 30600.0,
 		})
 	})
 
@@ -549,15 +549,15 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 		is := is.NewRelaxed(t)
 
 		dienstreisenDaten := []structs.UmfrageDienstreise{
-			{IDDienstreise: 3, Strecke: 10, Streckentyp: "Langstrecke", Tankart: "unbekannt"},
+			{IDDienstreise: 3, Strecke: 10, Streckentyp: "Langstrecke", Tankart: "unbekannt", Klasse: "average"},
 		}
 
 		emissionen, emissionenAufgeteilt, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
 		is.NoErr(err)                // Normalfall wirft keine Errors
-		is.Equal(emissionen, 8360.0) // erwartetes Ergebnis: 8360.0
+		is.Equal(emissionen, 3860.0) // erwartetes Ergebnis: 8360.0
 		is.Equal(emissionenAufgeteilt, map[string]float64{
-			"3-Langstrecke": 8360.0,
+			"3-Langstrecke": 3860.0,
 		})
 	})
 
@@ -567,8 +567,8 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 		dienstreisenDaten := []structs.UmfrageDienstreise{
 			{IDDienstreise: 2, Strecke: 1200, Tankart: "Diesel"},
 			{IDDienstreise: 1, Strecke: 150},
-			{IDDienstreise: 3, Strecke: 750, Streckentyp: "Langstrecke"},
-			{IDDienstreise: 3, Strecke: 1000, Streckentyp: "Kurzstrecke"},
+			{IDDienstreise: 3, Strecke: 750, Streckentyp: "Langstrecke", Klasse: "average"},
+			{IDDienstreise: 3, Strecke: 1000, Streckentyp: "Kurzstrecke", Klasse: "average"},
 			{IDDienstreise: 2, Strecke: 45, Tankart: "Benzin"},
 			{IDDienstreise: 1, Strecke: 1},
 		}
@@ -576,13 +576,13 @@ func TestBerechneDienstreisen(t *testing.T) { //nolint:funlen
 		emissionen, emissionenAufgeteilt, err := co2computation.BerechneDienstreisen(dienstreisenDaten)
 
 		is.NoErr(err)                   // Normalfall wirft keine Errors
-		is.Equal(emissionen, 3014416.0) // erwartetes Ergebnis: 3014416.0
+		is.Equal(emissionen, 1206916.0) // erwartetes Ergebnis: 1206916.0
 		is.Equal(emissionenAufgeteilt, map[string]float64{
 			"1":             2416.0,
 			"2-Diesel":      585600.0,
 			"2-Benzin":      23400.0,
-			"3-Kurzstrecke": 1776000.0,
-			"3-Langstrecke": 627000.0,
+			"3-Kurzstrecke": 306000.0,
+			"3-Langstrecke": 289500.0,
 		})
 	})
 
