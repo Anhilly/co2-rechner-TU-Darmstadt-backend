@@ -55,7 +55,11 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 		case structs.IDDienstreiseFlugzeug: // Flugzeug
 			for _, faktor := range medium.CO2Faktor {
 				if faktor.Streckentyp == dienstreise.Streckentyp {
-					co2Faktor = faktor.Wert
+					for _, wert := range faktor.Werte {
+						if wert.Klasse == dienstreise.Klasse {
+							co2Faktor = wert.Wert
+						}
+					}
 				}
 			}
 			if co2Faktor == -1 {
