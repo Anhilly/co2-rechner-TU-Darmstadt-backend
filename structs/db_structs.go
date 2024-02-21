@@ -180,4 +180,5 @@ type UmfrageDienstreise struct {
 	Streckentyp   string `json:"streckentyp" bson:"streckentyp"`
 	Strecke       int32  `json:"strecke" bson:"strecke"`
 	Tankart       string `json:"tankart" bson:"tankart"`
+	Klasse        string `json:"klasse" bson:"klasse"`
 }

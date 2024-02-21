@@ -115,7 +115,7 @@ type UpdateUmfrage struct {
 type InsertMitarbeiterUmfrage struct {
 	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`
-	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
+	Dienstreise []UmfrageDienstreise `json:"dienstreisen"`
 	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
 	IDUmfrage   primitive.ObjectID   `json:"idUmfrage"`
 }
