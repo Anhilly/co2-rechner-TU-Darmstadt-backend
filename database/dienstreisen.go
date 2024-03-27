@@ -28,3 +28,27 @@ func DienstreisenFind(idDienstreisen int32) (structs.Dienstreisen, error) {
 
 	return data, nil
 }
+
+// DienstreisenFindAll liefert einen Slice aller Dienstreisen structs.
+func DienstreisenFindAll() ([]structs.Dienstreisen, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.DienstreisenCol)
+
+	var data []structs.Dienstreisen
+	cursor, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+	err = cursor.All(ctx, &data)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return nil, err
+	}
+
+	return data, nil
+}

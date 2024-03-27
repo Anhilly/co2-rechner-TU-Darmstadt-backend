@@ -32,8 +32,12 @@ func TestFind(t *testing.T) {
 	}()
 
 	t.Run("TestITGeraeteFind", TestITGeraeteFind)
+	t.Run("TestITGeraeteFindAll", TestITGeraeteFindAll)
 	t.Run("TestEnergieversorgungFind", TestEnergieversorgungFind)
 	t.Run("TestDienstreisenFind", TestDienstreisenFind)
+	t.Run("TestDienstreisenFindAll", TestDienstreisenFindAll)
+	t.Run("TestPendelwegFind", TestPendelwegFind)
+	t.Run("TestPendelwegFindAll", TestPendelwegFindAll)
 	t.Run("TestGebaeudeFind", TestGebaeudeFind)
 	t.Run("TestZaehlerFind", TestZaehlerFind)
 	t.Run("TestTestUmfrageFind", TestUmfrageFind)
@@ -52,6 +56,7 @@ func TestFind(t *testing.T) {
 func TestITGeraeteFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
+	//Normalfall
 	t.Run("ITGeraeteFind: ID = 1", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -69,6 +74,7 @@ func TestITGeraeteFind(t *testing.T) {
 			}) // Überprüfung des zurückgelieferten Elements
 	})
 
+	// Errorfall
 	t.Run("ITGeraeteFind: ID = 0", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
@@ -76,6 +82,20 @@ func TestITGeraeteFind(t *testing.T) {
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.ITGeraete{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestITGeraeteFindAll(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	//Normalfall
+	t.Run("TestITGeraeteFindAll: length", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.ITGeraeteFindAll()
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(len(data), 10)
 	})
 }
 
@@ -110,9 +130,69 @@ func TestDienstreisenFind(t *testing.T) {
 	})
 }
 
+func TestDienstreisenFindAll(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	//Normalfall
+	t.Run("TestDienstreisenFindAll: length", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.DienstreisenFindAll()
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(len(data), 3)
+	})
+}
+
+func TestPendelwegFind(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	//Normalfall
+	t.Run("TestPendelwegFind: ID = 1", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.PendelwegFind(1)
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data,
+			structs.Pendelweg{
+				IDPendelweg: 1,
+				Medium:      "Fahrrad",
+				CO2Faktor:   4,
+				Einheit:     "g/Pkm",
+				Revision:    1,
+			}) // Überprüfung des zurückgelieferten Elements
+	})
+
+	// Errorfall
+	t.Run("TestPendelwegFind: ID = 0", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.PendelwegFind(0)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Pendelweg{}) // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestPendelwegFindAll(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	//Normalfall
+	t.Run("TestPendelwegFindAll: length", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.PendelwegFindAll()
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(len(data), 12)
+	})
+}
+
 func TestEnergieversorgungFind(t *testing.T) {
 	is := is.NewRelaxed(t)
 
+	//Normalfall
 	t.Run("EnergieversorgungFind: ID = 1", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
