@@ -202,8 +202,17 @@ func getAuswertung(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	if auswertung.EmissionenWaerme > 0 {
+		auswertung.EmissionenEnergie += auswertung.EmissionenWaerme
+	}
+	if auswertung.EmissionenStrom > 0 {
+		auswertung.EmissionenEnergie += auswertung.EmissionenStrom
+	}
+	if auswertung.EmissionenKaelte > 0 {
+		auswertung.EmissionenEnergie += auswertung.EmissionenKaelte
+	}
+
 	auswertung.EmissionenITGeraete = auswertung.EmissionenITGeraeteMitarbeiter + auswertung.EmissionenITGeraeteHauptverantwortlicher
-	auswertung.EmissionenEnergie = auswertung.EmissionenWaerme + auswertung.EmissionenStrom + auswertung.EmissionenKaelte
 	auswertung.EmissionenGesamt = auswertung.EmissionenPendelwege + auswertung.EmissionenITGeraete + auswertung.EmissionenDienstreisen + auswertung.EmissionenEnergie
 
 	auswertung.VerbrauchEnergie = auswertung.VerbrauchKaelte + auswertung.VerbrauchStrom + auswertung.VerbrauchWearme

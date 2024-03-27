@@ -79,9 +79,9 @@ func BerechneDienstreisen(dienstreisenDaten []structs.UmfrageDienstreise) (float
 			case structs.IDDienstreiseBahn:
 				identifier = fmt.Sprintf("%d", medium.IDDienstreisen)
 			case structs.IDDienstreiseAuto:
-				identifier = fmt.Sprintf("%d-%s", medium.IDDienstreisen, dienstreise.Tankart)
+				identifier = fmt.Sprintf("%d_%s", medium.IDDienstreisen, dienstreise.Tankart)
 			case structs.IDDienstreiseFlugzeug:
-				identifier = fmt.Sprintf("%d-%s", medium.IDDienstreisen, dienstreise.Streckentyp)
+				identifier = fmt.Sprintf("%d_%s_%s", medium.IDDienstreisen, dienstreise.Streckentyp, dienstreise.Klasse)
 			}
 
 			e, ok := emissionenAufgeteilt[identifier]
