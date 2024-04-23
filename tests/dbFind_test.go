@@ -185,7 +185,7 @@ func TestPendelwegFindAll(t *testing.T) {
 		data, err := database.PendelwegFindAll()
 
 		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(len(data), 12)
+		is.Equal(len(data), 14)
 	})
 }
 
