@@ -67,6 +67,7 @@ func StartServer(logger *lumberjack.Logger, mode string) {
 		r.Get("/umfrage/gebaeude", getAlleGebaeude)
 		r.Get("/umfrage/gebaeudeUndZaehler", getAlleGebaeudeUndZaehler)
 		r.Get("/umfrage/duplicate", duplicateUmfrage)
+		r.Post("/umfrage/share", postShareUmfrage)
 		r.Post("/umfrage/insert", postInsertUmfrage)
 		r.Post("/umfrage/update", postUpdateUmfrage)
 		r.Delete("/umfrage", deleteUmfrage)

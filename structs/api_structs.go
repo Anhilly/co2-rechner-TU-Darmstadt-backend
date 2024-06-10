@@ -134,8 +134,13 @@ type UmfrageSharedResultsRes struct {
 	Freigegeben int32 `json:"freigegeben"`
 }
 
-type DeleteUmfrage struct {
+type UmfrageIDRequest struct {
 	UmfrageID primitive.ObjectID `json:"umfrageID"`
+}
+
+type UmfrageShareRes struct {
+	Bezeichnung  string `json:"bezeichnung"`
+	Hinzugefuegt bool   `json:"hinzugefuegt"`
 }
 
 type RequestLinkShare struct {
