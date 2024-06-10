@@ -223,6 +223,7 @@ func postInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 // duplicateUmfrage dupliziert die Umfrage mit übergebener ObjectID
 // und sendet structs.UmfrageID mit neuer ObjectID zurück
 func duplicateUmfrage(res http.ResponseWriter, req *http.Request) {
+	duplicateReq := structs.DuplicateUmfrageReq{}
 	umfrageRes := structs.UmfrageID{}
 
 	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
@@ -231,27 +232,32 @@ func duplicateUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var requestedUmfrageID primitive.ObjectID
-	err = requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	err = json.Unmarshal(s, &duplicateReq)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
 	nutzer, _ := database.NutzerdatenFind(nutzername)
-	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, requestedUmfrageID) {
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, duplicateReq.UmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
 
-	umfrage, err := database.UmfrageFind(requestedUmfrageID)
+	umfrage, err := database.UmfrageFind(duplicateReq.UmfrageID)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
 	duplizierteUmfrage := structs.InsertUmfrage{
-		Bezeichnung:       umfrage.Bezeichnung + " (Kopie)",
+		Bezeichnung:       umfrage.Bezeichnung + " " + duplicateReq.Suffix,
 		Mitarbeiteranzahl: umfrage.Mitarbeiteranzahl,
 		Jahr:              umfrage.Jahr,
 		Gebaeude:          umfrage.Gebaeude,

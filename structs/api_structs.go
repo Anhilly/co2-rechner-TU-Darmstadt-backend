@@ -138,6 +138,11 @@ type DeleteUmfrage struct {
 	UmfrageID primitive.ObjectID `json:"umfrageID"`
 }
 
+type DuplicateUmfrageReq struct {
+	UmfrageID primitive.ObjectID `json:"umfrageID"`
+	Suffix    string             `json:"suffix"`
+}
+
 type RequestLinkShare struct {
 	UmfrageID    primitive.ObjectID `json:"umfrageID"`
 	Freigabewert int32              `json:"freigabewert"`
