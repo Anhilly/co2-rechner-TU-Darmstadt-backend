@@ -92,7 +92,7 @@ func postUpdateUmfrage(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, umfrageRes, http.StatusOK)
 }
 
-// getUmfrage empfaengt POST Request und sendet Umfrage struct fuer passende UmfrageID zurueck,
+// getUmfrage empfaengt GET Request und sendet Umfrage struct fuer passende UmfrageID zurueck,
 // sofern auth Eigentuemer oder Admin
 func getUmfrage(res http.ResponseWriter, req *http.Request) {
 	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
@@ -223,6 +223,7 @@ func postInsertUmfrage(res http.ResponseWriter, req *http.Request) {
 // duplicateUmfrage dupliziert die Umfrage mit übergebener ObjectID
 // und sendet structs.UmfrageID mit neuer ObjectID zurück
 func duplicateUmfrage(res http.ResponseWriter, req *http.Request) {
+	duplicateReq := structs.DuplicateUmfrageReq{}
 	umfrageRes := structs.UmfrageID{}
 
 	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
@@ -231,27 +232,32 @@ func duplicateUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var requestedUmfrageID primitive.ObjectID
-	err = requestedUmfrageID.UnmarshalText([]byte(req.URL.Query().Get("id")))
+	s, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	err = json.Unmarshal(s, &duplicateReq)
 	if err != nil {
 		errorResponse(res, err, http.StatusBadRequest)
 		return
 	}
 
 	nutzer, _ := database.NutzerdatenFind(nutzername)
-	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, requestedUmfrageID) {
+	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, duplicateReq.UmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
 		return
 	}
 
-	umfrage, err := database.UmfrageFind(requestedUmfrageID)
+	umfrage, err := database.UmfrageFind(duplicateReq.UmfrageID)
 	if err != nil {
 		errorResponse(res, err, http.StatusInternalServerError)
 		return
 	}
 
 	duplizierteUmfrage := structs.InsertUmfrage{
-		Bezeichnung:       umfrage.Bezeichnung + " (Kopie)",
+		Bezeichnung:       umfrage.Bezeichnung + " " + duplicateReq.Suffix,
 		Mitarbeiteranzahl: umfrage.Mitarbeiteranzahl,
 		Jahr:              umfrage.Jahr,
 		Gebaeude:          umfrage.Gebaeude,
@@ -293,7 +299,7 @@ func duplicateUmfrage(res http.ResponseWriter, req *http.Request) {
 // Sendet im Erfolgsfall null zurueck
 func deleteUmfrage(res http.ResponseWriter, req *http.Request) {
 	s, _ := ioutil.ReadAll(req.Body)
-	umfrageReq := structs.DeleteUmfrage{}
+	umfrageReq := structs.UmfrageIDRequest{}
 
 	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
 	if err != nil {
@@ -308,7 +314,7 @@ func deleteUmfrage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Pruefe ob Nutzer authentifiziert ist, dann ob er die zu loeschende Umfrage besitzt
+	// pruefe Zugriffsrechte
 	nutzer, _ := database.NutzerdatenFind(nutzername)
 	if nutzer.Rolle != 1 && !isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
 		errorResponse(res, structs.ErrNutzerHatKeineBerechtigung, http.StatusUnauthorized)
@@ -406,4 +412,76 @@ func getSharedResults(res http.ResponseWriter, req *http.Request) {
 	umfrageSharedRes.Freigegeben = umfrage.AuswertungFreigegeben
 
 	sendResponse(res, true, umfrageSharedRes, http.StatusOK)
+}
+
+// postShareUmfrage empfaengt POST Request mit UmfrageID und fügt die Umfrage dem Nutzer des Requests hinzu
+func postShareUmfrage(res http.ResponseWriter, req *http.Request) {
+	s, _ := ioutil.ReadAll(req.Body)
+	umfrageReq := structs.UmfrageIDRequest{}
+
+	nutzername, err := keycloak.GetUsernameFromToken(strings.Split(req.Header.Get("Authorization"), " ")[1], req.Context())
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	err = json.Unmarshal(s, &umfrageReq)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+
+	// pruefe, ob Umfrage existiert
+	umfrage, err := database.UmfrageFind(umfrageReq.UmfrageID)
+	if err != nil {
+		errorResponse(res, err, http.StatusBadRequest)
+		return
+	}
+	umfrageNameResponse := structs.UmfrageShareRes{
+		Bezeichnung:  umfrage.Bezeichnung,
+		Hinzugefuegt: false,
+	}
+
+	// pruefe, ob Nutzer schon Zugriff auf Umfrage hat
+	nutzer, err := database.NutzerdatenFind(nutzername)
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	if isOwnerOfUmfrage(nutzer.UmfrageRef, umfrageReq.UmfrageID) {
+		sendResponse(res, true, umfrageNameResponse, http.StatusOK)
+		return
+	}
+
+	// Datenverarbeitung
+	ordner, err := database.CreateDump("postShareUmfrage")
+	if err != nil {
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.NutzerdatenAddUmfrageref(nutzername, umfrageReq.UmfrageID)
+	if err != nil {
+		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
+		if err2 != nil {
+			log.Println(err2)
+		} else {
+			err := database.RemoveDump(ordner)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		errorResponse(res, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = database.RemoveDump(ordner)
+	if err != nil {
+		log.Println(err)
+	}
+
+	umfrageNameResponse.Hinzugefuegt = true
+
+	sendResponse(res, true, umfrageNameResponse, http.StatusOK)
 }

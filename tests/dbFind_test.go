@@ -185,7 +185,7 @@ func TestPendelwegFindAll(t *testing.T) {
 		data, err := database.PendelwegFindAll()
 
 		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(len(data), 12)
+		is.Equal(len(data), 14)
 	})
 }
 
@@ -839,7 +839,7 @@ func TestMitarbeiterUmfrageFind(t *testing.T) {
 				},
 				TageImBuero: 7,
 				Dienstreise: []structs.UmfrageDienstreise{
-					{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321},
+					{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321, Klasse: "average"},
 				},
 				ITGeraete: []structs.UmfrageITGeraete{
 					{IDITGeraete: 3, Anzahl: 45},
@@ -885,7 +885,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 				},
 				TageImBuero: 7,
 				Dienstreise: []structs.UmfrageDienstreise{
-					{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321},
+					{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321, Klasse: "average"},
 				},
 				ITGeraete: []structs.UmfrageITGeraete{
 					{IDITGeraete: 3, Anzahl: 45},
@@ -920,7 +920,7 @@ func TestMitarbeiterUmfrageFindMany(t *testing.T) {
 			},
 			TageImBuero: 7,
 			Dienstreise: []structs.UmfrageDienstreise{
-				{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321},
+				{IDDienstreise: 3, Streckentyp: "Langstrecke", Strecke: 321, Klasse: "average"},
 			},
 			ITGeraete: []structs.UmfrageITGeraete{
 				{IDITGeraete: 3, Anzahl: 45},
@@ -1103,6 +1103,7 @@ func TestMitarbeiterUmfageForUmfrage(t *testing.T) {
 					IDDienstreise: 3,
 					Streckentyp:   "Langstrecke",
 					Strecke:       321,
+					Klasse:        "average",
 				},
 			},
 			ITGeraete: []structs.UmfrageITGeraete{

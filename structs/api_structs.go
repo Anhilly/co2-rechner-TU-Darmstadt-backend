@@ -115,7 +115,7 @@ type UpdateUmfrage struct {
 type InsertMitarbeiterUmfrage struct {
 	Pendelweg   []UmfragePendelweg   `json:"pendelweg"`
 	TageImBuero int32                `json:"tageImBuero"`
-	Dienstreise []UmfrageDienstreise `json:"dienstreise"`
+	Dienstreise []UmfrageDienstreise `json:"dienstreisen"`
 	ITGeraete   []UmfrageITGeraete   `json:"itGeraete"`
 	IDUmfrage   primitive.ObjectID   `json:"idUmfrage"`
 }
@@ -134,8 +134,18 @@ type UmfrageSharedResultsRes struct {
 	Freigegeben int32 `json:"freigegeben"`
 }
 
-type DeleteUmfrage struct {
+type UmfrageIDRequest struct {
 	UmfrageID primitive.ObjectID `json:"umfrageID"`
+}
+
+type DuplicateUmfrageReq struct {
+	UmfrageID primitive.ObjectID `json:"umfrageID"`
+	Suffix    string             `json:"suffix"`
+}
+
+type UmfrageShareRes struct {
+	Bezeichnung  string `json:"bezeichnung"`
+	Hinzugefuegt bool   `json:"hinzugefuegt"`
 }
 
 type RequestLinkShare struct {

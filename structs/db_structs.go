@@ -112,9 +112,15 @@ type Dienstreisen struct {
 }
 
 type CO2Dienstreisen struct {
-	Tankart     string `json:"tankart" bson:"tankart"`
-	Streckentyp string `json:"streckentyp" bson:"streckentyp"`
-	Wert        int32  `json:"wert" bson:"wert"`
+	Tankart     string                `json:"tankart" bson:"tankart"`
+	Streckentyp string                `json:"streckentyp" bson:"streckentyp"`
+	Wert        int32                 `json:"wert" bson:"wert"`
+	Werte       []CO2Flugklassenwerte `json:"werte" bson:"werte"`
+}
+
+type CO2Flugklassenwerte struct {
+	Klasse string `json:"klasse" bson:"klasse"`
+	Wert   int32  `json:"wert" bson:"wert"`
 }
 
 // Collection pendelweg
@@ -180,4 +186,5 @@ type UmfrageDienstreise struct {
 	Streckentyp   string `json:"streckentyp" bson:"streckentyp"`
 	Strecke       int32  `json:"strecke" bson:"strecke"`
 	Tankart       string `json:"tankart" bson:"tankart"`
+	Klasse        string `json:"klasse" bson:"klasse"`
 }
