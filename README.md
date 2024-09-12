@@ -22,12 +22,12 @@ Die Interaktionen zwischen Frontend und Backend sind in einer REST artigen API d
 Das Projekt ist in der Sprache Go geschrieben.
 Der CO2-Rechner verwendet die folgenden direkten Abhängigkeiten, um die Funktionalität bereitzustellen:
 
-- [Go Lang Version 1.17](https://go.dev/) - Go Entwicklungssprache
-- [go chi Version 5.0.7](https://github.com/go-chi/chi) - Go Router für HTTP Dienste
-- [is Version 1.4.0](https://github.com/matryer/is) - Test Framework
-- [mongo-driver Version 1.8.0](https://go.mongodb.org/mongo-driver) - Mongodb Treiber für Go
-- [lumberjack Version 2.0.0](https://gopkg.in/natefinch/lumberjack.v2) - Logger
-- [gocloak Version 13.8.0](https://github.com/Nerzal/gocloak/) - Go Keycloak Client
+- [Go v1.23](https://go.dev/) - Go Entwicklungssprache
+- [go chi v5.1.0](https://github.com/go-chi/chi) - Go Router für HTTP Dienste
+- [is v1.4.1](https://github.com/matryer/is) - Test Framework
+- [mongo-driver v1.16.1](https://go.mongodb.org/mongo-driver) - Mongodb Treiber für Go
+- [lumberjack v2.2.1](https://gopkg.in/natefinch/lumberjack.v2) - Logger
+- [gocloak v13.9.0](https://github.com/Nerzal/gocloak/) - Go Keycloak Client
 
 ## Entwicklungssetup
 

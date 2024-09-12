@@ -15,17 +15,19 @@ func main() {
 	// setting up logger
 	var filename string
 	if mode == "prod" {
-		print("prod mode")
+		println("prod mode")
 		filename = config.ProdLogFilename
 	} else if mode == "dev" {
-		print("dev mode")
+		println("dev mode")
 		filename = config.DevLogFilename
 	} else if mode == "test" {
-		print("test mode")
+		println("test mode")
 		filename = config.TestLogFilename
 	} else {
 		panic("MODE not set")
 	}
+
+	println("cgo:", cgoEnabled)
 
 	logger := lumberjack.Logger{
 		Filename:  filename,
