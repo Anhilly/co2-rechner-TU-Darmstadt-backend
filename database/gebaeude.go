@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"runtime/debug"
@@ -21,6 +22,27 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	err := collection.FindOne(
 		ctx,
 		bson.D{{"nr", nr}},
+	).Decode(&data)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return structs.Gebaeude{}, err
+	}
+
+	return data, nil
+}
+
+// GebaeudeFindOID liefert einen Gebaeude struct mit ObjectID gleich dem Parameter.
+func GebaeudeFindOID(oid primitive.ObjectID) (structs.Gebaeude, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+
+	var data structs.Gebaeude
+	err := collection.FindOne(
+		ctx,
+		bson.D{{"_id", oid}},
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
@@ -99,15 +121,16 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 	_, err = collection.InsertOne(
 		ctx,
 		structs.Gebaeude{
+			GebaeudeID:      primitive.NewObjectID(),
 			Nr:              data.Nr,
 			Bezeichnung:     data.Bezeichnung,
 			Flaeche:         data.Flaeche,
 			Einheit:         structs.Einheitqm,
 			Spezialfall:     1,
-			Revision:        1,
-			KaelteRef:       []int32{},
-			WaermeRef:       []int32{},
-			StromRef:        []int32{},
+			Revision:        2,
+			KaelteRef:       []primitive.ObjectID{},
+			WaermeRef:       []primitive.ObjectID{},
+			StromRef:        []primitive.ObjectID{},
 			Kaelteversorger: kaelteversorger,
 			Waermeversorger: waermeversorger,
 			Stromversorger:  stromversorger,

@@ -4,14 +4,58 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"runtime/debug"
 	"time"
 )
 
-// ZaehlerFind liefert einen Zaehler struct fuer den Zaehler mit pkEnergie und uebergebenen Energieform.
-func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) {
+// Kann nicht mehr verwendet werde, weil PK Energie aus den Zaehler entfernt wurde.
+//// ZaehlerFind liefert einen Zaehler struct fuer den Zaehler mit pkEnergie und uebergebenen Energieform.
+//func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) {
+//	var collectionname string
+//	var zaehlertyp string
+//
+//	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+//	defer cancel()
+//
+//	switch idEnergieversorgung {
+//	case structs.IDEnergieversorgungWaerme: // Waerme
+//		collectionname = structs.WaermezaehlerCol
+//		zaehlertyp = structs.ZaehlertypWaerme
+//	case structs.IDEnergieversorgungStrom: // Strom
+//		collectionname = structs.StromzaehlerCol
+//		zaehlertyp = structs.ZaehlertypStrom
+//	case structs.IDEnergieversorgungKaelte: // Kaelte
+//		collectionname = structs.KaeltezaehlerCol
+//		zaehlertyp = structs.ZaehlertypKaelte
+//	default:
+//		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
+//		log.Println(string(debug.Stack()))
+//		return structs.Zaehler{}, structs.ErrIDEnergieversorgungNichtVorhanden
+//	}
+//
+//	collection := client.Database(dbName).Collection(collectionname)
+//
+//	var data structs.Zaehler
+//	err := collection.FindOne(
+//		ctx,
+//		bson.D{{"pkEnergie", pkEnergie}},
+//	).Decode(&data)
+//	if err != nil {
+//		log.Println(err)
+//		log.Println(string(debug.Stack()))
+//		return structs.Zaehler{}, err
+//	}
+//
+//	data.Zaehlertyp = zaehlertyp
+//
+//	return data, nil
+//}
+
+// ZaehlerFindOID liefert einen Zaehler struct fuer den Zaehler mit ObjectID und uebergebenen Energieform.
+func ZaehlerFindOID(oid primitive.ObjectID, idEnergieversorgung int32) (structs.Zaehler, error) {
 	var collectionname string
 	var zaehlertyp string
 
@@ -39,7 +83,49 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 	var data structs.Zaehler
 	err := collection.FindOne(
 		ctx,
-		bson.D{{"pkEnergie", pkEnergie}},
+		bson.D{{"_id", oid}},
+	).Decode(&data)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return structs.Zaehler{}, err
+	}
+
+	data.Zaehlertyp = zaehlertyp
+
+	return data, nil
+}
+
+// ZaehlerFindDPName liefert einen Zaehler struct fuer den Zaehler mit DPName und uebergebenen Energieform.
+func ZaehlerFindDPName(dpName string, idEnergieversorgung int32) (structs.Zaehler, error) {
+	var collectionname string
+	var zaehlertyp string
+
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	switch idEnergieversorgung {
+	case structs.IDEnergieversorgungWaerme: // Waerme
+		collectionname = structs.WaermezaehlerCol
+		zaehlertyp = structs.ZaehlertypWaerme
+	case structs.IDEnergieversorgungStrom: // Strom
+		collectionname = structs.StromzaehlerCol
+		zaehlertyp = structs.ZaehlertypStrom
+	case structs.IDEnergieversorgungKaelte: // Kaelte
+		collectionname = structs.KaeltezaehlerCol
+		zaehlertyp = structs.ZaehlertypKaelte
+	default:
+		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
+		log.Println(string(debug.Stack()))
+		return structs.Zaehler{}, structs.ErrIDEnergieversorgungNichtVorhanden
+	}
+
+	collection := client.Database(dbName).Collection(collectionname)
+
+	var data structs.Zaehler
+	err := collection.FindOne(
+		ctx,
+		bson.D{{"dpName", dpName}},
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
@@ -282,12 +368,13 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	_, err = collection.InsertOne(
 		ctx,
 		structs.Zaehler{
-			PKEnergie:    data.PKEnergie,
+			ZaehlerID:    primitive.NewObjectID(),
+			DPName:       data.DPName,
 			Bezeichnung:  data.Bezeichnung,
 			Einheit:      data.Einheit,
 			Zaehlerdaten: zaehlerdaten,
 			Spezialfall:  1,
-			Revision:     1,
+			Revision:     2,
 			GebaeudeRef:  data.GebaeudeRef,
 		},
 	)
