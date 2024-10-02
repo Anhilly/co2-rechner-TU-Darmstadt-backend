@@ -150,7 +150,7 @@ func ZaehlerAlleZaehlerUndDaten() ([]structs.ZaehlerUndZaehlerdaten, error) {
 	cursorWaermezaehler, err := collectionWaermezaehler.Find(
 		ctx,
 		bson.D{},
-		options.Find().SetProjection(bson.M{"_id": 0, "pkEnergie": 1, "zaehlerdaten": 1}),
+		options.Find().SetProjection(bson.M{"_id": 1, "zaehlerdaten": 1}),
 	)
 	if err != nil {
 		log.Println(err)
@@ -169,7 +169,7 @@ func ZaehlerAlleZaehlerUndDaten() ([]structs.ZaehlerUndZaehlerdaten, error) {
 	cursorKaeltezaehler, err := collectionKaeltezaehler.Find(
 		ctx,
 		bson.D{},
-		options.Find().SetProjection(bson.M{"_id": 0, "pkEnergie": 1, "zaehlerdaten": 1}),
+		options.Find().SetProjection(bson.M{"_id": 1, "zaehlerdaten": 1}),
 	)
 	if err != nil {
 		log.Println(err)
@@ -188,7 +188,7 @@ func ZaehlerAlleZaehlerUndDaten() ([]structs.ZaehlerUndZaehlerdaten, error) {
 	cursorStromzaehler, err := collectionStromzaehler.Find(
 		ctx,
 		bson.D{},
-		options.Find().SetProjection(bson.M{"_id": 0, "pkEnergie": 1, "zaehlerdaten": 1}),
+		options.Find().SetProjection(bson.M{"_id": 1, "zaehlerdaten": 1}),
 	)
 	if err != nil {
 		log.Println(err)
@@ -229,8 +229,8 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 
 	collection := client.Database(dbName).Collection(collectionname)
 
-	// Ueberpruefung, ob PK in Datenbank vorhanden
-	currentDoc, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+	// Ueberpruefung, ob DPName in Datenbank vorhanden
+	currentDoc, err := ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
 	if err != nil {
 		log.Println(err)
 		log.Println(string(debug.Stack()))
@@ -259,7 +259,7 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	if wert_ersetzten {
 		_, err = collection.UpdateOne(
 			ctx,
-			bson.D{{"pkEnergie", data.PKEnergie}},
+			bson.D{{"dpName", data.DPName}},
 			bson.D{{"$set",
 				bson.D{{"zaehlerdaten.$[element]",
 					bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
@@ -271,7 +271,7 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	} else {
 		_, err = collection.UpdateOne(
 			ctx,
-			bson.D{{"pkEnergie", data.PKEnergie}},
+			bson.D{{"dpName", data.DPName}},
 			bson.D{{"$push",
 				bson.D{{"zaehlerdaten",
 					bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
@@ -348,7 +348,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		return structs.ErrFehlendeGebaeuderef
 	}
 
-	_, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+	_, err := ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
 	if err == nil { // kein Error = Nr schon vorhanden
 		log.Println(err)
 		log.Println(string(debug.Stack()))
@@ -365,17 +365,31 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		})
 	}
 
+	// konvertiert die Gebaeudenummern in ObjectIDs aus der Datenbank
+	var gebaeudeRefOID []primitive.ObjectID
+	for _, referenz := range data.GebaeudeRef {
+		gebaeude, err := GebaeudeFind(referenz)
+		if err != nil {
+			log.Println(err)
+			log.Println(string(debug.Stack()))
+			return err
+		}
+		gebaeudeRefOID = append(gebaeudeRefOID, gebaeude.GebaeudeID)
+	}
+
+	zaehlerID := primitive.NewObjectID()
+
 	_, err = collection.InsertOne(
 		ctx,
 		structs.Zaehler{
-			ZaehlerID:    primitive.NewObjectID(),
+			ZaehlerID:    zaehlerID,
 			DPName:       data.DPName,
 			Bezeichnung:  data.Bezeichnung,
 			Einheit:      data.Einheit,
 			Zaehlerdaten: zaehlerdaten,
 			Spezialfall:  1,
 			Revision:     2,
-			GebaeudeRef:  data.GebaeudeRef,
+			GebaeudeRef:  gebaeudeRefOID,
 		},
 	)
 	if err != nil {
@@ -385,7 +399,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	}
 
 	for _, referenz := range data.GebaeudeRef {
-		err := GebaeudeAddZaehlerref(referenz, data.PKEnergie, data.IDEnergieversorgung)
+		err := GebaeudeAddZaehlerref(referenz, zaehlerID, data.IDEnergieversorgung)
 		if err != nil {
 			log.Println(err)
 			log.Println(string(debug.Stack()))

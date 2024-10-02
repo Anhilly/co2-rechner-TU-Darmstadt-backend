@@ -56,10 +56,10 @@ var ( // Fehler, die bei Berechnungen auftreten
 	ErrZaehlerSpezialfall = errors.New("gebaeudeNormalfall: Spezialfall fuer Zaehler nicht abgedeckt")
 
 	// Fehler durch falsche Daten in Datenbank
-	ErrStrGebaeuderefFehlt = "%s: Zaehler %d hat keine Referenzen auf Gebaeude"
+	ErrStrGebaeuderefFehlt = "%s: Zaehler %s hat keine Referenzen auf Gebaeude"
 
 	// Fehler durch fehlende Werte in Datenbank
-	ErrStrVerbrauchFehlt = "%s: Kein Verbrauch für das Jahr %d, Zaehler: %d"
+	ErrStrVerbrauchFehlt = "%s: Kein Verbrauch für das Jahr %d, Zaehler: %s"
 
 	// Fehler durch nicht behandelte Einheit oder Fehler in der Datenbank
 	ErrStrEinheitUnbekannt = "%s: Einheit %s unbekannt"

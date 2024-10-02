@@ -66,8 +66,8 @@ type Zaehler struct {
 
 // Uebertyp fuer Kaeltezaehler, Waermezaehler und Stromzaehler
 type ZaehlerUndZaehlerdaten struct {
-	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"`
-	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
+	ZaehlerID    primitive.ObjectID `json:"_id" bson:"_id"`
+	Zaehlerdaten []Zaehlerwerte     `json:"zaehlerdaten" bson:"zaehlerdaten"`
 }
 
 type Zaehlerwerte struct {

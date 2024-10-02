@@ -240,7 +240,7 @@ func GebaeudeAddStandardVersorger(data structs.AddStandardVersorger) error {
 }
 
 // GebaeudeAddZaehlerref fuegt einem Gebaeude eine Zaehlereferenz hinzu, falls diese noch nicht vorhanden ist.
-func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
+func GebaeudeAddZaehlerref(nr int32, zaehlerID primitive.ObjectID, idEnergieversorgung int32) error {
 	var referenzname string
 
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
@@ -266,7 +266,7 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 		ctx,
 		bson.D{{"nr", nr}},
 		bson.D{{"$addToSet", // $addToSet verhindert, dass eine Referenz doppelt im Array steht (sollte nicht vorkommen)
-			bson.D{{referenzname, ref}}}},
+			bson.D{{referenzname, zaehlerID}}}},
 	).Decode(&updatedDoc)
 	if err != nil {
 		log.Println(err)

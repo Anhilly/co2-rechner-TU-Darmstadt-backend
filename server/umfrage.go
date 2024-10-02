@@ -140,6 +140,9 @@ func getAlleGebaeude(res http.ResponseWriter, req *http.Request) {
 // getAlleGebaeudeUndZaehler sendet Response mit allen Gebaeuden Nummern und den eingetragenen Zaehlern in der Datenbank zurueck.
 // Zusaetzlich werden alle Zaehler mit Angabe, ob ein Wert für jedes von 2018 bis zum aktuellen Jahr vorhanden ist.
 func getAlleGebaeudeUndZaehler(res http.ResponseWriter, req *http.Request) {
+
+	// TODO: Überprüfung im Frontend
+
 	var err error
 	gebaeudeRes := structs.AlleGebaeudeUndZaehlerRes{}
 
