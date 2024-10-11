@@ -241,20 +241,20 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	wert_ersetzten := false
 
 	for _, zaehlerdatum := range currentDoc.Zaehlerdaten {
-		if int32(zaehlerdatum.Zeitstempel.Year()) == data.Jahr {
+		if int32(zaehlerdatum.Zeitstempel.Year()) == data.Jahr && int32(zaehlerdatum.Zeitstempel.Month()) == data.Monat {
 			if zaehlerdatum.Wert == 0.0 {
 				wert_ersetzten = true
 				break
 			}
-			log.Println(structs.ErrJahrVorhanden)
+			log.Println(structs.ErrJahrUndMonatVorhanden)
 			log.Println(string(debug.Stack()))
-			return structs.ErrJahrVorhanden
+			return structs.ErrJahrUndMonatVorhanden
 		}
 	}
 
 	// Update des Eintrages
 	location, _ := time.LoadLocation("Etc/GMT")
-	zeitstempel := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
+	zeitstempel := time.Date(int(data.Jahr), time.Month(data.Monat), 01, 0, 0, 0, 0, location).UTC()
 
 	if wert_ersetzten {
 		_, err = collection.UpdateOne(
@@ -294,7 +294,7 @@ func ZaehlerAddStandardZaehlerdaten(data structs.AddStandardZaehlerdaten) error 
 
 	// Update aller Zaehler ohne Wert für Zeitstempel
 	location, _ := time.LoadLocation("Etc/GMT")
-	zeitstempel := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
+	zeitstempel := time.Date(int(data.Jahr), time.Month(data.Monat), 01, 0, 0, 0, 0, location).UTC()
 
 	for _, tmp := range []string{structs.WaermezaehlerCol, structs.StromzaehlerCol, structs.KaeltezaehlerCol} {
 		collection := client.Database(dbName).Collection(tmp)
@@ -349,7 +349,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	}
 
 	_, err := ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
-	if err == nil { // kein Error = Nr schon vorhanden
+	if err == nil { // kein Error = DPName schon vorhanden
 		log.Println(err)
 		log.Println(string(debug.Stack()))
 		return structs.ErrZaehlerVorhanden
@@ -359,10 +359,12 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	aktuellesJahr := int32(time.Now().Year())
 	var zaehlerdaten []structs.Zaehlerwerte
 	for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
-		zaehlerdaten = append(zaehlerdaten, structs.Zaehlerwerte{
-			Wert:        0.0,
-			Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
-		})
+		for j := 1; j <= 12; j++ {
+			zaehlerdaten = append(zaehlerdaten, structs.Zaehlerwerte{
+				Wert:        0.0,
+				Zeitstempel: time.Date(int(i), time.Month(j), 01, 0, 0, 0, 0, location).UTC(),
+			})
+		}
 	}
 
 	// konvertiert die Gebaeudenummern in ObjectIDs aus der Datenbank
@@ -372,7 +374,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		if err != nil {
 			log.Println(err)
 			log.Println(string(debug.Stack()))
-			return err
+			return structs.ErrGebaeudeNichtVorhanden
 		}
 		gebaeudeRefOID = append(gebaeudeRefOID, gebaeude.GebaeudeID)
 	}

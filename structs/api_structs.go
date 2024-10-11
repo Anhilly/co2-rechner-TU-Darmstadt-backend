@@ -45,17 +45,20 @@ type AddZaehlerdaten struct {
 	DPName              string  `json:"dpName"`
 	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
 	Jahr                int32   `json:"jahr"`
+	Monat               int32   `json:"monat"`
 	Wert                float64 `json:"wert"`
 }
 
 type AddStandardZaehlerdaten struct {
-	Jahr int32 `json:"jahr"`
+	Jahr  int32 `json:"jahr"`
+	Monat int32 `json:"monat"`
 }
 
 type AddZaehlerdatenCSV struct {
 	DPName              []string  `json:"dpName"`
 	IDEnergieversorgung []int32   `json:"idEnergieversorgung"`
-	Jahr                int32     `json:"jahr"`
+	Jahr                []int32   `json:"jahr"`
+	Monat               []int32   `json:"monat"`
 	Wert                []float64 `json:"wert"`
 }
 

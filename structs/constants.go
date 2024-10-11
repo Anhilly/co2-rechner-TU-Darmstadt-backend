@@ -68,7 +68,7 @@ const ( // Einheit g CO2 eq.
 )
 
 const ( // Beginn der Historie für Gebaeudeversoger
-	ErstesJahr int32 = 2018
+	ErstesJahr int32 = 2020
 )
 
 const (

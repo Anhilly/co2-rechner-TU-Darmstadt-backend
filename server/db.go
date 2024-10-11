@@ -129,12 +129,13 @@ func postAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		log.Printf("DPName: %s, Type: %d, Jahr: %d, Wert: %f\n", data.DPName[i], data.IDEnergieversorgung[i], data.Jahr, data.Wert[i])
+		log.Printf("DPName: %s, Type: %d, Jahr: %d, Monat: %d, Wert: %f\n", data.DPName[i], data.IDEnergieversorgung[i], data.Jahr[i], data.Monat[i], data.Wert[i])
 
 		eachValue := structs.AddZaehlerdaten{
 			DPName:              data.DPName[i],
 			IDEnergieversorgung: data.IDEnergieversorgung[i],
-			Jahr:                data.Jahr,
+			Jahr:                data.Jahr[i],
+			Monat:               data.Monat[i],
 			Wert:                data.Wert[i],
 		}
 

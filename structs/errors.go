@@ -4,13 +4,16 @@ import "errors"
 
 var ( // Fehler von Add, Delete und Insert Funktionen
 	// Fehler durch Nutzereingabe
-	ErrZaehlerVorhanden = errors.New("Es ist schon ein Zaehler mit dem PK vorhanden")
+	ErrZaehlerVorhanden = errors.New("Es ist schon ein Zaehler mit dem DPName vorhanden")
 
 	// Fehler durch Nutzereingabe
 	ErrFehlendeGebaeuderef = errors.New("Neuer Zaehler hat keine Referenzen auf Gebaeude")
 
 	// Fehler durch Nutzereingabe
 	ErrJahrVorhanden = errors.New("Ein Wert ist fuer das angegebene Jahr schon vorhanden")
+
+	// Fehler durch Nutzereingabe
+	ErrJahrUndMonatVorhanden = errors.New("Ein Wert fuer den angegebene Monat im Jahr ist schon vorhanden")
 
 	// Fehler durch Nutzereingabe
 	ErrGebaeudeVorhanden = errors.New("Ein Gebaeude mit der angegeben Nummer existiert schon in der Datenbank")
@@ -83,7 +86,7 @@ var ( // Fehler, die bei Berechnungen auftreten
 	ErrBerechnungUnbekannt = errors.New("BerechneDienstreisen: Keine Berechnung fuer angegeben ID vorhanden")
 
 	// Fehler durch fehlende Angabe des Versorgers für Jahr
-	ErrStrKeinVersorger = "gebaeudeNormalfall: Gebaude %d hat keinen Versorger für Jahr %d eingetragen"
+	ErrStrKeinVersorger = "gebaeudeNormalfall: Gebaeude %d hat keinen Versorger für Jahr %d eingetragen"
 
 	// Fehler durch fehlenden Energiefaktor für bestimmtes Jahr und Energieform
 	ErrStrKeinFaktorFuerVertrag = "Für Jahr %d ist kein Faktor für Energie %d und Vertrag %d"
