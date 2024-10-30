@@ -4,14 +4,15 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"runtime/debug"
 	"time"
 )
 
-// ZaehlerFind liefert einen Zaehler struct fuer den Zaehler mit pkEnergie und uebergebenen Energieform.
-func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) {
+// ZaehlerFindOID liefert einen Zaehler struct fuer den Zaehler mit ObjectID und uebergebenen Energieform.
+func ZaehlerFindOID(oid primitive.ObjectID, idEnergieversorgung int32) (structs.Zaehler, error) {
 	var collectionname string
 	var zaehlertyp string
 
@@ -39,7 +40,49 @@ func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) 
 	var data structs.Zaehler
 	err := collection.FindOne(
 		ctx,
-		bson.D{{"pkEnergie", pkEnergie}},
+		bson.D{{"_id", oid}},
+	).Decode(&data)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return structs.Zaehler{}, err
+	}
+
+	data.Zaehlertyp = zaehlertyp
+
+	return data, nil
+}
+
+// ZaehlerFindDPName liefert einen Zaehler struct fuer den Zaehler mit DPName und uebergebenen Energieform.
+func ZaehlerFindDPName(dpName string, idEnergieversorgung int32) (structs.Zaehler, error) {
+	var collectionname string
+	var zaehlertyp string
+
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	switch idEnergieversorgung {
+	case structs.IDEnergieversorgungWaerme: // Waerme
+		collectionname = structs.WaermezaehlerCol
+		zaehlertyp = structs.ZaehlertypWaerme
+	case structs.IDEnergieversorgungStrom: // Strom
+		collectionname = structs.StromzaehlerCol
+		zaehlertyp = structs.ZaehlertypStrom
+	case structs.IDEnergieversorgungKaelte: // Kaelte
+		collectionname = structs.KaeltezaehlerCol
+		zaehlertyp = structs.ZaehlertypKaelte
+	default:
+		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
+		log.Println(string(debug.Stack()))
+		return structs.Zaehler{}, structs.ErrIDEnergieversorgungNichtVorhanden
+	}
+
+	collection := client.Database(dbName).Collection(collectionname)
+
+	var data structs.Zaehler
+	err := collection.FindOne(
+		ctx,
+		bson.D{{"dpName", dpName}},
 	).Decode(&data)
 	if err != nil {
 		log.Println(err)
@@ -64,7 +107,7 @@ func ZaehlerAlleZaehlerUndDaten() ([]structs.ZaehlerUndZaehlerdaten, error) {
 	cursorWaermezaehler, err := collectionWaermezaehler.Find(
 		ctx,
 		bson.D{},
-		options.Find().SetProjection(bson.M{"_id": 0, "pkEnergie": 1, "zaehlerdaten": 1}),
+		options.Find().SetProjection(bson.M{"_id": 1, "zaehlerdaten": 1}),
 	)
 	if err != nil {
 		log.Println(err)
@@ -83,7 +126,7 @@ func ZaehlerAlleZaehlerUndDaten() ([]structs.ZaehlerUndZaehlerdaten, error) {
 	cursorKaeltezaehler, err := collectionKaeltezaehler.Find(
 		ctx,
 		bson.D{},
-		options.Find().SetProjection(bson.M{"_id": 0, "pkEnergie": 1, "zaehlerdaten": 1}),
+		options.Find().SetProjection(bson.M{"_id": 1, "zaehlerdaten": 1}),
 	)
 	if err != nil {
 		log.Println(err)
@@ -102,7 +145,7 @@ func ZaehlerAlleZaehlerUndDaten() ([]structs.ZaehlerUndZaehlerdaten, error) {
 	cursorStromzaehler, err := collectionStromzaehler.Find(
 		ctx,
 		bson.D{},
-		options.Find().SetProjection(bson.M{"_id": 0, "pkEnergie": 1, "zaehlerdaten": 1}),
+		options.Find().SetProjection(bson.M{"_id": 1, "zaehlerdaten": 1}),
 	)
 	if err != nil {
 		log.Println(err)
@@ -143,8 +186,8 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 
 	collection := client.Database(dbName).Collection(collectionname)
 
-	// Ueberpruefung, ob PK in Datenbank vorhanden
-	currentDoc, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+	// Ueberpruefung, ob DPName in Datenbank vorhanden
+	currentDoc, err := ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
 	if err != nil {
 		log.Println(err)
 		log.Println(string(debug.Stack()))
@@ -155,25 +198,25 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	wert_ersetzten := false
 
 	for _, zaehlerdatum := range currentDoc.Zaehlerdaten {
-		if int32(zaehlerdatum.Zeitstempel.Year()) == data.Jahr {
+		if int32(zaehlerdatum.Zeitstempel.Year()) == data.Jahr && int32(zaehlerdatum.Zeitstempel.Month()) == data.Monat {
 			if zaehlerdatum.Wert == 0.0 {
 				wert_ersetzten = true
 				break
 			}
-			log.Println(structs.ErrJahrVorhanden)
+			log.Println(structs.ErrJahrUndMonatVorhanden)
 			log.Println(string(debug.Stack()))
-			return structs.ErrJahrVorhanden
+			return structs.ErrJahrUndMonatVorhanden
 		}
 	}
 
 	// Update des Eintrages
 	location, _ := time.LoadLocation("Etc/GMT")
-	zeitstempel := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
+	zeitstempel := time.Date(int(data.Jahr), time.Month(data.Monat), 01, 0, 0, 0, 0, location).UTC()
 
 	if wert_ersetzten {
 		_, err = collection.UpdateOne(
 			ctx,
-			bson.D{{"pkEnergie", data.PKEnergie}},
+			bson.D{{"dpName", data.DPName}},
 			bson.D{{"$set",
 				bson.D{{"zaehlerdaten.$[element]",
 					bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
@@ -185,7 +228,7 @@ func ZaehlerAddZaehlerdaten(data structs.AddZaehlerdaten) error {
 	} else {
 		_, err = collection.UpdateOne(
 			ctx,
-			bson.D{{"pkEnergie", data.PKEnergie}},
+			bson.D{{"dpName", data.DPName}},
 			bson.D{{"$push",
 				bson.D{{"zaehlerdaten",
 					bson.D{{"wert", data.Wert}, {"zeitstempel", zeitstempel}}}}}},
@@ -208,7 +251,7 @@ func ZaehlerAddStandardZaehlerdaten(data structs.AddStandardZaehlerdaten) error 
 
 	// Update aller Zaehler ohne Wert für Zeitstempel
 	location, _ := time.LoadLocation("Etc/GMT")
-	zeitstempel := time.Date(int(data.Jahr), time.January, 01, 0, 0, 0, 0, location).UTC()
+	zeitstempel := time.Date(int(data.Jahr), time.Month(data.Monat), 01, 0, 0, 0, 0, location).UTC()
 
 	for _, tmp := range []string{structs.WaermezaehlerCol, structs.StromzaehlerCol, structs.KaeltezaehlerCol} {
 		collection := client.Database(dbName).Collection(tmp)
@@ -236,7 +279,7 @@ func ZaehlerAddStandardZaehlerdaten(data structs.AddStandardZaehlerdaten) error 
 // ZaehlerInsert fuegt einen Zaehler in die Datenbank ein, falls PK noch nicht vergeben.
 // Außerdem werden die referenzierten Gebaeude um eine Referenz auf diesen Zaehler erweitert.
 // Sollte die Funktion durch einen Fehler beendet werden, kann es zu inkonsistenten Daten in der Datenbank fuehren!
-func ZaehlerInsert(data structs.InsertZaehler) error {
+func ZaehlerInsert(data structs.InsertZaehler) (primitive.ObjectID, error) {
 	var collectionname string
 
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
@@ -252,59 +295,76 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	default:
 		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
 		log.Println(string(debug.Stack()))
-		return structs.ErrIDEnergieversorgungNichtVorhanden
+		return primitive.NilObjectID, structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 	collection := client.Database(dbName).Collection(collectionname)
 
 	if len(data.GebaeudeRef) == 0 {
 		log.Println(structs.ErrFehlendeGebaeuderef)
 		log.Println(string(debug.Stack()))
-		return structs.ErrFehlendeGebaeuderef
+		return primitive.NilObjectID, structs.ErrFehlendeGebaeuderef
 	}
 
-	_, err := ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
-	if err == nil { // kein Error = Nr schon vorhanden
+	_, err := ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
+	if err == nil { // kein Error = DPName schon vorhanden
 		log.Println(err)
 		log.Println(string(debug.Stack()))
-		return structs.ErrZaehlerVorhanden
+		return primitive.NilObjectID, structs.ErrZaehlerVorhanden
 	}
 
 	location, _ := time.LoadLocation("Etc/GMT")
 	aktuellesJahr := int32(time.Now().Year())
 	var zaehlerdaten []structs.Zaehlerwerte
 	for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
-		zaehlerdaten = append(zaehlerdaten, structs.Zaehlerwerte{
-			Wert:        0.0,
-			Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
-		})
+		for j := 1; j <= 12; j++ {
+			zaehlerdaten = append(zaehlerdaten, structs.Zaehlerwerte{
+				Wert:        0.0,
+				Zeitstempel: time.Date(int(i), time.Month(j), 01, 0, 0, 0, 0, location).UTC(),
+			})
+		}
 	}
+
+	// konvertiert die Gebaeudenummern in ObjectIDs aus der Datenbank
+	var gebaeudeRefOID []primitive.ObjectID
+	for _, referenz := range data.GebaeudeRef {
+		gebaeude, err := GebaeudeFind(referenz)
+		if err != nil {
+			log.Println(err)
+			log.Println(string(debug.Stack()))
+			return primitive.NilObjectID, structs.ErrGebaeudeNichtVorhanden
+		}
+		gebaeudeRefOID = append(gebaeudeRefOID, gebaeude.GebaeudeID)
+	}
+
+	zaehlerID := primitive.NewObjectID()
 
 	_, err = collection.InsertOne(
 		ctx,
 		structs.Zaehler{
-			PKEnergie:    data.PKEnergie,
+			ZaehlerID:    zaehlerID,
+			DPName:       data.DPName,
 			Bezeichnung:  data.Bezeichnung,
 			Einheit:      data.Einheit,
 			Zaehlerdaten: zaehlerdaten,
 			Spezialfall:  1,
-			Revision:     1,
-			GebaeudeRef:  data.GebaeudeRef,
+			Revision:     2,
+			GebaeudeRef:  gebaeudeRefOID,
 		},
 	)
 	if err != nil {
 		log.Println(err)
 		log.Println(string(debug.Stack()))
-		return err
+		return primitive.NilObjectID, err
 	}
 
 	for _, referenz := range data.GebaeudeRef {
-		err := GebaeudeAddZaehlerref(referenz, data.PKEnergie, data.IDEnergieversorgung)
+		err := GebaeudeAddZaehlerref(referenz, zaehlerID, data.IDEnergieversorgung)
 		if err != nil {
 			log.Println(err)
 			log.Println(string(debug.Stack()))
-			return err
+			return primitive.NilObjectID, err
 		}
 	}
 
-	return nil
+	return zaehlerID, nil
 }

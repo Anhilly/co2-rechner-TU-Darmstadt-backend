@@ -66,24 +66,24 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)                    // Normalfall wirft keine Errors
-		is.Equal(emissionen, 6604024.85) // erwartetes Ergebnis: 6604024.85
-		is.Equal(verbrauch, 45861.28)
+		is.Equal(emissionen, 6604015.48) // erwartetes Ergebnis: 6604015.48
+		is.Equal(verbrauch, 45861.22)    // erwartetes Ergebnis: 45861.22
 	})
 
 	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Gebaeude mehrere Zaehler ", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		gebaeudeFlaecheDaten := []structs.UmfrageGebaeude{
-			{GebaeudeNr: 1108, Nutzflaeche: 1000}, // Zaehler 2250, 2251, 2252, 2085
+			{GebaeudeNr: 3260, Nutzflaeche: 1000},
 		}
 		var jahr int32 = 2020
-		var idEnergieversorgung int32 = 1
+		var idEnergieversorgung int32 = 3
 
 		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
-		is.NoErr(err)                     // Normalfall wirft keine Errors
-		is.Equal(emissionen, 23126680.04) // erwartetes Ergebnis: 23126680.04
-		is.Equal(verbrauch, 160601.94)
+		is.NoErr(err)                       // Normalfall wirft keine Errors
+		is.Equal(emissionen, 3486568639.15) // erwartetes Ergebnis: 3486568639.15
+		is.Equal(verbrauch, 48424564.43)
 	})
 
 	t.Run("BerechneEnergieverbrauch: einfache Eingabe, Gruppenzaehler ", func(t *testing.T) {
@@ -115,7 +115,7 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
 		is.NoErr(err)                    // Normalfall wirft keine Errors
-		is.Equal(emissionen, 8804937.41) // erwartetes Ergebnis: 8804937.41
+		is.Equal(emissionen, 8804939.48) // erwartetes Ergebnis: 8804939.48
 		is.Equal(verbrauch, 30894.52)
 	})
 
@@ -132,9 +132,9 @@ func TestBerechneEnergieverbrauch(t *testing.T) { //nolint:funlen
 
 		emissionen, verbrauch, err := co2computation.BerechneEnergieverbrauch(gebaeudeFlaecheDaten, jahr, idEnergieversorgung)
 
-		is.NoErr(err)                    // Normalfall wirft keine Errors
-		is.Equal(emissionen, 38362781.9) // erwartetes Ergebnis: 38362781.9
-		is.Equal(verbrauch, 266408.21)
+		is.NoErr(err)                     // Normalfall wirft keine Errors
+		is.Equal(emissionen, 22347183.87) // erwartetes Ergebnis: 22347183.87
+		is.Equal(verbrauch, 155188.78)
 	})
 
 	t.Run("BerechneEnergieverbrauch: Gebaeude ohne Zaehler", func(t *testing.T) {

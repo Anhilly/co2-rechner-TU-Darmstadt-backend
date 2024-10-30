@@ -103,7 +103,7 @@ func postAddZaehlerdaten(res http.ResponseWriter, req *http.Request) {
 	sendResponse(res, true, nil, http.StatusOK)
 }
 
-// postAddZaehlerdaten fuegt Zaehlerdaten fuer einen Liste an Zaehler in die DB ein,
+// postAddZaehlerdatenCSV fuegt Zaehlerdaten fuer einen Liste an Zaehler in die DB ein,
 // sofern der Nutzer authentifizierter Admin ist und sendet eine Response mit null zurueck.
 func postAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 	s, err := ioutil.ReadAll(req.Body)
@@ -122,19 +122,20 @@ func postAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 	combined_error := "Folgende Fehler sind aufgetreten:"
 	error_encountered := false
 
-	for i := 0; i < len(data.PKEnergie); i++ { // rufe für jeden uebergebenen Wert die Hinzufuegefunktion einzeln auf
+	for i := 0; i < len(data.DPName); i++ { // rufe für jeden uebergebenen Wert die Hinzufuegefunktion einzeln auf
 		ordner, err := database.CreateDump("postAddZaehlerdatenCSV")
 		if err != nil {
 			errorResponse(res, err, http.StatusInternalServerError)
 			return
 		}
 
-		log.Printf("PK: %d, Type: %d, Jahr: %d, Wert: %f\n", data.PKEnergie[i], data.IDEnergieversorgung[i], data.Jahr, data.Wert[i])
+		log.Printf("DPName: %s, Type: %d, Jahr: %d, Monat: %d, Wert: %f\n", data.DPName[i], data.IDEnergieversorgung[i], data.Jahr[i], data.Monat[i], data.Wert[i])
 
 		eachValue := structs.AddZaehlerdaten{
-			PKEnergie:           data.PKEnergie[i],
+			DPName:              data.DPName[i],
 			IDEnergieversorgung: data.IDEnergieversorgung[i],
-			Jahr:                data.Jahr,
+			Jahr:                data.Jahr[i],
+			Monat:               data.Monat[i],
 			Wert:                data.Wert[i],
 		}
 
@@ -142,7 +143,7 @@ func postAddZaehlerdatenCSV(res http.ResponseWriter, req *http.Request) {
 
 		if err != nil {
 			error_encountered = true
-			combined_error += fmt.Sprintf("\n\t-Zähler %d: %s", data.PKEnergie[i], err.Error())
+			combined_error += fmt.Sprintf("\n\t-Zähler %s: %s", data.DPName[i], err.Error())
 
 			err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 			if err2 != nil {
@@ -326,7 +327,7 @@ func postInsertZaehler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = database.ZaehlerInsert(data)
+	_, err = database.ZaehlerInsert(data)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
@@ -372,7 +373,7 @@ func postInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = database.GebaeudeInsert(data)
+	_, err = database.GebaeudeInsert(data)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {

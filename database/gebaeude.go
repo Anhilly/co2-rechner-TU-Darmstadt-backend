@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Anhilly/co2-rechner-TU-Darmstadt-backend/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"runtime/debug"
@@ -31,6 +32,27 @@ func GebaeudeFind(nr int32) (structs.Gebaeude, error) {
 	return data, nil
 }
 
+// GebaeudeFindOID liefert einen Gebaeude struct mit ObjectID gleich dem Parameter.
+func GebaeudeFindOID(oid primitive.ObjectID) (structs.Gebaeude, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
+	defer cancel()
+
+	collection := client.Database(dbName).Collection(structs.GebaeudeCol)
+
+	var data structs.Gebaeude
+	err := collection.FindOne(
+		ctx,
+		bson.D{{"_id", oid}},
+	).Decode(&data)
+	if err != nil {
+		log.Println(err)
+		log.Println(string(debug.Stack()))
+		return structs.Gebaeude{}, err
+	}
+
+	return data, nil
+}
+
 // Hilfsfunktion, die true zurückgibt, falls a in list
 func intInSlice(a int32, list []int32) bool {
 	for _, b := range list {
@@ -42,7 +64,7 @@ func intInSlice(a int32, list []int32) bool {
 }
 
 // GebaeudeInsert fuegt ein Gebaeude in die Datenbank ein, falls die Nr noch nicht vorhanden ist.
-func GebaeudeInsert(data structs.InsertGebaeude) error {
+func GebaeudeInsert(data structs.InsertGebaeude) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -50,7 +72,7 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 
 	_, err := GebaeudeFind(data.Nr)
 	if err == nil { // kein Error = Nr schon vorhanden
-		return structs.ErrGebaeudeVorhanden
+		return primitive.NilObjectID, structs.ErrGebaeudeVorhanden
 	}
 
 	aktuellesJahr := int32(time.Now().Year())
@@ -96,18 +118,21 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 		}
 	}
 
+	gebaeudeID := primitive.NewObjectID()
+
 	_, err = collection.InsertOne(
 		ctx,
 		structs.Gebaeude{
+			GebaeudeID:      gebaeudeID,
 			Nr:              data.Nr,
 			Bezeichnung:     data.Bezeichnung,
 			Flaeche:         data.Flaeche,
 			Einheit:         structs.Einheitqm,
 			Spezialfall:     1,
-			Revision:        1,
-			KaelteRef:       []int32{},
-			WaermeRef:       []int32{},
-			StromRef:        []int32{},
+			Revision:        2,
+			KaelteRef:       []primitive.ObjectID{},
+			WaermeRef:       []primitive.ObjectID{},
+			StromRef:        []primitive.ObjectID{},
 			Kaelteversorger: kaelteversorger,
 			Waermeversorger: waermeversorger,
 			Stromversorger:  stromversorger,
@@ -116,10 +141,10 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 	if err != nil {
 		log.Println(err)
 		log.Println(string(debug.Stack()))
-		return err
+		return primitive.NilObjectID, err
 	}
 
-	return nil
+	return gebaeudeID, nil
 }
 
 // Hilfsfunktion, die überprüft, ob ein Jahr in einem Versorger Slice vorkommt
@@ -217,7 +242,7 @@ func GebaeudeAddStandardVersorger(data structs.AddStandardVersorger) error {
 }
 
 // GebaeudeAddZaehlerref fuegt einem Gebaeude eine Zaehlereferenz hinzu, falls diese noch nicht vorhanden ist.
-func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
+func GebaeudeAddZaehlerref(nr int32, zaehlerID primitive.ObjectID, idEnergieversorgung int32) error {
 	var referenzname string
 
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
@@ -243,7 +268,7 @@ func GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung int32) error {
 		ctx,
 		bson.D{{"nr", nr}},
 		bson.D{{"$addToSet", // $addToSet verhindert, dass eine Referenz doppelt im Array steht (sollte nicht vorkommen)
-			bson.D{{referenzname, ref}}}},
+			bson.D{{referenzname, zaehlerID}}}},
 	).Decode(&updatedDoc)
 	if err != nil {
 		log.Println(err)

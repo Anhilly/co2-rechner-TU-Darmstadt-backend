@@ -8,7 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
-	"time"
 )
 
 func TestFind(t *testing.T) {
@@ -39,7 +38,9 @@ func TestFind(t *testing.T) {
 	t.Run("TestPendelwegFind", TestPendelwegFind)
 	t.Run("TestPendelwegFindAll", TestPendelwegFindAll)
 	t.Run("TestGebaeudeFind", TestGebaeudeFind)
-	t.Run("TestZaehlerFind", TestZaehlerFind)
+	t.Run("TestGebaeudeFindOID", TestGebaeudeFindOID)
+	t.Run("TestZaehlerFindDPName", TestZaehlerFindDPName)
+	t.Run("TestZaehlerFindOID", TestZaehlerFindOID)
 	t.Run("TestTestUmfrageFind", TestUmfrageFind)
 	t.Run("TestMitarbeiterUmfrageFind", TestMitarbeiterUmfrageFind)
 	t.Run("TestNutzerdatenFind", TestNutzerdatenFind)
@@ -233,8 +234,15 @@ func TestGebaeudeFind(t *testing.T) {
 
 		data, err := database.GebaeudeFind(1101)
 
-		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(data, structs.Gebaeude{
+		// entferne jahresabhängige Daten
+		data.Waermeversorger = []structs.Versoger{}
+		data.Stromversorger = []structs.Versoger{}
+		data.Kaelteversorger = []structs.Versoger{}
+
+		waermeZaehlerOID, _ := primitive.ObjectIDFromHex("6710a1ca3a47b613426ff656")
+		gebaeudeOID, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a286")
+		compareDoc := structs.Gebaeude{
+			GebaeudeID:  gebaeudeOID,
 			Nr:          1101,
 			Bezeichnung: "Universitaetszentrum, karo 5, Audimax",
 			Flaeche: structs.GebaeudeFlaeche{
@@ -246,34 +254,19 @@ func TestGebaeudeFind(t *testing.T) {
 				FreiF:   96.57,
 				GesamtF: 21000.81,
 			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			KaelteRef: []int32{},
-			WaermeRef: []int32{2084},
-			StromRef:  []int32{26024, 24799},
-		}) // Überprüfung des zurückgelieferten Elements
+			Einheit:         "m^2",
+			Spezialfall:     1,
+			Revision:        2,
+			Stromversorger:  []structs.Versoger{},
+			Waermeversorger: []structs.Versoger{},
+			Kaelteversorger: []structs.Versoger{},
+			KaelteRef:       []primitive.ObjectID{},
+			WaermeRef:       []primitive.ObjectID{waermeZaehlerOID},
+			StromRef:        []primitive.ObjectID{},
+		}
+
+		is.NoErr(err)              // kein Error seitens der Datenbank
+		is.Equal(data, compareDoc) // Überprüfung des zurückgelieferten Elements
 	})
 
 	t.Run("GebaeudeFind: ID = 0 nicht vorhanden", func(t *testing.T) {
@@ -367,401 +360,363 @@ func TestGebaeudeFind(t *testing.T) {
 
 }
 
-func TestZaehlerFind(t *testing.T) {
+func TestGebaeudeFindOID(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	t.Run("GebaeudeFindOID: OID = 61b712f66a1a52dea358a286", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeudeOID, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a286")
+
+		data, err := database.GebaeudeFindOID(gebaeudeOID)
+
+		// entferne jahresabhängige Daten
+		data.Waermeversorger = []structs.Versoger{}
+		data.Stromversorger = []structs.Versoger{}
+		data.Kaelteversorger = []structs.Versoger{}
+
+		waermeZaehlerOID, _ := primitive.ObjectIDFromHex("6710a1ca3a47b613426ff656")
+		compareDoc := structs.Gebaeude{
+			GebaeudeID:  gebaeudeOID,
+			Nr:          1101,
+			Bezeichnung: "Universitaetszentrum, karo 5, Audimax",
+			Flaeche: structs.GebaeudeFlaeche{
+				HNF:     6395.56,
+				NNF:     3081.85,
+				NGF:     15365.03,
+				FF:      5539.21,
+				VF:      5887.62,
+				FreiF:   96.57,
+				GesamtF: 21000.81,
+			},
+			Einheit:         "m^2",
+			Spezialfall:     1,
+			Revision:        2,
+			Stromversorger:  []structs.Versoger{},
+			Waermeversorger: []structs.Versoger{},
+			Kaelteversorger: []structs.Versoger{},
+			KaelteRef:       []primitive.ObjectID{},
+			WaermeRef:       []primitive.ObjectID{waermeZaehlerOID},
+			StromRef:        []primitive.ObjectID{},
+		}
+
+		is.NoErr(err)              // kein Error seitens der Datenbank
+		is.Equal(data, compareDoc) // Überprüfung des zurückgelieferten Elements
+	})
+
+	t.Run("GebaeudeFindOID: OID = 000000000000000000000000 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		gebaeudeOID := primitive.NilObjectID
+
+		data, err := database.GebaeudeFindOID(gebaeudeOID)
+
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Gebaeude{})  // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestZaehlerFindDPName(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("ZaehlerFind: Kaelterzaehler, ID = 4023", func(t *testing.T) {
+	t.Run("ZaehlerFindDPName: Kaelterzaehler, DPName = L101XXXXXXKA000XXXXXXZ50CO00001", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 4023
-		var idEnergieversorgung int32 = 3
+		data, err := database.ZaehlerFindDPName("L101XXXXXXKA000XXXXXXZ50CO00001", structs.IDEnergieversorgungKaelte)
+		data.Zaehlerdaten = []structs.Zaehlerwerte{}
 
-		location, _ := time.LoadLocation("Etc/GMT")
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		zaehlerOID, _ := primitive.ObjectIDFromHex("6710a1ca3a47b613426ff67d")
+		gebaudeOID, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a2e7")
+		compareDoc := structs.Zaehler{
+			ZaehlerID:    zaehlerOID,
+			Zaehlertyp:   "Kaelte",
+			DPName:       "L101XXXXXXKA000XXXXXXZ50CO00001",
+			Bezeichnung:  "3101 Kälte Hauptzähler",
+			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Einheit:      "MWh",
+			Spezialfall:  1,
+			Revision:     2,
+			GebaeudeRef:  []primitive.ObjectID{gebaudeOID},
+		}
 
 		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(data, structs.Zaehler{Zaehlertyp: "Kaelte",
-			PKEnergie:   4023,
-			Bezeichnung: "3101 Kaelte Hauptzaehler",
-			Zaehlerdaten: []structs.Zaehlerwerte{
-				{
-					Wert:        414.61,
-					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        555.3,
-					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        169.59,
-					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        380.67,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        370.39,
-					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-			},
-			Einheit:     "MWh",
-			Spezialfall: 1,
-			Revision:    1,
-			GebaeudeRef: []int32{3101},
-		})
+		is.Equal(data, compareDoc)
 	})
 
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2107", func(t *testing.T) {
+	t.Run("ZaehlerFindDPName: Waermezaehler, DPName = B101XXXXXXHE000XXXXXXZ40CO00001", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2107
-		var idEnergieversorgung int32 = 1
+		data, err := database.ZaehlerFindDPName("B101XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
+		data.Zaehlerdaten = []structs.Zaehlerwerte{}
 
-		location, _ := time.LoadLocation("Etc/GMT")
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		zaehlerOID, _ := primitive.ObjectIDFromHex("6710a1c93a47b613426ff62b")
+		gebaudeOID2101, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a2cf")
+		gebaudeOID2102, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a2d0")
+		gebaudeOID2108, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a2d5")
+		compareDoc := structs.Zaehler{
+			ZaehlerID:    zaehlerOID,
+			Zaehlertyp:   "Waerme",
+			DPName:       "B101XXXXXXHE000XXXXXXZ40CO00001",
+			Bezeichnung:  "2101 Zoologie,2102 Botanik (Altbau), 2108 Mobi-Office 1 Wärme Gruppenzähler",
+			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Einheit:      "MWh",
+			Spezialfall:  1,
+			Revision:     2,
+			GebaeudeRef:  []primitive.ObjectID{gebaudeOID2101, gebaudeOID2102, gebaudeOID2108},
+		}
 
 		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(data, structs.Zaehler{Zaehlertyp: "Waerme",
-			PKEnergie:   2107,
-			Bezeichnung: " 2101,2102,2108 Waerme Gruppenzaehler",
-			Zaehlerdaten: []structs.Zaehlerwerte{
-				{
-					Wert:        788.66,
-					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        794.8,
-					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        736.9,
-					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        859.29,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        697.07,
-					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-			},
-			Einheit:     "MWh",
-			Spezialfall: 1,
-			Revision:    1,
-			GebaeudeRef: []int32{2101, 2102, 2108},
-		})
+		is.Equal(data, compareDoc)
 	})
 
-	t.Run("ZaehlerFind: Stromzaehler, ID = 5967", func(t *testing.T) {
+	t.Run("ZaehlerFindDPName: Stromzaehler, DPName = B102xxxxxxNA000xxxxxxZ01ED11005", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 5967
-		var idEnergieversorgung int32 = 2
+		data, err := database.ZaehlerFindDPName("B102xxxxxxNA000xxxxxxZ01ED11005", structs.IDEnergieversorgungStrom)
+		data.Zaehlerdaten = []structs.Zaehlerwerte{}
 
-		location, _ := time.LoadLocation("Etc/GMT")
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		zaehlerOID, _ := primitive.ObjectIDFromHex("6710a1ca3a47b613426ff68e")
+		gebaeudeOID, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a2d0")
+		compareDoc := structs.Zaehler{
+			ZaehlerID:    zaehlerOID,
+			Zaehlertyp:   "Strom",
+			DPName:       "B102xxxxxxNA000xxxxxxZ01ED11005",
+			Bezeichnung:  "2102 Elektro HZ Blechverteiler Altbau",
+			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Einheit:      "kWh",
+			Spezialfall:  1,
+			Revision:     2,
+			GebaeudeRef:  []primitive.ObjectID{gebaeudeOID},
+		}
 
 		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(data, structs.Zaehler{Zaehlertyp: "Strom",
-			PKEnergie:   5967,
-			Bezeichnung: "2201 Strom Hauptzaehler",
-			Zaehlerdaten: []structs.Zaehlerwerte{
-				{
-					Wert:        0.0,
-					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        0.0,
-					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        0.0,
-					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        165440,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        197599.6,
-					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-			},
-			Einheit:     "kWh",
-			Spezialfall: 1,
-			Revision:    1,
-			GebaeudeRef: []int32{2201},
-		})
+		is.Equal(data, compareDoc)
 	})
 
 	// Errortests
-	t.Run("ZaehlerFind: Kaeltezaehler, ID = 0 nicht vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerFindDPName: Kaeltezaehler, DPName = xxxx nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 0
-		var idEnergieversorgung int32 = 3
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindDPName("xxxx", structs.IDEnergieversorgungKaelte)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	t.Run("ZaehlerFind: Waermezaehler, ID = 0 nicht vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerFindDPName: Waermezaehler, DPName = xxxx nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 0
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindDPName("xxxx", structs.IDEnergieversorgungWaerme)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, 1473 Waerme Hauptzaehler Justitzzentrum
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2104 nicht vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerFindDPName: Stromzaehler, DPName = xxxx nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2104
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindDPName("xxxx", structs.IDEnergieversorgungStrom)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, 1475 Waerme Hauptzaehler Landgericht Gebaeude A
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2105 nicht vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerFindDPName: IDEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2105
-		var idEnergieversorgung int32 = 1
+		data, err := database.ZaehlerFindDPName("B102xxxxxxNA000xxxxxxZ01ED11005", 0)
 
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Funktion wirft ErrIDEnergieversorgungNichtVorhanden
+		is.Equal(data, structs.Zaehler{})                           // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+
+	// Zaehler soll nicht beachtet werden, S473XXXXXXHE000XXXXXXZ40CO00001 Waerme Hauptzaehler Justitzzentrum
+	t.Run("ZaehlerFindDPName: Waermezaehler, DPName = S473XXXXXXHE000XXXXXXZ40CO00001 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.ZaehlerFindDPName("S473XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, 1476 Waerme Hauptzaehler Landgericht Gebaeude B
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2106 nicht vorhanden", func(t *testing.T) {
+	// Zaehler soll nicht beachtet werden, S475XXXXXXHE000XXXXXXZ40CO00001 Waerme Hauptzaehler Landgericht Gebaeude A
+	t.Run("ZaehlerFindDPName: Waermezaehler, DPName = S475XXXXXXHE000XXXXXXZ40CO00001 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2106
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindDPName("S475XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, 1477 Waerme Hauptzaehler Regierungspraesidium
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2256 nicht vorhanden", func(t *testing.T) {
+	// Zaehler soll nicht beachtet werden, S476XXXXXXHE000XXXXXXZ40CO00001 Waerme Hauptzaehler Landgericht Gebaeude B
+	t.Run("ZaehlerFindDPName: Waermezaehler, DPName = S476XXXXXXHE000XXXXXXZ40CO00001 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2256
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindDPName("S476XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, 1479 Waerme Hauptzaehler Staatsbauamt
-	t.Run("ZaehlerFind: Waermezaehler, ID = 3613 nicht vorhanden", func(t *testing.T) {
+	// Zaehler soll nicht beachtet werden, S477XXXXXXHE000XXXXXXZ40CO00001 Waerme Hauptzaehler Regierungspraesidium
+	t.Run("ZaehlerFindDPName: Waermezaehler, DPName = S477XXXXXXHE000XXXXXXZ40CO00001 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 3613
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindDPName("S477XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, 1480 Waerme Hauptzaehler Landesmuseum
-	t.Run("ZaehlerFind: Waermezaehler, ID = 3614 nicht vorhanden", func(t *testing.T) {
+	// Zaehler soll nicht beachtet werden, S479XXXXXXHE000XXXXXXZ40CO00001 Waerme Hauptzaehler Staatsbauamt
+	t.Run("ZaehlerFindDPName: Waermezaehler, DPName = S479XXXXXXHE000XXXXXXZ40CO00001 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 3614
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindDPName("S479XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, 1481 Waerme Hauptzaehler Staatsarchiv
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2102 nicht vorhanden", func(t *testing.T) {
+	// Zaehler soll nicht beachtet werden, S480XXXXXXHE000XXXXXXZ40CO00001 Waerme Hauptzaehler Landesmuseum
+	t.Run("ZaehlerFindDPName: Waermezaehler, DPName = S480XXXXXXHE000XXXXXXZ40CO00001 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2012
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindDPName("S480XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, 1213a Altbau Frauenhofer Institut (LBF) Waerme
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2377 nicht vorhanden", func(t *testing.T) {
+	// Zaehler soll nicht beachtet werden, S481XXXXXXHE000XXXXXXZ40CO00001 Waerme Hauptzaehler Staatsarchiv
+	t.Run("ZaehlerFindDPName: Waermezaehler, DPName = S481XXXXXXHE000XXXXXXZ40CO00001 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2377
-		var idEnergieversorgung int32 = 1
+		data, err := database.ZaehlerFindDPName("S481XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
 
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
+	})
+}
+
+func TestZaehlerFindOID(t *testing.T) {
+	is := is.NewRelaxed(t)
+
+	// Normalfall
+	t.Run("TestZaehlerFindOID: Kaelterzaehler, OID = 6710a1ca3a47b613426ff67d", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		zaehlerOID, _ := primitive.ObjectIDFromHex("6710a1ca3a47b613426ff67d")
+
+		data, err := database.ZaehlerFindOID(zaehlerOID, structs.IDEnergieversorgungKaelte)
+		data.Zaehlerdaten = []structs.Zaehlerwerte{}
+
+		gebaudeOID, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a2e7")
+		compareDoc := structs.Zaehler{
+			ZaehlerID:    zaehlerOID,
+			Zaehlertyp:   "Kaelte",
+			DPName:       "L101XXXXXXKA000XXXXXXZ50CO00001",
+			Bezeichnung:  "3101 Kälte Hauptzähler",
+			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Einheit:      "MWh",
+			Spezialfall:  1,
+			Revision:     2,
+			GebaeudeRef:  []primitive.ObjectID{gebaudeOID},
+		}
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data, compareDoc)
+	})
+
+	t.Run("TestZaehlerFindOID: Waermezaehler, OID = 6710a1c93a47b613426ff62b", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		zaehlerOID, _ := primitive.ObjectIDFromHex("6710a1c93a47b613426ff62b")
+
+		data, err := database.ZaehlerFindOID(zaehlerOID, structs.IDEnergieversorgungWaerme)
+		data.Zaehlerdaten = []structs.Zaehlerwerte{}
+
+		gebaudeOID2101, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a2cf")
+		gebaudeOID2102, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a2d0")
+		gebaudeOID2108, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a2d5")
+		compareDoc := structs.Zaehler{
+			ZaehlerID:    zaehlerOID,
+			Zaehlertyp:   "Waerme",
+			DPName:       "B101XXXXXXHE000XXXXXXZ40CO00001",
+			Bezeichnung:  "2101 Zoologie,2102 Botanik (Altbau), 2108 Mobi-Office 1 Wärme Gruppenzähler",
+			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Einheit:      "MWh",
+			Spezialfall:  1,
+			Revision:     2,
+			GebaeudeRef:  []primitive.ObjectID{gebaudeOID2101, gebaudeOID2102, gebaudeOID2108},
+		}
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data, compareDoc)
+	})
+
+	t.Run("TestZaehlerFindOID: Stromzaehler, OID = 6710a1ca3a47b613426ff68e", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		zaehlerOID, _ := primitive.ObjectIDFromHex("6710a1ca3a47b613426ff68e")
+
+		data, err := database.ZaehlerFindOID(zaehlerOID, structs.IDEnergieversorgungStrom)
+		data.Zaehlerdaten = []structs.Zaehlerwerte{}
+
+		gebaeudeOID, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a2d0")
+		compareDoc := structs.Zaehler{
+			ZaehlerID:    zaehlerOID,
+			Zaehlertyp:   "Strom",
+			DPName:       "B102xxxxxxNA000xxxxxxZ01ED11005",
+			Bezeichnung:  "2102 Elektro HZ Blechverteiler Altbau",
+			Zaehlerdaten: []structs.Zaehlerwerte{},
+			Einheit:      "kWh",
+			Spezialfall:  1,
+			Revision:     2,
+			GebaeudeRef:  []primitive.ObjectID{gebaeudeOID},
+		}
+
+		is.NoErr(err) // kein Error seitens der Datenbank
+		is.Equal(data, compareDoc)
+	})
+
+	// Errortests
+	t.Run("TestZaehlerFindOID: Kaeltezaehler, OID = 000000000000000000000000 nicht vorhanden", func(t *testing.T) {
+		is := is.NewRelaxed(t)
+
+		data, err := database.ZaehlerFindOID(primitive.NilObjectID, structs.IDEnergieversorgungKaelte)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, 1213b Frauenhofer Institut (LBF) Neubau Waerme
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2378 nicht vorhanden", func(t *testing.T) {
+	t.Run("TestZaehlerFindOID: Waermezaehler, OID = 000000000000000000000000 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 2378
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindOID(primitive.NilObjectID, structs.IDEnergieversorgungWaerme)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, Geb_Rechenwerk_Neues_RP_Entega_ENERGIE
-	t.Run("ZaehlerFind: Waermezaehler, ID = 4193 nicht vorhanden", func(t *testing.T) {
+	t.Run("TestZaehlerFindOID: Stromzaehler, OID = 000000000000000000000000 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 4193
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindOID(primitive.NilObjectID, structs.IDEnergieversorgungStrom)
 
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
 	})
 
-	// Zaehler soll nicht beachtet werden, Geb_Rechenwerk_Neues_RP_Steag_ENERGIE
-	t.Run("ZaehlerFind: Waermezaehler, ID = 4194 nicht vorhanden", func(t *testing.T) {
+	t.Run("TestZaehlerFindOID: IDEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		var pkEnergie int32 = 4194
-		var idEnergieversorgung int32 = 1
+		zaehlerOID, _ := primitive.ObjectIDFromHex("6710a1ca3a47b613426ff68e")
 
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
-
-		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
-		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
-	})
-
-	// Zaehler soll nicht beachtet werden, Heizgruppe Süd Schloss gesamt + E-Technik gesamt
-	t.Run("ZaehlerFind: Waermezaehler, ID = 3960 nicht vorhanden", func(t *testing.T) {
-		is := is.NewRelaxed(t)
-
-		var pkEnergie int32 = 3960
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
-
-		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
-		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
-	})
-
-	// Zaehler soll nicht beachtet werden, Netz Darmstadt Nord
-	t.Run("ZaehlerFind: Waermezaehler, ID = 6697 nicht vorhanden", func(t *testing.T) {
-		is := is.NewRelaxed(t)
-
-		var pkEnergie int32 = 6697
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
-
-		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
-		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
-	})
-
-	// Zaehler soll nicht beachtet werden, Wärmezähler Lichtwiese Forschungsprojekt
-	t.Run("ZaehlerFind: Waermezaehler, ID = 3789 nicht vorhanden", func(t *testing.T) {
-		is := is.NewRelaxed(t)
-
-		var pkEnergie int32 = 3789
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
-
-		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
-		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
-	})
-
-	// Zaehler soll nicht beachtet werden, Wärme Hauptzähler Tagesverbrauch
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2558 nicht vorhanden", func(t *testing.T) {
-		is := is.NewRelaxed(t)
-
-		var pkEnergie int32 = 2558
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
-
-		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
-		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
-	})
-
-	// Zaehler soll nicht beachtet werden, Wärme Hauptzähler Wochenverbrauch
-	t.Run("ZaehlerFind: Waermezaehler, ID = 2560 nicht vorhanden", func(t *testing.T) {
-		is := is.NewRelaxed(t)
-
-		var pkEnergie int32 = 2560
-		var idEnergieversorgung int32 = 1
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
-
-		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
-		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
-	})
-
-	t.Run("ZaehlerFind: Stromzaehler, ID = 0 nicht vorhanden", func(t *testing.T) {
-		is := is.NewRelaxed(t)
-
-		var pkEnergie int32 = 0
-		var idEnergieversorgung int32 = 2
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
-
-		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
-		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
-	})
-
-	// dieser Zaehler wurde rausgenommen, weil die Einheit kW ist
-	t.Run("ZaehlerFind: Stromzaehler, ID = 3576 nicht vorhanden", func(t *testing.T) {
-		is := is.NewRelaxed(t)
-
-		var pkEnergie int32 = 3576
-		var idEnergieversorgung int32 = 2
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
-
-		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
-		is.Equal(data, structs.Zaehler{})   // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
-	})
-
-	t.Run("ZaehlerFind: IDEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
-		is := is.NewRelaxed(t)
-
-		var pkEnergie int32 = 1
-		var idEnergieversorgung int32 = 0
-
-		data, err := database.ZaehlerFind(pkEnergie, idEnergieversorgung)
+		data, err := database.ZaehlerFindOID(zaehlerOID, 0)
 
 		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Funktion wirft ErrIDEnergieversorgungNichtVorhanden
 		is.Equal(data, structs.Zaehler{})                           // Bei einem Fehler soll ein leer Struct zurückgeliefert werden
