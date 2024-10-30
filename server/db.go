@@ -327,7 +327,7 @@ func postInsertZaehler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = database.ZaehlerInsert(data)
+	_, err = database.ZaehlerInsert(data)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {
@@ -373,7 +373,7 @@ func postInsertGebaeude(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = database.GebaeudeInsert(data)
+	_, err = database.GebaeudeInsert(data)
 	if err != nil {
 		err2 := database.RestoreDump(ordner) // im Fehlerfall wird vorheriger Zustand wiederhergestellt
 		if err2 != nil {

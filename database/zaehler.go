@@ -11,49 +11,6 @@ import (
 	"time"
 )
 
-// Kann nicht mehr verwendet werde, weil PK Energie aus den Zaehler entfernt wurde.
-//// ZaehlerFind liefert einen Zaehler struct fuer den Zaehler mit pkEnergie und uebergebenen Energieform.
-//func ZaehlerFind(pkEnergie, idEnergieversorgung int32) (structs.Zaehler, error) {
-//	var collectionname string
-//	var zaehlertyp string
-//
-//	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
-//	defer cancel()
-//
-//	switch idEnergieversorgung {
-//	case structs.IDEnergieversorgungWaerme: // Waerme
-//		collectionname = structs.WaermezaehlerCol
-//		zaehlertyp = structs.ZaehlertypWaerme
-//	case structs.IDEnergieversorgungStrom: // Strom
-//		collectionname = structs.StromzaehlerCol
-//		zaehlertyp = structs.ZaehlertypStrom
-//	case structs.IDEnergieversorgungKaelte: // Kaelte
-//		collectionname = structs.KaeltezaehlerCol
-//		zaehlertyp = structs.ZaehlertypKaelte
-//	default:
-//		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
-//		log.Println(string(debug.Stack()))
-//		return structs.Zaehler{}, structs.ErrIDEnergieversorgungNichtVorhanden
-//	}
-//
-//	collection := client.Database(dbName).Collection(collectionname)
-//
-//	var data structs.Zaehler
-//	err := collection.FindOne(
-//		ctx,
-//		bson.D{{"pkEnergie", pkEnergie}},
-//	).Decode(&data)
-//	if err != nil {
-//		log.Println(err)
-//		log.Println(string(debug.Stack()))
-//		return structs.Zaehler{}, err
-//	}
-//
-//	data.Zaehlertyp = zaehlertyp
-//
-//	return data, nil
-//}
-
 // ZaehlerFindOID liefert einen Zaehler struct fuer den Zaehler mit ObjectID und uebergebenen Energieform.
 func ZaehlerFindOID(oid primitive.ObjectID, idEnergieversorgung int32) (structs.Zaehler, error) {
 	var collectionname string
@@ -322,7 +279,7 @@ func ZaehlerAddStandardZaehlerdaten(data structs.AddStandardZaehlerdaten) error 
 // ZaehlerInsert fuegt einen Zaehler in die Datenbank ein, falls PK noch nicht vergeben.
 // Außerdem werden die referenzierten Gebaeude um eine Referenz auf diesen Zaehler erweitert.
 // Sollte die Funktion durch einen Fehler beendet werden, kann es zu inkonsistenten Daten in der Datenbank fuehren!
-func ZaehlerInsert(data structs.InsertZaehler) error {
+func ZaehlerInsert(data structs.InsertZaehler) (primitive.ObjectID, error) {
 	var collectionname string
 
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
@@ -338,21 +295,21 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	default:
 		log.Println(structs.ErrIDEnergieversorgungNichtVorhanden)
 		log.Println(string(debug.Stack()))
-		return structs.ErrIDEnergieversorgungNichtVorhanden
+		return primitive.NilObjectID, structs.ErrIDEnergieversorgungNichtVorhanden
 	}
 	collection := client.Database(dbName).Collection(collectionname)
 
 	if len(data.GebaeudeRef) == 0 {
 		log.Println(structs.ErrFehlendeGebaeuderef)
 		log.Println(string(debug.Stack()))
-		return structs.ErrFehlendeGebaeuderef
+		return primitive.NilObjectID, structs.ErrFehlendeGebaeuderef
 	}
 
 	_, err := ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
 	if err == nil { // kein Error = DPName schon vorhanden
 		log.Println(err)
 		log.Println(string(debug.Stack()))
-		return structs.ErrZaehlerVorhanden
+		return primitive.NilObjectID, structs.ErrZaehlerVorhanden
 	}
 
 	location, _ := time.LoadLocation("Etc/GMT")
@@ -374,7 +331,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		if err != nil {
 			log.Println(err)
 			log.Println(string(debug.Stack()))
-			return structs.ErrGebaeudeNichtVorhanden
+			return primitive.NilObjectID, structs.ErrGebaeudeNichtVorhanden
 		}
 		gebaeudeRefOID = append(gebaeudeRefOID, gebaeude.GebaeudeID)
 	}
@@ -397,7 +354,7 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 	if err != nil {
 		log.Println(err)
 		log.Println(string(debug.Stack()))
-		return err
+		return primitive.NilObjectID, err
 	}
 
 	for _, referenz := range data.GebaeudeRef {
@@ -405,9 +362,9 @@ func ZaehlerInsert(data structs.InsertZaehler) error {
 		if err != nil {
 			log.Println(err)
 			log.Println(string(debug.Stack()))
-			return err
+			return primitive.NilObjectID, err
 		}
 	}
 
-	return nil
+	return zaehlerID, nil
 }

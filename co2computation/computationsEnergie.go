@@ -129,7 +129,7 @@ func gebaeudeNormalfall(co2Faktoren map[int32]int32, gebaeude structs.Gebaeude, 
 			gesamtverbrauch += verbrauch
 			gesamtNGF += ngf
 
-		case 2: // Spezialfall für Kaeltezaehler L202XXXXXaKA000XXXXXXZ50CO00001 (und L402XXXXXXKA000XXXXXXZ50CO00001)		// TODO: Check if still correct
+		case 2: // Spezialfall für Kaeltezaehler L202XXXXXaKA000XXXXXXZ50CO00001 (und L402XXXXXXKA000XXXXXXZ50CO00001)
 			verbrauch, err := zaehlerSpezialfall(zaehler, jahr, "L402XXXXXXKA000XXXXXXZ50CO00001")
 			if err != nil {
 				return 0, 0, err
@@ -137,7 +137,7 @@ func gebaeudeNormalfall(co2Faktoren map[int32]int32, gebaeude structs.Gebaeude, 
 
 			gesamtverbrauch += verbrauch
 
-		case 3: // Spezialfall für Kaeltezaehler L204XXXXXXKA000XXXXXXZ50CO00001 (und 3620)		// TODO: Check if still correct
+		case 3: // Spezialfall für Kaeltezaehler L204XXXXXXKA000XXXXXXZ50CO00001 (und L206XXXXXXKA000XXXXXXZ50CO00001)
 			verbrauch, err := zaehlerSpezialfall(zaehler, jahr, "L206XXXXXXKA000XXXXXXZ50CO00001")
 			if err != nil {
 				return 0, 0, err
@@ -176,13 +176,15 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaeudeID primitive
 	}
 
 	// addiere gespeicherten Verbrauch des Jahres auf Gesamtverbrauch auf
-	var verbrauch float64 = -1
-	for _, zaehlerstand := range zaehler.Zaehlerdaten {
+	var verbrauch float64 = 0
+	var datenVorhanden bool = false
+	for _, zaehlerstand := range zaehler.Zaehlerdaten { // vorerst aggregiert alle Werte des Jahres, wird potentiell noch geändert
 		if int32(zaehlerstand.Zeitstempel.Year()) == jahr {
-			verbrauch = zaehlerstand.Wert
+			datenVorhanden = true
+			verbrauch += zaehlerstand.Wert
 		}
 	}
-	if verbrauch == -1 {
+	if !datenVorhanden {
 		return 0, 0, fmt.Errorf(structs.ErrStrVerbrauchFehlt, "zaehlerNormalfall", jahr, zaehler.DPName)
 	}
 
@@ -217,13 +219,15 @@ func zaehlerNormalfall(zaehler structs.Zaehler, jahr int32, gebaeudeID primitive
 // Es ist eine abgewandelte Version des Normalfalls und genau auf diese Zaehler zugeschnitten.
 // Ergebniseinheit: kWh
 func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andererZaehlerDPName string) (float64, error) {
-	var verbrauch float64 = -1 // Verbrauch des Gruppenzaehlers
+	var verbrauch float64 = 0 // Verbrauch des Gruppenzaehlers
+	var datenVorhanden bool = false
 	for _, zaehlerstand := range zaehler.Zaehlerdaten {
 		if int32(zaehlerstand.Zeitstempel.Year()) == jahr {
-			verbrauch = zaehlerstand.Wert
+			datenVorhanden = true
+			verbrauch += zaehlerstand.Wert
 		}
 	}
-	if verbrauch == -1 {
+	if !datenVorhanden {
 		return 0, fmt.Errorf(structs.ErrStrVerbrauchFehlt, "zaehlerSpezialfall", jahr, zaehler.DPName)
 	}
 
@@ -231,20 +235,39 @@ func zaehlerSpezialfall(zaehler structs.Zaehler, jahr int32, andererZaehlerDPNam
 	if err != nil {
 		return 0, err
 	}
-	var subtraktionsverbrauch float64 = -1 // Verbrauch des Zaehlers, der subtrahiert werden muss
+	var subtraktionsverbrauch float64 = 0 // Verbrauch des Zaehlers, der subtrahiert werden muss
+	datenVorhanden = false
 	for _, zaehlerstand := range subtraktionszaehler.Zaehlerdaten {
 		if int32(zaehlerstand.Zeitstempel.Year()) == jahr {
-			subtraktionsverbrauch = zaehlerstand.Wert
+			datenVorhanden = true
+			subtraktionsverbrauch += zaehlerstand.Wert
 		}
 	}
-	if subtraktionsverbrauch == -1 {
+	if !datenVorhanden {
 		return 0, fmt.Errorf(structs.ErrStrVerbrauchFehlt, "zaehlerSpezialfall", jahr, zaehler.DPName)
 	}
 
+	// Umrechnung der Einheiten in kWh
+	switch zaehler.Einheit {
+	case structs.EinheitMWh:
+		verbrauch *= 1000
+	case structs.EinheitkWh:
+		// da Verbrauch schon in kWh muss nichts gemacht werden
+	default:
+		return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "zaehlerNormalfall", zaehler.Einheit)
+	}
+
+	switch subtraktionszaehler.Einheit {
+	case structs.EinheitMWh:
+		subtraktionsverbrauch *= 1000
+	case structs.EinheitkWh:
+		// da Verbrauch schon in kWh muss nichts gemacht werden
+	default:
+		return 0, fmt.Errorf(structs.ErrStrEinheitUnbekannt, "zaehlerNormalfall", zaehler.Einheit)
+	}
+
 	differenz := verbrauch - subtraktionsverbrauch
-	if differenz > 0 { // Wert wird auf 0 gesetzt, falls er negativ ist, um Berechnungen nicht zu verfaelschen
-		differenz *= 1000 // Konvertierung MWh in KWh; da beide Spezialfaelle in MWh messen
-	} else {
+	if differenz < 0 { // Wert wird auf 0 gesetzt, falls er negativ ist, um Berechnungen nicht zu verfaelschen
 		differenz = 0
 	}
 

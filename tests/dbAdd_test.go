@@ -48,6 +48,18 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 	t.Run("EnergieversorgungAddFaktor: ID = 1", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		// hole altes Dokument
+		compareDoc, err := database.EnergieversorgungFind(1)
+		is.NoErr(err)
+
+		compareDoc.CO2Faktor = append(compareDoc.CO2Faktor, structs.CO2Energie{
+			Jahr: 2030,
+			Vertraege: []structs.CO2FaktorVetrag{
+				{IDVertrag: 1, Wert: 400},
+			},
+		})
+
+		// update Dokument per Funktion
 		data := structs.AddCO2Faktor{
 			IDEnergieversorgung: 1,
 			IDVertrag:           1,
@@ -55,33 +67,29 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 			Jahr:                2030,
 		}
 
-		err := database.EnergieversorgungAddFaktor(data)
+		err = database.EnergieversorgungAddFaktor(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.EnergieversorgungFind(data.IDEnergieversorgung)
-
-		is.Equal(updatedDoc, structs.Energieversorgung{
-			IDEnergieversorgung: 1,
-			Kategorie:           "Fernwaerme",
-			Einheit:             "g/kWh",
-			Revision:            1,
-			CO2Faktor: []structs.CO2Energie{
-				{Jahr: 2020, Vertraege: []structs.CO2FaktorVetrag{
-					{IDVertrag: 1, Wert: 144},
-				}},
-				{Jahr: 2021, Vertraege: []structs.CO2FaktorVetrag{
-					{IDVertrag: 1, Wert: 125},
-				}},
-				{Jahr: 2030, Vertraege: []structs.CO2FaktorVetrag{
-					{IDVertrag: 1, Wert: 400},
-				}},
-			},
-		}) // Ueberpruefung des geaenderten Elementes
+		updatedDoc, err := database.EnergieversorgungFind(data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des geaenderten Elementes
 	})
 
 	t.Run("EnergieversorgungAddFaktor: IDVertrag = 2", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		// hole altes Dokument
+		compareDoc, err := database.EnergieversorgungFind(2)
+		is.NoErr(err)
+
+		compareDoc.CO2Faktor = append(compareDoc.CO2Faktor, structs.CO2Energie{
+			Jahr: 2030,
+			Vertraege: []structs.CO2FaktorVetrag{
+				{IDVertrag: 2, Wert: 400},
+			},
+		})
+
+		// update Dokument per Funktion
 		data := structs.AddCO2Faktor{
 			IDEnergieversorgung: 2,
 			IDVertrag:           2,
@@ -89,28 +97,12 @@ func TestEnergieversorgungAddFaktor(t *testing.T) {
 			Jahr:                2030,
 		}
 
-		err := database.EnergieversorgungAddFaktor(data)
+		err = database.EnergieversorgungAddFaktor(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.EnergieversorgungFind(data.IDEnergieversorgung)
-
-		is.Equal(updatedDoc, structs.Energieversorgung{
-			IDEnergieversorgung: 2,
-			Kategorie:           "Strom",
-			Einheit:             "g/kWh",
-			Revision:            1,
-			CO2Faktor: []structs.CO2Energie{
-				{Jahr: 2020, Vertraege: []structs.CO2FaktorVetrag{
-					{IDVertrag: 1, Wert: 285},
-				}},
-				{Jahr: 2021, Vertraege: []structs.CO2FaktorVetrag{
-					{IDVertrag: 1, Wert: 357},
-				}},
-				{Jahr: 2030, Vertraege: []structs.CO2FaktorVetrag{
-					{IDVertrag: 2, Wert: 400},
-				}},
-			},
-		}) // Ueberpruefung des geaenderten Elementes
+		updatedDoc, err := database.EnergieversorgungFind(data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des geaenderten Elementes
 	})
 
 	// Errortests
@@ -175,212 +167,135 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, ID = 2017", func(t *testing.T) {
+	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, DPName = B101XXXXXXHE000XXXXXXZ40CO00001", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		// hole altes Dokument
+		compareDoc, err := database.ZaehlerFindDPName("B101XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
+		is.NoErr(err)
+
+		location, _ := time.LoadLocation("Etc/GMT")
+		compareDoc.Zaehlerdaten = append(compareDoc.Zaehlerdaten, structs.Zaehlerwerte{
+			Wert:        1000.0,
+			Zeitstempel: time.Date(3001, time.May, 01, 0, 0, 0, 0, location).UTC(),
+		})
+
+		// update Dokument per Funktion
 		data := structs.AddZaehlerdaten{
-			PKEnergie:           2107,
+			DPName:              "B101XXXXXXHE000XXXXXXZ40CO00001",
 			Wert:                1000.0,
 			Jahr:                3001,
+			Monat:               5,
 			IDEnergieversorgung: 1,
 		}
-		location, _ := time.LoadLocation("Etc/GMT")
 
-		err := database.ZaehlerAddZaehlerdaten(data)
+		err = database.ZaehlerAddZaehlerdaten(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
-
-		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Waerme",
-			PKEnergie:   2107,
-			Bezeichnung: " 2101,2102,2108 Waerme Gruppenzaehler",
-			Zaehlerdaten: []structs.Zaehlerwerte{
-				{
-					Wert:        788.66,
-					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        794.8,
-					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        736.9,
-					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        859.29,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        697.07,
-					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        1000.0,
-					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-			},
-			Einheit:     "MWh",
-			Spezialfall: 1,
-			Revision:    1,
-			GebaeudeRef: []int32{2101, 2102, 2108},
-		}) // Ueberpruefung des geaenderten Elementes
+		updatedDoc, err := database.ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
+		is.NoErr(err)                    // Datenbank wirft keinen Fehler
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des geaenderten Elementes
 	})
 
-	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, ID = 5967", func(t *testing.T) {
+	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, ID = B102xxxxxxNA000xxxxxxZ01ED11005", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		// hole altes Dokument
+		compareDoc, err := database.ZaehlerFindDPName("B102xxxxxxNA000xxxxxxZ01ED11005", structs.IDEnergieversorgungStrom)
+		is.NoErr(err)
+
+		location, _ := time.LoadLocation("Etc/GMT")
+		compareDoc.Zaehlerdaten = append(compareDoc.Zaehlerdaten, structs.Zaehlerwerte{
+			Wert:        1000.0,
+			Zeitstempel: time.Date(3001, time.November, 01, 0, 0, 0, 0, location).UTC(),
+		})
+
+		// update Dokument per Funktion
 		data := structs.AddZaehlerdaten{
-			PKEnergie:           5967,
+			DPName:              "B102xxxxxxNA000xxxxxxZ01ED11005",
 			Wert:                1000.0,
 			Jahr:                3001,
+			Monat:               11,
 			IDEnergieversorgung: 2,
 		}
-		location, _ := time.LoadLocation("Etc/GMT")
 
-		err := database.ZaehlerAddZaehlerdaten(data)
+		err = database.ZaehlerAddZaehlerdaten(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
-
-		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Strom",
-			PKEnergie:   5967,
-			Bezeichnung: "2201 Strom Hauptzaehler",
-			Zaehlerdaten: []structs.Zaehlerwerte{
-				{
-					Wert:        0.0,
-					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        0.0,
-					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        0.0,
-					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        165440,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        197599.6,
-					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        1000.0,
-					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-			},
-			Einheit:     "kWh",
-			Spezialfall: 1,
-			Revision:    1,
-			GebaeudeRef: []int32{2201},
-		}) // Ueberpruefung des geaenderten Elementes
+		updatedDoc, err := database.ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des geaenderten Elementes
 	})
 
-	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, ID = 4023", func(t *testing.T) {
+	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, DPName = L101XXXXXXKA000XXXXXXZ50CO00001", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		// hole altes Dokument
+		compareDoc, err := database.ZaehlerFindDPName("L101XXXXXXKA000XXXXXXZ50CO00001", structs.IDEnergieversorgungKaelte)
+		is.NoErr(err)
+
+		location, _ := time.LoadLocation("Etc/GMT")
+		compareDoc.Zaehlerdaten = append(compareDoc.Zaehlerdaten, structs.Zaehlerwerte{
+			Wert:        1000.0,
+			Zeitstempel: time.Date(3001, time.February, 01, 0, 0, 0, 0, location).UTC(),
+		})
+
+		// update Dokument per Funktion
 		data := structs.AddZaehlerdaten{
-			PKEnergie:           4023,
+			DPName:              "L101XXXXXXKA000XXXXXXZ50CO00001",
 			Wert:                1000.0,
 			Jahr:                3001,
+			Monat:               2,
 			IDEnergieversorgung: 3,
 		}
-		location, _ := time.LoadLocation("Etc/GMT")
 
-		err := database.ZaehlerAddZaehlerdaten(data)
+		err = database.ZaehlerAddZaehlerdaten(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
-
-		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Kaelte",
-			PKEnergie:   4023,
-			Bezeichnung: "3101 Kaelte Hauptzaehler",
-			Zaehlerdaten: []structs.Zaehlerwerte{
-				{
-					Wert:        414.61,
-					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        555.3,
-					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        169.59,
-					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        380.67,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        370.39,
-					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        1000.0,
-					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-			},
-			Einheit:     "MWh",
-			Spezialfall: 1,
-			Revision:    1,
-			GebaeudeRef: []int32{3101},
-		}) // Ueberpruefung des geaenderten Elementes
+		updatedDoc, err := database.ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
+		is.NoErr(err)
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des geaenderten Elementes
 	})
 
 	t.Run("ZaehlerAddZaehlerdaten: Ueberschreiben von Wert 0.0 bei Zaehler", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		data := structs.AddZaehlerdaten{
-			PKEnergie:           5967,
-			Wert:                5643,
-			Jahr:                2018,
-			IDEnergieversorgung: 2,
-		}
-		location, _ := time.LoadLocation("Etc/GMT")
+		// hole altes Dokument
+		compareDoc, err := database.ZaehlerFindDPName("B101XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
+		is.NoErr(err)
 
-		err := database.ZaehlerAddZaehlerdaten(data)
+		location, _ := time.LoadLocation("Etc/GMT")
+		compareDoc.Zaehlerdaten = append(compareDoc.Zaehlerdaten, structs.Zaehlerwerte{
+			Wert:        1030.0,
+			Zeitstempel: time.Date(3005, time.May, 01, 0, 0, 0, 0, location).UTC(),
+		})
+
+		// update Dokument per Funktion
+		data := structs.AddZaehlerdaten{
+			DPName:              "B101XXXXXXHE000XXXXXXZ40CO00001",
+			Wert:                0.0,
+			Jahr:                3005,
+			Monat:               5,
+			IDEnergieversorgung: 1,
+		}
+
+		err = database.ZaehlerAddZaehlerdaten(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		data = structs.AddZaehlerdaten{
+			DPName:              "B101XXXXXXHE000XXXXXXZ40CO00001",
+			Wert:                1030.0,
+			Jahr:                3005,
+			Monat:               5,
+			IDEnergieversorgung: 1,
+		}
 
-		is.Equal(updatedDoc, structs.Zaehler{Zaehlertyp: "Strom",
-			PKEnergie:   5967,
-			Bezeichnung: "2201 Strom Hauptzaehler",
-			Zaehlerdaten: []structs.Zaehlerwerte{
-				{
-					Wert:        0.0,
-					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        0.0,
-					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        5643.0,
-					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        165440,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        197599.6,
-					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        1000.0,
-					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-			},
-			Einheit:     "kWh",
-			Spezialfall: 1,
-			Revision:    1,
-			GebaeudeRef: []int32{2201},
-		}) // Ueberpruefung des geaenderten Elementes
+		err = database.ZaehlerAddZaehlerdaten(data)
+		is.NoErr(err) // kein Error seitens der Datenbank
+
+		updatedDoc, _ := database.ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
+
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des geaenderten Elementes
 	})
 
 	// Errortests
@@ -388,9 +303,10 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.AddZaehlerdaten{
-			PKEnergie:           0,
-			Wert:                1000.0,
-			Jahr:                3000,
+			DPName:              "B101XXXXXXHE000XXXXXXZ40CO00001",
+			Wert:                550.0,
+			Jahr:                3006,
+			Monat:               5,
 			IDEnergieversorgung: 0,
 		}
 
@@ -398,13 +314,14 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Funktion wirft ErrIDEnergieversorgungNichtVorhanden
 	})
 
-	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, ID nicht vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, DPName nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.AddZaehlerdaten{
-			PKEnergie:           0,
-			Wert:                1000.0,
-			Jahr:                3000,
+			DPName:              "B101XXXXXXHE000XXXXXXZ40CO00",
+			Wert:                550.0,
+			Jahr:                3006,
+			Monat:               5,
 			IDEnergieversorgung: 1,
 		}
 
@@ -412,27 +329,29 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 	})
 
-	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, Jahr schon vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerAddZaehlerdaten: Waermezaehler, Jahr und Monat schon vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.AddZaehlerdaten{
-			PKEnergie:           2107,
+			DPName:              "B101XXXXXXHE000XXXXXXZ40CO00001",
 			Wert:                1000.0,
-			Jahr:                2020,
+			Jahr:                3001,
+			Monat:               5,
 			IDEnergieversorgung: 1,
 		}
 
 		err := database.ZaehlerAddZaehlerdaten(data)
-		is.Equal(err, structs.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+		is.Equal(err, structs.ErrJahrUndMonatVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 
-	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, ID nicht vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, DPName nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.AddZaehlerdaten{
-			PKEnergie:           0,
-			Wert:                1000.0,
-			Jahr:                3000,
+			DPName:              "B101XXXXXXHE000XXXXXXZ40CO00",
+			Wert:                550.0,
+			Jahr:                3006,
+			Monat:               5,
 			IDEnergieversorgung: 2,
 		}
 
@@ -440,27 +359,29 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 	})
 
-	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, Jahr schon vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerAddZaehlerdaten: Stromzaehler, Jahr und Monat schon vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.AddZaehlerdaten{
-			PKEnergie:           5967,
+			DPName:              "B102xxxxxxNA000xxxxxxZ01ED11005",
 			Wert:                1000.0,
-			Jahr:                2021,
+			Jahr:                3001,
+			Monat:               11,
 			IDEnergieversorgung: 2,
 		}
 
 		err := database.ZaehlerAddZaehlerdaten(data)
-		is.Equal(err, structs.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+		is.Equal(err, structs.ErrJahrUndMonatVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 
-	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, ID nicht vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, DPName nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.AddZaehlerdaten{
-			PKEnergie:           0,
-			Wert:                1000.0,
-			Jahr:                3000,
+			DPName:              "B101XXXXXXHE000XXXXXXZ40CO00",
+			Wert:                550.0,
+			Jahr:                3006,
+			Monat:               5,
 			IDEnergieversorgung: 3,
 		}
 
@@ -468,18 +389,19 @@ func TestZaehlerAddZaehlerdaten(t *testing.T) {
 		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
 	})
 
-	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, Jahr schon vorhanden", func(t *testing.T) {
+	t.Run("ZaehlerAddZaehlerdaten: Kaeltezaehler, Jahr und Monat schon vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.AddZaehlerdaten{
-			PKEnergie:           4023,
+			DPName:              "L101XXXXXXKA000XXXXXXZ50CO00001",
 			Wert:                1000.0,
-			Jahr:                2020,
+			Jahr:                3001,
+			Monat:               2,
 			IDEnergieversorgung: 3,
 		}
 
 		err := database.ZaehlerAddZaehlerdaten(data)
-		is.Equal(err, structs.ErrJahrVorhanden) // Funktion wirft ErrJahrVorhanden
+		is.Equal(err, structs.ErrJahrUndMonatVorhanden) // Funktion wirft ErrJahrVorhanden
 	})
 }
 
@@ -490,54 +412,28 @@ func TestZaehlerAddStandardZaehlerdaten(t *testing.T) {
 	t.Run("AddStandardZaehlerdaten", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
-		data := structs.AddStandardZaehlerdaten{
-			Jahr: 3000,
-		}
+		// hole altes Dokument
+		compareDoc, err := database.ZaehlerFindDPName("B101XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
+		is.NoErr(err)
+
 		location, _ := time.LoadLocation("Etc/GMT")
+		compareDoc.Zaehlerdaten = append(compareDoc.Zaehlerdaten, structs.Zaehlerwerte{
+			Wert:        0.0,
+			Zeitstempel: time.Date(3000, time.August, 01, 0, 0, 0, 0, location).UTC(),
+		})
 
-		err := database.ZaehlerAddStandardZaehlerdaten(data)
+		// update Dokument per Funktion
+		data := structs.AddStandardZaehlerdaten{
+			Jahr:  3000,
+			Monat: 8,
+		}
+
+		err = database.ZaehlerAddStandardZaehlerdaten(data)
 		is.NoErr(err) // Datenbank wirft keinen Fehler
 
-		zaehler, err := database.ZaehlerFind(2107, 1)
-		is.NoErr(err) // Datenbank wirft keinen Fehler
-		is.Equal(zaehler, structs.Zaehler{Zaehlertyp: "Waerme",
-			PKEnergie:   2107,
-			Bezeichnung: " 2101,2102,2108 Waerme Gruppenzaehler",
-			Zaehlerdaten: []structs.Zaehlerwerte{
-				{
-					Wert:        788.66,
-					Zeitstempel: time.Date(2020, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        794.8,
-					Zeitstempel: time.Date(2019, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        736.9,
-					Zeitstempel: time.Date(2018, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        859.29,
-					Zeitstempel: time.Date(2021, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        697.07,
-					Zeitstempel: time.Date(2022, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        1000.0,
-					Zeitstempel: time.Date(3001, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-				{
-					Wert:        0.0,
-					Zeitstempel: time.Date(3000, time.January, 01, 0, 0, 0, 0, location).UTC(),
-				},
-			},
-			Einheit:     "MWh",
-			Spezialfall: 1,
-			Revision:    1,
-			GebaeudeRef: []int32{2101, 2102, 2108},
-		}) // Ueberpruefung des geaenderten Elementes)
+		updatedDoc, err := database.ZaehlerFindDPName("B101XXXXXXHE000XXXXXXZ40CO00001", structs.IDEnergieversorgungWaerme)
+		is.NoErr(err)                    // Datenbank wirft keinen Fehler
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des geaenderten Elementes)
 	})
 }
 
@@ -549,159 +445,66 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var nr int32 = 1101
-		var ref int32 = 999
+		ref, _ := primitive.ObjectIDFromHex("B203XXXXXXHE000XXXXXXZ40CO00002")
 		var idEnergieversorgung int32 = 1
 
-		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
+		// hole altes Dokument
+		compareDoc, err := database.GebaeudeFind(nr)
+		is.NoErr(err)
+
+		compareDoc.WaermeRef = append(compareDoc.WaermeRef, ref)
+
+		// update Dokument per Funktion
+		err = database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.GebaeudeFind(nr)
-		is.Equal(updatedDoc, structs.Gebaeude{
-			Nr:          1101,
-			Bezeichnung: "Universitaetszentrum, karo 5, Audimax",
-			Flaeche: structs.GebaeudeFlaeche{
-				HNF:     6395.56,
-				NNF:     3081.85,
-				NGF:     15365.03,
-				FF:      5539.21,
-				VF:      5887.62,
-				FreiF:   96.57,
-				GesamtF: 21000.81,
-			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			KaelteRef: []int32{},
-			WaermeRef: []int32{2084, 999},
-			StromRef:  []int32{26024, 24799},
-		}) // Ueberpruefung des zurueckgelieferten Elements
+		updatedDoc, err := database.GebaeudeFind(nr)
+		is.NoErr(err)
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
 	t.Run("GebaeudeAddZaehlerref: ID = 1102, idEnergieversorgung = 2", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var nr int32 = 1102
-		var ref int32 = 999
+		ref, _ := primitive.ObjectIDFromHex("B203XXXXXXHE000XXXXXXZ40CO00002")
 		var idEnergieversorgung int32 = 2
 
-		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
+		// hole altes Dokument
+		compareDoc, err := database.GebaeudeFind(nr)
+		is.NoErr(err)
+
+		compareDoc.StromRef = append(compareDoc.StromRef, ref)
+
+		// update Dokument per Funktion
+		err = database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.GebaeudeFind(nr)
-		is.Equal(updatedDoc, structs.Gebaeude{
-			Nr:          1102,
-			Bezeichnung: "Altes Hauptgebaeude (Westfluegel)",
-			Flaeche: structs.GebaeudeFlaeche{
-				HNF:     2632.27,
-				NNF:     168.53,
-				NGF:     4152.24,
-				FF:      99,
-				VF:      1351.44,
-				FreiF:   0,
-				GesamtF: 4251.24,
-			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			KaelteRef: []int32{},
-			WaermeRef: []int32{2348},
-			StromRef:  []int32{28175, 999},
-		}) // Ueberpruefung des zurueckgelieferten Elements
+		updatedDoc, err := database.GebaeudeFind(nr)
+		is.NoErr(err)
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
 	t.Run("GebaeudeAddZaehlerref: ID = 1103, idEnergieversorgung = 3", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var nr int32 = 1103
-		var ref int32 = 999
+		ref, _ := primitive.ObjectIDFromHex("B203XXXXXXHE000XXXXXXZ40CO00002")
 		var idEnergieversorgung int32 = 3
 
-		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
+		// hole altes Dokument
+		compareDoc, err := database.GebaeudeFind(nr)
+		is.NoErr(err)
+
+		compareDoc.KaelteRef = append(compareDoc.KaelteRef, ref)
+
+		// update Dokument per Funktion
+		err = database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.GebaeudeFind(nr)
-		is.Equal(updatedDoc, structs.Gebaeude{
-			Nr:          1103,
-			Bezeichnung: "Altes Hauptgebaeude",
-			Flaeche: structs.GebaeudeFlaeche{
-				HNF:     11745.22,
-				NNF:     2191.86,
-				NGF:     20297.78,
-				FF:      2438.26,
-				VF:      6360.7,
-				FreiF:   0,
-				GesamtF: 22736.04,
-			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			KaelteRef: []int32{999},
-			WaermeRef: []int32{2349, 2350, 2351, 2352, 2353, 2354},
-			StromRef:  []int32{28175},
-		}) // Ueberpruefung des zurueckgelieferten Elements
+		updatedDoc, err := database.GebaeudeFind(nr)
+		is.NoErr(err)
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
 	// dieser Fall sollte nicht auftreten
@@ -709,16 +512,19 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var nr int32 = 1108
-		var ref int32 = 2250
+		ref, _ := primitive.ObjectIDFromHex("6710a1ca3a47b613426ff65a")
 		var idEnergieversorgung int32 = 1
 
-		doc, _ := database.GebaeudeFind(nr)
+		// hole altes Dokument
+		compareDoc, _ := database.GebaeudeFind(nr)
 
+		// update Dokument per Funktion
 		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		updatedDoc, _ := database.GebaeudeFind(nr)
-		is.Equal(updatedDoc, doc) // Ueberpruefung des zurueckgelieferten Elements
+		updatedDoc, err := database.GebaeudeFind(nr)
+		is.NoErr(err)
+		is.Equal(updatedDoc, compareDoc) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
 	// Errortests
@@ -726,7 +532,7 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var nr int32 = -12
-		var ref int32 = 999
+		ref := primitive.NewObjectID()
 		var idEnergieversorgung int32 = 3
 
 		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
@@ -737,7 +543,7 @@ func TestGebaeudeAddZaehlerref(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		var nr int32 = 1101
-		var ref int32 = 999
+		ref := primitive.NewObjectID()
 		var idEnergieversorgung int32 = 0
 
 		err := database.GebaeudeAddZaehlerref(nr, ref, idEnergieversorgung)
@@ -749,9 +555,19 @@ func TestGebaeudeAddVersorger(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("AddVersorger: Gebaeude Nr 1101", func(t *testing.T) {
+	t.Run("AddVersorger: Gebaeude Nr 1102", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		// hole altes Dokument
+		compareDoc, err := database.GebaeudeFind(1102)
+		is.NoErr(err)
+
+		compareDoc.Waermeversorger = append(compareDoc.Waermeversorger, structs.Versoger{
+			Jahr:      3005,
+			IDVertrag: 2,
+		})
+
+		// update Dokument per Funktion
 		data := structs.AddVersorger{
 			Nr:                  1102,
 			Jahr:                3005,
@@ -759,52 +575,12 @@ func TestGebaeudeAddVersorger(t *testing.T) {
 			IDVertrag:           2,
 		}
 
-		err := database.GebaeudeAddVersorger(data)
+		err = database.GebaeudeAddVersorger(data)
 		is.NoErr(err) // Datenbank wirft keinen Fehler
 
 		gebaeude, err := database.GebaeudeFind(1102)
 		is.NoErr(err)
-		is.Equal(gebaeude, structs.Gebaeude{
-			Nr:          1102,
-			Bezeichnung: "Altes Hauptgebaeude (Westfluegel)",
-			Flaeche: structs.GebaeudeFlaeche{
-				HNF:     2632.27,
-				NNF:     168.53,
-				NGF:     4152.24,
-				FF:      99,
-				VF:      1351.44,
-				FreiF:   0,
-				GesamtF: 4251.24,
-			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-				{Jahr: 3005, IDVertrag: 2},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			KaelteRef: []int32{},
-			WaermeRef: []int32{2348},
-			StromRef:  []int32{28175, 999},
-		}) // Ueberpruefung des zurueckgelieferten Elements
+		is.Equal(gebaeude, compareDoc) // Ueberpruefung des zurueckgelieferten Elements
 	})
 
 	// Errortests
@@ -854,8 +630,8 @@ func TestGebaeudeAddVersorger(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.AddVersorger{
-			Nr:                  1101,
-			Jahr:                2018,
+			Nr:                  1102,
+			Jahr:                3005,
 			IDEnergieversorgung: 1,
 			IDVertrag:           1,
 		}
@@ -872,58 +648,34 @@ func TestGebaeudeAddStandardVersorger(t *testing.T) {
 	t.Run("AddStandardVersorger", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		// hole altes Dokument
+		compareDoc, err := database.GebaeudeFind(1101)
+		is.NoErr(err)
+
+		compareDoc.Stromversorger = append(compareDoc.Stromversorger, structs.Versoger{
+			Jahr:      3000,
+			IDVertrag: 1,
+		})
+		compareDoc.Waermeversorger = append(compareDoc.Waermeversorger, structs.Versoger{
+			Jahr:      3000,
+			IDVertrag: 1,
+		})
+		compareDoc.Kaelteversorger = append(compareDoc.Kaelteversorger, structs.Versoger{
+			Jahr:      3000,
+			IDVertrag: 1,
+		})
+
+		// update Dokument per Funktion
 		data := structs.AddStandardVersorger{
 			Jahr: 3000,
 		}
 
-		err := database.GebaeudeAddStandardVersorger(data)
+		err = database.GebaeudeAddStandardVersorger(data)
 		is.NoErr(err) // Datenbank wirft keinen Fehler
 
-		gebaeude, err := database.GebaeudeFind(1101)
+		updatedDoc, err := database.GebaeudeFind(1101)
 		is.NoErr(err)
-		is.Equal(gebaeude, structs.Gebaeude{
-			Nr:          1101,
-			Bezeichnung: "Universitaetszentrum, karo 5, Audimax",
-			Flaeche: structs.GebaeudeFlaeche{
-				HNF:     6395.56,
-				NNF:     3081.85,
-				NGF:     15365.03,
-				FF:      5539.21,
-				VF:      5887.62,
-				FreiF:   96.57,
-				GesamtF: 21000.81,
-			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-				{Jahr: 3000, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-				{Jahr: 3000, IDVertrag: 1},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-				{Jahr: 3000, IDVertrag: 1},
-			},
-			KaelteRef: []int32{},
-			WaermeRef: []int32{2084, 999},
-			StromRef:  []int32{26024, 24799},
-		}) // Überprüfung des zurückgelieferten Elements
+		is.Equal(updatedDoc, compareDoc) // Überprüfung des zurückgelieferten Elements
 	})
 }
 
@@ -936,25 +688,20 @@ func TestNutzerdatenAddUmfrageref(t *testing.T) {
 
 		username := "anton"
 		id := primitive.NewObjectID()
-		objID, _ := primitive.ObjectIDFromHex("61b1ceb3dfb93b34b1305b70")
 
-		var idVorhanden primitive.ObjectID
-		err := idVorhanden.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
+		// hole altes Dokument
+		compareDoc, err := database.NutzerdatenFind(username)
 		is.NoErr(err)
 
+		compareDoc.UmfrageRef = append(compareDoc.UmfrageRef, id)
+
+		// update Dokument per Funktion
 		err = database.NutzerdatenAddUmfrageref(username, id)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
 		updatedDoc, err := database.NutzerdatenFind(username)
-		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(updatedDoc, structs.Nutzerdaten{
-			NutzerID:   objID,
-			EMail:      "anton@tobi.com",
-			Nutzername: "anton",
-			Rolle:      0,
-			Revision:   2,
-			UmfrageRef: []primitive.ObjectID{idVorhanden, id},
-		}) // Überprüfung des zurückgelieferten Elements
+		is.NoErr(err)                    // kein Error seitens der Datenbank
+		is.Equal(updatedDoc, compareDoc) // Überprüfung des zurückgelieferten Elements
 	})
 
 	// Errortests
@@ -976,35 +723,22 @@ func TestUmfrageAddMitarbeiterUmfrageRef(t *testing.T) {
 	t.Run("UmfrageAddMitarbeiterUmfrageRef: ID = 61b23e9855aa64762baf76d7", func(t *testing.T) {
 		is.NewRelaxed(t)
 
-		var idUmfrage primitive.ObjectID
-		err := idUmfrage.UnmarshalText([]byte("61b23e9855aa64762baf76d7"))
-		is.NoErr(err)
-		var idVorhanden primitive.ObjectID
-		err = idVorhanden.UnmarshalText([]byte("61b34f9324756df01eee5ff4"))
-		is.NoErr(err)
-
+		idUmfrage, _ := primitive.ObjectIDFromHex("61b23e9855aa64762baf76d7")
 		referenz := primitive.NewObjectID()
 
+		// hole altes Dokument
+		compareDoc, err := database.UmfrageFind(idUmfrage)
+		is.NoErr(err)
+
+		compareDoc.MitarbeiterumfrageRef = append(compareDoc.MitarbeiterumfrageRef, referenz)
+
+		// update Dokument per Funktion
 		err = database.UmfrageAddMitarbeiterUmfrageRef(idUmfrage, referenz)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
 		updatedDoc, err := database.UmfrageFind(idUmfrage)
-		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(updatedDoc, structs.Umfrage{
-			ID:                idUmfrage,
-			Bezeichnung:       "testumfrage1",
-			Mitarbeiteranzahl: 10,
-			Jahr:              2020,
-			Gebaeude: []structs.UmfrageGebaeude{
-				{GebaeudeNr: 1101, Nutzflaeche: 100},
-			},
-			ITGeraete: []structs.UmfrageITGeraete{
-				{IDITGeraete: 5, Anzahl: 10},
-			},
-			AuswertungFreigegeben: 0,
-			Revision:              1,
-			MitarbeiterumfrageRef: []primitive.ObjectID{idVorhanden, referenz},
-		}) // Überprüfung des zurückgelieferten Elements
+		is.NoErr(err)                    // kein Error seitens der Datenbank
+		is.Equal(updatedDoc, compareDoc) // Überprüfung des zurückgelieferten Elements
 	})
 
 	// Errortests

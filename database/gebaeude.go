@@ -64,7 +64,7 @@ func intInSlice(a int32, list []int32) bool {
 }
 
 // GebaeudeInsert fuegt ein Gebaeude in die Datenbank ein, falls die Nr noch nicht vorhanden ist.
-func GebaeudeInsert(data structs.InsertGebaeude) error {
+func GebaeudeInsert(data structs.InsertGebaeude) (primitive.ObjectID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), structs.TimeoutDuration)
 	defer cancel()
 
@@ -72,7 +72,7 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 
 	_, err := GebaeudeFind(data.Nr)
 	if err == nil { // kein Error = Nr schon vorhanden
-		return structs.ErrGebaeudeVorhanden
+		return primitive.NilObjectID, structs.ErrGebaeudeVorhanden
 	}
 
 	aktuellesJahr := int32(time.Now().Year())
@@ -118,10 +118,12 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 		}
 	}
 
+	gebaeudeID := primitive.NewObjectID()
+
 	_, err = collection.InsertOne(
 		ctx,
 		structs.Gebaeude{
-			GebaeudeID:      primitive.NewObjectID(),
+			GebaeudeID:      gebaeudeID,
 			Nr:              data.Nr,
 			Bezeichnung:     data.Bezeichnung,
 			Flaeche:         data.Flaeche,
@@ -139,10 +141,10 @@ func GebaeudeInsert(data structs.InsertGebaeude) error {
 	if err != nil {
 		log.Println(err)
 		log.Println(string(debug.Stack()))
-		return err
+		return primitive.NilObjectID, err
 	}
 
-	return nil
+	return gebaeudeID, nil
 }
 
 // Hilfsfunktion, die überprüft, ob ein Jahr in einem Versorger Slice vorkommt
