@@ -251,7 +251,7 @@ func binaereZahlerdatenFuerZaehler(alleZaehler []structs.ZaehlerUndZaehlerdaten)
 
 	for _, zaehler := range alleZaehler {
 		var new_zaehler structs.ZaehlerUndZaehlerdatenVorhanden
-		new_zaehler.PKEnergie = zaehler.PKEnergie
+		new_zaehler.ZaehlerID = zaehler.ZaehlerID
 
 		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
 			found := false

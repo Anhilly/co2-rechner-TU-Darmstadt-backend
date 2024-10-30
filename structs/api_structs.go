@@ -18,7 +18,7 @@ type AlleGebaeudeUndZaehlerRes struct {
 }
 
 type ZaehlerUndZaehlerdatenVorhanden struct {
-	PKEnergie             int32                  `json:"pkEnergie"`
+	ZaehlerID             primitive.ObjectID     `json:"zaehlerID"`
 	ZaehlerdatenVorhanden []ZaehlerwertVorhanden `json:"zaehlerdatenVorhanden"`
 }
 
@@ -42,25 +42,28 @@ type AddCO2Faktor struct {
 }
 
 type AddZaehlerdaten struct {
-	PKEnergie           int32   `json:"pkEnergie"`
+	DPName              string  `json:"dpName"`
 	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
 	Jahr                int32   `json:"jahr"`
+	Monat               int32   `json:"monat"`
 	Wert                float64 `json:"wert"`
 }
 
 type AddStandardZaehlerdaten struct {
-	Jahr int32 `json:"jahr"`
+	Jahr  int32 `json:"jahr"`
+	Monat int32 `json:"monat"`
 }
 
 type AddZaehlerdatenCSV struct {
-	PKEnergie           []int32   `json:"pkEnergie"`
+	DPName              []string  `json:"dpName"`
 	IDEnergieversorgung []int32   `json:"idEnergieversorgung"`
-	Jahr                int32     `json:"jahr"`
+	Jahr                []int32   `json:"jahr"`
+	Monat               []int32   `json:"monat"`
 	Wert                []float64 `json:"wert"`
 }
 
 type InsertZaehler struct {
-	PKEnergie           int32   `json:"pkEnergie"`
+	DPName              string  `json:"dpName"`
 	IDEnergieversorgung int32   `json:"idEnergieversorgung"`
 	Bezeichnung         string  `json:"bezeichnung"`
 	Einheit             string  `json:"einheit"`

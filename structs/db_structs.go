@@ -11,20 +11,21 @@ Im dieser Datei sind die Dokumententype zur Emissionsberechnung als structs aufg
 
 // collection gebaeude
 type Gebaeude struct {
-	Nr          int32           `json:"nr" bson:"nr"` // (index)
-	Bezeichnung string          `json:"bezeichnung" bson:"bezeichnung"`
-	Flaeche     GebaeudeFlaeche `json:"flaeche" bson:"flaeche"`
-	Einheit     string          `json:"einheit" bson:"einheit"`
-	Spezialfall int32           `json:"spezialfall" bson:"spezialfall"`
-	Revision    int32           `json:"revision" bson:"revision"`
+	GebaeudeID  primitive.ObjectID `json:"_id" bson:"_id"`
+	Nr          int32              `json:"nr" bson:"nr"` // (index)
+	Bezeichnung string             `json:"bezeichnung" bson:"bezeichnung"`
+	Flaeche     GebaeudeFlaeche    `json:"flaeche" bson:"flaeche"`
+	Einheit     string             `json:"einheit" bson:"einheit"`
+	Spezialfall int32              `json:"spezialfall" bson:"spezialfall"`
+	Revision    int32              `json:"revision" bson:"revision"`
 
 	Stromversorger  []Versoger `json:"stromversorger" bson:"stromversorger"`
 	Waermeversorger []Versoger `json:"waermeversorger" bson:"waermeversorger"`
 	Kaelteversorger []Versoger `json:"kaelteversorger" bson:"kaelteversorger"`
 
-	KaelteRef []int32 `json:"kaelteRef" bson:"kaelteRef"` // -> Kaeltezaehler.pkEnergie
-	WaermeRef []int32 `json:"waermeRef" bson:"waermeRef"` // -> Waermezaehler.pkEnergie
-	StromRef  []int32 `json:"stromRef" bson:"stromRef"`   // -> Stromzaehler.pkEnergie
+	KaelteRef []primitive.ObjectID `json:"kaelteRef" bson:"kaelteRef"` // -> Kaeltezaehler._id
+	WaermeRef []primitive.ObjectID `json:"waermeRef" bson:"waermeRef"` // -> Waermezaehler._id
+	StromRef  []primitive.ObjectID `json:"stromRef" bson:"stromRef"`   // -> Stromzaehler._id
 }
 
 type GebaeudeFlaeche struct {
@@ -43,29 +44,30 @@ type Versoger struct {
 }
 
 type GebaeudeNrUndZaehlerRef struct {
-	Nr        int32   `json:"nr" bson:"nr"`
-	KaelteRef []int32 `json:"kaelteRef" bson:"kaelteRef"`
-	WaermeRef []int32 `json:"waermeRef" bson:"waermeRef"`
-	StromRef  []int32 `json:"stromRef" bson:"stromRef"`
+	Nr        int32                `json:"nr" bson:"nr"`
+	KaelteRef []primitive.ObjectID `json:"kaelteRef" bson:"kaelteRef"`
+	WaermeRef []primitive.ObjectID `json:"waermeRef" bson:"waermeRef"`
+	StromRef  []primitive.ObjectID `json:"stromRef" bson:"stromRef"`
 }
 
 // Uebertyp fuer Kaeltezaehler, Waermezaehler und Stromzaehler
 type Zaehler struct {
-	Zaehlertyp   string         `json:"-" bson:"-"`                 // Feld wird nur in Go benutzt
-	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"` // (index)
-	Bezeichnung  string         `json:"bezeichnung" bson:"bezeichnung"`
-	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
-	Einheit      string         `json:"einheit" bson:"einheit"`
-	Spezialfall  int32          `json:"spezialfall" bson:"spezialfall"`
-	Revision     int32          `json:"revision" bson:"revision"`
+	ZaehlerID    primitive.ObjectID `json:"_id" bson:"_id"`
+	Zaehlertyp   string             `json:"-" bson:"-"` // Feld wird nur in Go benutzt
+	DPName       string             `json:"dpName" bson:"dpName"`
+	Bezeichnung  string             `json:"bezeichnung" bson:"bezeichnung"`
+	Zaehlerdaten []Zaehlerwerte     `json:"zaehlerdaten" bson:"zaehlerdaten"`
+	Einheit      string             `json:"einheit" bson:"einheit"`
+	Spezialfall  int32              `json:"spezialfall" bson:"spezialfall"`
+	Revision     int32              `json:"revision" bson:"revision"`
 
-	GebaeudeRef []int32 `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
+	GebaeudeRef []primitive.ObjectID `json:"gebaeudeRef" bson:"gebaeudeRef"` // -> Gebaeude.nr
 }
 
 // Uebertyp fuer Kaeltezaehler, Waermezaehler und Stromzaehler
 type ZaehlerUndZaehlerdaten struct {
-	PKEnergie    int32          `json:"pkEnergie" bson:"pkEnergie"`
-	Zaehlerdaten []Zaehlerwerte `json:"zaehlerdaten" bson:"zaehlerdaten"`
+	ZaehlerID    primitive.ObjectID `json:"_id" bson:"_id"`
+	Zaehlerdaten []Zaehlerwerte     `json:"zaehlerdaten" bson:"zaehlerdaten"`
 }
 
 type Zaehlerwerte struct {

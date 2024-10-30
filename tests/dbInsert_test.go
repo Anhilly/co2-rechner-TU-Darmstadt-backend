@@ -59,12 +59,22 @@ func TestGebaeudeInsert(t *testing.T) {
 			},
 		}
 
-		err := database.GebaeudeInsert(data)
+		newGebaeudeOID, err := database.GebaeudeInsert(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
+
+		aktuellesJahr := int32(time.Now().Year())
+		var versoger []structs.Versoger
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			versoger = append(versoger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragTU,
+			})
+		}
 
 		insertedDoc, err := database.GebaeudeFind(data.Nr)
 		is.NoErr(err) // kein Error seitens der Datenbank
 		is.Equal(insertedDoc, structs.Gebaeude{
+			GebaeudeID:  newGebaeudeOID,
 			Nr:          0,
 			Bezeichnung: "Testgebaeude",
 			Flaeche: structs.GebaeudeFlaeche{
@@ -76,39 +86,15 @@ func TestGebaeudeInsert(t *testing.T) {
 				FreiF:   1000.0,
 				GesamtF: 1000.0,
 			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-				{Jahr: 2023, IDVertrag: 1},
-				{Jahr: 2024, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-				{Jahr: 2023, IDVertrag: 1},
-				{Jahr: 2024, IDVertrag: 1},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-				{Jahr: 2023, IDVertrag: 1},
-				{Jahr: 2024, IDVertrag: 1},
-			},
-			KaelteRef: []int32{},
-			WaermeRef: []int32{},
-			StromRef:  []int32{},
+			Einheit:         "m^2",
+			Spezialfall:     1,
+			Revision:        2,
+			Stromversorger:  versoger,
+			Waermeversorger: versoger,
+			Kaelteversorger: versoger,
+			KaelteRef:       []primitive.ObjectID{},
+			WaermeRef:       []primitive.ObjectID{},
+			StromRef:        []primitive.ObjectID{},
 		}) // Ueberpruefung des geaenderten Elementes
 	})
 
@@ -132,12 +118,32 @@ func TestGebaeudeInsert(t *testing.T) {
 			StromVersorgerJahre:  []int32{2023},
 		}
 
-		err := database.GebaeudeInsert(data)
+		newGebaeudeOID, err := database.GebaeudeInsert(data)
 		is.NoErr(err) // kein Error seitens der Datenbank
 
-		insertedDoc, err := database.GebaeudeFind(data.Nr)
-		is.NoErr(err) // kein Error seitens der Datenbank
-		is.Equal(insertedDoc, structs.Gebaeude{
+		aktuellesJahr := int32(time.Now().Year())
+		var stromversoger []structs.Versoger
+		var waermeversoger []structs.Versoger
+		var kaelteversoger []structs.Versoger
+		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
+			stromversoger = append(stromversoger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragTU,
+			})
+
+			waermeversoger = append(waermeversoger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragTU,
+			})
+
+			kaelteversoger = append(kaelteversoger, structs.Versoger{
+				Jahr:      int32(i),
+				IDVertrag: structs.IDVertragTU,
+			})
+		}
+
+		compareDoc := structs.Gebaeude{
+			GebaeudeID:  newGebaeudeOID,
 			Nr:          1,
 			Bezeichnung: "Testgebaeude",
 			Flaeche: structs.GebaeudeFlaeche{
@@ -149,40 +155,24 @@ func TestGebaeudeInsert(t *testing.T) {
 				FreiF:   1000.0,
 				GesamtF: 1000.0,
 			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-				{Jahr: 2023, IDVertrag: 2},
-				{Jahr: 2024, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 2},
-				{Jahr: 2019, IDVertrag: 2},
-				{Jahr: 2020, IDVertrag: 2},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-				{Jahr: 2023, IDVertrag: 1},
-				{Jahr: 2024, IDVertrag: 1},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 2},
-				{Jahr: 2022, IDVertrag: 1},
-				{Jahr: 2023, IDVertrag: 1},
-				{Jahr: 2024, IDVertrag: 1},
-			},
-			KaelteRef: []int32{},
-			WaermeRef: []int32{},
-			StromRef:  []int32{},
-		}) // Ueberpruefung des geaenderten Elementes
+			Einheit:         "m^2",
+			Spezialfall:     1,
+			Revision:        2,
+			Stromversorger:  stromversoger,
+			Waermeversorger: waermeversoger,
+			Kaelteversorger: kaelteversoger,
+			KaelteRef:       []primitive.ObjectID{},
+			WaermeRef:       []primitive.ObjectID{},
+			StromRef:        []primitive.ObjectID{},
+		}
+
+		compareDoc.Waermeversorger[0].IDVertrag = 2
+		compareDoc.Kaelteversorger[1].IDVertrag = 2
+		compareDoc.Stromversorger[3].IDVertrag = 2
+
+		insertedDoc, err := database.GebaeudeFind(data.Nr)
+		is.NoErr(err)                     // kein Error seitens der Datenbank
+		is.Equal(insertedDoc, compareDoc) // Ueberpruefung des geaenderten Elementes
 	})
 
 	// Errortest
@@ -190,7 +180,7 @@ func TestGebaeudeInsert(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.InsertGebaeude{
-			Nr:          0,
+			Nr:          1101,
 			Bezeichnung: "Testgebaeude",
 			Flaeche: structs.GebaeudeFlaeche{
 				HNF:     1000.0,
@@ -203,8 +193,9 @@ func TestGebaeudeInsert(t *testing.T) {
 			},
 		}
 
-		err := database.GebaeudeInsert(data)
+		oid, err := database.GebaeudeInsert(data)
 		is.Equal(err, structs.ErrGebaeudeVorhanden) // Funktion wirft ErrGebaeudeVorhanden
+		is.Equal(oid, primitive.NilObjectID)
 	})
 }
 
@@ -212,250 +203,169 @@ func TestZaehlerInsert(t *testing.T) {
 	is := is.NewRelaxed(t)
 
 	// Normalfall
-	t.Run("ZaehlerInsert: Waermezaehler, ID = 190", func(t *testing.T) {
+	t.Run("ZaehlerInsert: Waermezaehler, DPName = 190acd", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		// hole unveraendertes Gebaeude
+		gebaeude, err := database.GebaeudeFind(1101)
+		is.NoErr(err)
+
+		// fuege neuen Zaehler hinzu
 		data := structs.InsertZaehler{
-			PKEnergie:           190,
+			DPName:              "190acd",
 			Bezeichnung:         "Testzaehler",
 			Einheit:             "kWh",
 			GebaeudeRef:         []int32{1101},
 			IDEnergieversorgung: 1,
 		}
 
-		err := database.ZaehlerInsert(data)
+		newZaehlerOID, err := database.ZaehlerInsert(data)
 		is.NoErr(err)
 
 		// Vergleichszaehler wird dynamisch erstellt, weil eingetragene Zaehlerdaten vom aktuellen Jahr abhaengen
 		location, _ := time.LoadLocation("Etc/GMT")
 		aktuellesJahr := int32(time.Now().Year())
+		gebaeudeOID, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a286")
+
 		vergleichszaehler := structs.Zaehler{
+			ZaehlerID:    newZaehlerOID,
 			Zaehlertyp:   "Waerme",
-			PKEnergie:    190,
+			DPName:       "190acd",
 			Bezeichnung:  "Testzaehler",
 			Zaehlerdaten: []structs.Zaehlerwerte{},
 			Einheit:      "kWh",
 			Spezialfall:  1,
-			Revision:     1,
-			GebaeudeRef:  []int32{1101},
+			Revision:     2,
+			GebaeudeRef:  []primitive.ObjectID{gebaeudeOID},
 		}
 		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
-			vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
-				Wert:        0.0,
-				Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
-			})
+			for j := 1; j <= 12; j++ {
+				vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
+					Wert:        0.0,
+					Zeitstempel: time.Date(int(i), time.Month(j), 01, 0, 0, 0, 0, location).UTC(),
+				})
+			}
 		}
 
-		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		neuerZaehler, err := database.ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
 		is.NoErr(err)
 		is.Equal(neuerZaehler, vergleichszaehler)
 
+		gebaeude.WaermeRef = append(gebaeude.WaermeRef, newZaehlerOID)
+
 		updatedGebaeude, err := database.GebaeudeFind(1101)
 		is.NoErr(err)
-		is.Equal(updatedGebaeude, structs.Gebaeude{
-			Nr:          1101,
-			Bezeichnung: "Universitaetszentrum, karo 5, Audimax",
-			Flaeche: structs.GebaeudeFlaeche{
-				HNF:     6395.56,
-				NNF:     3081.85,
-				NGF:     15365.03,
-				FF:      5539.21,
-				VF:      5887.62,
-				FreiF:   96.57,
-				GesamtF: 21000.81,
-			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			KaelteRef: []int32{},
-			WaermeRef: []int32{2084, 190},
-			StromRef:  []int32{26024, 24799},
-		})
+		is.Equal(updatedGebaeude, gebaeude)
 	})
 
-	t.Run("ZaehlerInsert: Stromzaehler, ID = 191", func(t *testing.T) {
+	t.Run("ZaehlerInsert: Stromzaehler, DPName = 191acd", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		// hole unveraendertes Gebaeude
+		gebaeude, err := database.GebaeudeFind(1102)
+		is.NoErr(err)
+
+		// fuege neuen Zaehler hinzu
 		data := structs.InsertZaehler{
-			PKEnergie:           191,
+			DPName:              "191acd",
 			Bezeichnung:         "Testzaehler",
 			Einheit:             "kWh",
-			GebaeudeRef:         []int32{1101},
+			GebaeudeRef:         []int32{1102},
 			IDEnergieversorgung: 2,
 		}
 
-		err := database.ZaehlerInsert(data)
+		newZaehlerOID, err := database.ZaehlerInsert(data)
 		is.NoErr(err)
 
 		// Vergleichszaehler wird dynamisch erstellt, weil eingetragene Zaehlerdaten vom aktuellen Jahr abhaengen
 		location, _ := time.LoadLocation("Etc/GMT")
 		aktuellesJahr := int32(time.Now().Year())
+		gebaeudeOID, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a287")
+
 		vergleichszaehler := structs.Zaehler{
+			ZaehlerID:    newZaehlerOID,
 			Zaehlertyp:   "Strom",
-			PKEnergie:    191,
+			DPName:       "191acd",
 			Bezeichnung:  "Testzaehler",
 			Zaehlerdaten: []structs.Zaehlerwerte{},
 			Einheit:      "kWh",
 			Spezialfall:  1,
-			Revision:     1,
-			GebaeudeRef:  []int32{1101},
+			Revision:     2,
+			GebaeudeRef:  []primitive.ObjectID{gebaeudeOID},
 		}
 		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
-			vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
-				Wert:        0.0,
-				Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
-			})
+			for j := 1; j <= 12; j++ {
+				vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
+					Wert:        0.0,
+					Zeitstempel: time.Date(int(i), time.Month(j), 01, 0, 0, 0, 0, location).UTC(),
+				})
+			}
 		}
 
-		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		neuerZaehler, err := database.ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
 		is.NoErr(err)
 		is.Equal(neuerZaehler, vergleichszaehler)
 
-		updatedGebaeude, err := database.GebaeudeFind(1101)
+		gebaeude.StromRef = append(gebaeude.StromRef, newZaehlerOID)
+
+		updatedGebaeude, err := database.GebaeudeFind(1102)
 		is.NoErr(err)
-		is.Equal(updatedGebaeude, structs.Gebaeude{
-			Nr:          1101,
-			Bezeichnung: "Universitaetszentrum, karo 5, Audimax",
-			Flaeche: structs.GebaeudeFlaeche{
-				HNF:     6395.56,
-				NNF:     3081.85,
-				NGF:     15365.03,
-				FF:      5539.21,
-				VF:      5887.62,
-				FreiF:   96.57,
-				GesamtF: 21000.81,
-			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			KaelteRef: []int32{},
-			WaermeRef: []int32{2084, 190},
-			StromRef:  []int32{26024, 24799, 191},
-		})
+		is.Equal(updatedGebaeude, gebaeude)
 	})
 
-	t.Run("ZaehlerInsert: Kaeltezaehler, ID = 192", func(t *testing.T) {
+	t.Run("ZaehlerInsert: Kaeltezaehler, DPName = 192acd", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
+		// hole unveraendertes Gebaeude
+		gebaeude, err := database.GebaeudeFind(1103)
+		is.NoErr(err)
+
+		// fuege neuen Zaehler hinzu
 		data := structs.InsertZaehler{
-			PKEnergie:           192,
+			DPName:              "192acd",
 			Bezeichnung:         "Testzaehler",
 			Einheit:             "kWh",
-			GebaeudeRef:         []int32{1101},
+			GebaeudeRef:         []int32{1103},
 			IDEnergieversorgung: 3,
 		}
 
-		err := database.ZaehlerInsert(data)
+		newZaehlerOID, err := database.ZaehlerInsert(data)
 		is.NoErr(err)
 
 		// Vergleichszaehler wird dynamisch erstellt, weil eingetragene Zaehlerdaten vom aktuellen Jahr abhaengen
 		location, _ := time.LoadLocation("Etc/GMT")
 		aktuellesJahr := int32(time.Now().Year())
+		gebaeudeOID, _ := primitive.ObjectIDFromHex("61b712f66a1a52dea358a288")
+
 		vergleichszaehler := structs.Zaehler{
+			ZaehlerID:    newZaehlerOID,
 			Zaehlertyp:   "Kaelte",
-			PKEnergie:    192,
+			DPName:       "192acd",
 			Bezeichnung:  "Testzaehler",
 			Zaehlerdaten: []structs.Zaehlerwerte{},
 			Einheit:      "kWh",
 			Spezialfall:  1,
-			Revision:     1,
-			GebaeudeRef:  []int32{1101},
+			Revision:     2,
+			GebaeudeRef:  []primitive.ObjectID{gebaeudeOID},
 		}
 		for i := structs.ErstesJahr; i <= aktuellesJahr; i++ {
-			vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
-				Wert:        0.0,
-				Zeitstempel: time.Date(int(i), time.January, 01, 0, 0, 0, 0, location).UTC(),
-			})
+			for j := 1; j <= 12; j++ {
+				vergleichszaehler.Zaehlerdaten = append(vergleichszaehler.Zaehlerdaten, structs.Zaehlerwerte{
+					Wert:        0.0,
+					Zeitstempel: time.Date(int(i), time.Month(j), 01, 0, 0, 0, 0, location).UTC(),
+				})
+			}
 		}
 
-		neuerZaehler, err := database.ZaehlerFind(data.PKEnergie, data.IDEnergieversorgung)
+		neuerZaehler, err := database.ZaehlerFindDPName(data.DPName, data.IDEnergieversorgung)
 		is.NoErr(err)
 		is.Equal(neuerZaehler, vergleichszaehler)
 
-		updatedGebaeude, err := database.GebaeudeFind(1101)
+		gebaeude.KaelteRef = append(gebaeude.KaelteRef, newZaehlerOID)
+
+		updatedGebaeude, err := database.GebaeudeFind(1103)
 		is.NoErr(err)
-		is.Equal(updatedGebaeude, structs.Gebaeude{
-			Nr:          1101,
-			Bezeichnung: "Universitaetszentrum, karo 5, Audimax",
-			Flaeche: structs.GebaeudeFlaeche{
-				HNF:     6395.56,
-				NNF:     3081.85,
-				NGF:     15365.03,
-				FF:      5539.21,
-				VF:      5887.62,
-				FreiF:   96.57,
-				GesamtF: 21000.81,
-			},
-			Einheit:     "m^2",
-			Spezialfall: 1,
-			Revision:    1,
-			Stromversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Waermeversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			Kaelteversorger: []structs.Versoger{
-				{Jahr: 2018, IDVertrag: 1},
-				{Jahr: 2019, IDVertrag: 1},
-				{Jahr: 2020, IDVertrag: 1},
-				{Jahr: 2021, IDVertrag: 1},
-				{Jahr: 2022, IDVertrag: 1},
-			},
-			KaelteRef: []int32{192},
-			WaermeRef: []int32{2084, 190},
-			StromRef:  []int32{26024, 24799, 191},
-		})
+		is.Equal(updatedGebaeude, gebaeude)
 	})
 
 	// Errortests
@@ -463,60 +373,64 @@ func TestZaehlerInsert(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.InsertZaehler{
-			PKEnergie:           190,
+			DPName:              "190",
 			Bezeichnung:         "Testzaehler",
 			Einheit:             "kWh",
 			GebaeudeRef:         []int32{},
 			IDEnergieversorgung: 1,
 		}
 
-		err := database.ZaehlerInsert(data)
+		oid, err := database.ZaehlerInsert(data)
 		is.Equal(err, structs.ErrFehlendeGebaeuderef) // Funktion wirft ErrFehlendeGebaeudered
+		is.Equal(oid, primitive.NilObjectID)
 	})
 
 	t.Run("ZaehlerInsert: Zaehler vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.InsertZaehler{
-			PKEnergie:           2107,
+			DPName:              "B101XXXXXXHE000XXXXXXZ40CO00001",
 			Bezeichnung:         "Testzaehler",
 			Einheit:             "kWh",
 			GebaeudeRef:         []int32{190},
 			IDEnergieversorgung: 1,
 		}
 
-		err := database.ZaehlerInsert(data)
+		oid, err := database.ZaehlerInsert(data)
 		is.Equal(err, structs.ErrZaehlerVorhanden) // Funktion wirft ErrZaehlerVorhanden
+		is.Equal(oid, primitive.NilObjectID)
 	})
 
 	t.Run("ZaehlerInsert: ungueltige Gebaeudereferenz", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.InsertZaehler{
-			PKEnergie:           14,
+			DPName:              "78",
 			Bezeichnung:         "Testzaehler",
 			Einheit:             "kWh",
 			GebaeudeRef:         []int32{12},
 			IDEnergieversorgung: 1,
 		}
 
-		err := database.ZaehlerInsert(data)
-		is.Equal(err, mongo.ErrNoDocuments) // Datenbank wirft ErrNoDocuments
+		oid, err := database.ZaehlerInsert(data)
+		is.Equal(err, structs.ErrGebaeudeNichtVorhanden) // Funktion wirft ErrGebaeudeNichtVorhanden
+		is.Equal(oid, primitive.NilObjectID)
 	})
 
 	t.Run("ZaehlerInsert: IDEnergieversorgung = 0 nicht vorhanden", func(t *testing.T) {
 		is := is.NewRelaxed(t)
 
 		data := structs.InsertZaehler{
-			PKEnergie:           15,
+			DPName:              "780",
 			Bezeichnung:         "Testzaehler",
 			Einheit:             "kWh",
 			GebaeudeRef:         []int32{12},
 			IDEnergieversorgung: 0,
 		}
 
-		err := database.ZaehlerInsert(data)
+		oid, err := database.ZaehlerInsert(data)
 		is.Equal(err, structs.ErrIDEnergieversorgungNichtVorhanden) // Funktion wirft ErrIDEnergieversorgungNichtVorhanden
+		is.Equal(oid, primitive.NilObjectID)
 	})
 }
 
